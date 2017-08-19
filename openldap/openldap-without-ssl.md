@@ -60,7 +60,7 @@
 ## 附录
 
 #### 参考资料
-[1]: [使用 OpenLDAP 集中管理用户帐号, Mike O'Reilly](https://www.ibm.com/developerworks/cn/linux/l-openldap/)  
+[1]: [使用 OpenLDAP 集中管理用户帐号, Mike O'Reilly, IBM DeveloperWorks](https://www.ibm.com/developerworks/cn/linux/l-openldap/)  
 
 #### 结语
 * 最后, 恭喜您在未禁用 selinux & iptables 的情况下完成了OpenLDAP的安装与配置!
