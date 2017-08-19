@@ -6,8 +6,8 @@
 CentOS 7 x86_64 minimal
 
 #### 安全选项
-iptables:   ON
-SELinux:    enabled, enforcing
+* iptables:   ON
+* SELinux:    enabled, enforcing
 
 #### 软件版本
 1. [openswan](https://github.com/xelerance/Openswan): [2.6.49](https://github.com/xelerance/Openswan/archive/v2.6.49.tar.gz)
@@ -95,7 +95,7 @@ SELinux:    enabled, enforcing
     + VPN类型(VPN Type)     选择 **IPSec 上的 L2TP(L2TP over IPSec)**
     + 服务名称(Service Name) 输入容易识别的名称(自定义)
     + 之后点击 **创建(Create)**
-3. 服务器地址(Server Address)，输入VPN服务器的外网IP地址
+3. 服务器地址(Server Address)，输入VPN服务器的外网IP地址或域名
 4. 账户名称(Account Name), 输入VPN用户名
 5. 点击 **鉴定设置(Authentication Settings)**
     + 密码(Password)输入 VPN 密码
@@ -106,4 +106,34 @@ SELinux:    enabled, enforcing
     + 点击 **好(OK)**
 7. 点击 **连接(Connect)** 即可连接
 
-#### 
+#### iOS
+1. 点击 **设置** -> **通用** -> **VPN**
+2. 点击 **添加VPN配置**
+    + 类型选择 **L2TP**
+    + 描述输入 容易识别的名称
+    + 服务器输入 输入VPN服务器的外网IP地址或域名
+    + 账户输入 VPN用户名
+    + 密码输入 VPN 密码
+    + 密钥输入 **预共享密钥**
+    + 发送所有流量 打开
+3. 点击 **右上角 完成** 后即可连接使用
+
+#### Windows 7
+1. 在 **控制面板** 中打开 **网络和共享中心**
+2. 点击 **设置一个新的连接或网络**
+3. 选择 **连接到工作区**，点击 **下一步**
+4. 选择 **使用我的 Internet 连接(VPN)**
+    + Internet 地址 输入 VPN服务器的外网IP地址或域名
+    + 最下方勾选 **现在不连接；仅进行设置以便稍后连接**
+    + 点击 **下一步**
+    + 输入 VPN 用户名及密码
+    + 勾选 **记住此密码**
+    + 点击 **创建**
+    + 出现 **连接已经可以使用时** 点击 **关闭**
+5. 在 **网络和共享中心** 点击 **更改适配器设置**
+6. 选中 VPN 连接，右键选择 属性，在 **安全选项栏中**
+    + VPN类型 选择 **使用 IPsec 的第 2 层隧道协议(L2TP/IPSec)**
+    + 点击 **高级设置**，密钥输入 **预共享密钥**，然后点击 确定
+    + 数据加密 选择 **需要加密(如果服务器拒绝将断开连接)**
+    + 点击 **确定** 关闭 VPN 连接属性
+7. 双击 VPN 连接，点击 **连接** 即可使用
