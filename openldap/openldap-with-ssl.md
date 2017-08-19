@@ -90,55 +90,55 @@ CentOS 7 x86_64 minimal
 1. 安装 [JAVA](https://java.com/en/download/)
 2. 安装 [Apache Directory Studio](http://directory.apache.org/studio/downloads.html)
 3. 打开 Apache Directory Studio
-4. [新建一个LDAP连接](https://github.com/Statemood/documents/raw/master/images/ldap-10.png)，参考: 点击图中蓝色框内图标
-5. [New LDAP Connection](https://github.com/Statemood/documents/raw/master/images/ldap-11.png)，输入网络信息
+4. [新建一个LDAP连接(图 10)](https://github.com/Statemood/documents/raw/master/images/ldap-10.png)，参考: 点击图中蓝色框内图标
+5. [New LDAP Connection(图 10)](https://github.com/Statemood/documents/raw/master/images/ldap-11.png)，输入网络信息
    + LDAP Port 默认为 *389*
    + LDAPS Port 默认为 *636*
    + *Encryption method* 选择使用 *No encryption*，
    + 如启用了 *SSL* 则选择 *Use SSL encryption(ldaps://)*，且下方 *Provider* 须选择 *JNDI*
    + 输入完成点击 *Check Network Parameter*, 如果提示 successfully 则Hostname与Port信息正确，否则返回检查
    + 点击 *Next* 进入用户信息输入界面
-6. [New LDAP Connection](https://github.com/Statemood/documents/raw/master/images/ldap-12.png)，输入用户信息
+6. [New LDAP Connection(图 12)](https://github.com/Statemood/documents/raw/master/images/ldap-12.png)，输入用户信息
    + *Bind DN or user* 输入 `cn=Manager,dc=ldap,dc=abc,dc=com`
    + *Bind password* 输入DN密码，点击 *Check Authentication*，如果提示 successfully 则以上信息正确，否则返回检查
    + 点击 *Finish* 完成连接向导
 7. 双击新创建的LDAP完成连接
 
 #### 创建 Entry domain
-1. [主界面(图)](https://github.com/Statemood/documents/raw/master/images/ldap-13.png) 选中 *Root DSE*，右键选择 *New* -> *New Context Entry*
-2. *[Entry Creation Method(图)](https://github.com/Statemood/documents/raw/master/images/ldap-14.png)* 界面选择 *Create entry from scratch*，点击 *Next*
-3. *[Object Classes(图)](https://github.com/Statemood/documents/raw/master/images/ldap-15.png)* 界面添加 `domain`，点击 *Next*
-4. *[Distinguished Name(图)](https://github.com/Statemood/documents/raw/master/images/ldap-16.png)* 界面输入 `dc=ldap,dc=abc,dc=com`，点击 *Next*
-5. *[Attributes(图)](https://github.com/Statemood/documents/raw/master/images/ldap-17.png)* 界面点击 *Finish* 即可完成 *domain* 的创建
+1. [主界面(图 13)](https://github.com/Statemood/documents/raw/master/images/ldap-13.png) 选中 *Root DSE*，右键选择 *New* -> *New Context Entry*
+2. *[Entry Creation Method(图 13)](https://github.com/Statemood/documents/raw/master/images/ldap-14.png)* 界面选择 *Create entry from scratch*，点击 *Next*
+3. *[Object Classes(图 15)](https://github.com/Statemood/documents/raw/master/images/ldap-15.png)* 界面添加 `domain`，点击 *Next*
+4. *[Distinguished Name(图 16)](https://github.com/Statemood/documents/raw/master/images/ldap-16.png)* 界面输入 `dc=ldap,dc=abc,dc=com`，点击 *Next*
+5. *[Attributes(图 17)](https://github.com/Statemood/documents/raw/master/images/ldap-17.png)* 界面点击 *Finish* 即可完成 *domain* 的创建
 
 #### 创建 Entries Users & Groups
-1. [主界面(图)](https://github.com/Statemood/documents/raw/master/images/ldap-20.png) 选中 *dc=ldap,dc=abc,dc=com*，右键选择 *New* -> *New Context Entry*
-2. *[Entry Creation Method(图)](https://github.com/Statemood/documents/raw/master/images/ldap-14.png)* 界面选择 *Create entry from scratch*，点击 *Next*
-3. *[Object Classes(图)](https://github.com/Statemood/documents/raw/master/images/ldap-21.png)* 界面添加 `organizationalUnit`(会自动增加 `top`)，点击 *Next*
-4. *[Distinguished Name(图)](https://github.com/Statemood/documents/raw/master/images/ldap-16.png)* 界面输入 `ou=Users,dc=ldap,dc=abc,dc=com`，点击 *Next*
+1. [主界面(图 20)](https://github.com/Statemood/documents/raw/master/images/ldap-20.png) 选中 *dc=ldap,dc=abc,dc=com*，右键选择 *New* -> *New Context Entry*
+2. *[Entry Creation Method(图 14)](https://github.com/Statemood/documents/raw/master/images/ldap-14.png)* 界面选择 *Create entry from scratch*，点击 *Next*
+3. *[Object Classes(图 21)](https://github.com/Statemood/documents/raw/master/images/ldap-21.png)* 界面添加 `organizationalUnit`(会自动增加 `top`)，点击 *Next*
+4. *[Distinguished Name(图 16)](https://github.com/Statemood/documents/raw/master/images/ldap-16.png)* 界面输入 `ou=Users,dc=ldap,dc=abc,dc=com`，点击 *Next*
 5. *Attributes* 界面点击 *Finish* 即可完成 Entry *Users* 的创建
 6. *Entry Groups 创建步骤与上方相同*
 
 #### 创建一个 User Entry: admin
 1. 主界面 选中 *ou=Users,dc=ldap,dc=abc,dc=com*，右键选择 *New* -> *New Context Entry*
-2. *[Entry Creation Method(图)](https://github.com/Statemood/documents/raw/master/images/ldap-14.png)* 界面选择 *Create entry from scratch*，点击 *Next*
-3. *[Object Classes(图)](https://github.com/Statemood/documents/raw/master/images/ldap-15.png)* 界面添加 `OpenLDAPperson`，点击 *Next*
-4. *[Distinguished Name(图)](https://github.com/Statemood/documents/raw/master/images/ldap-16.png)* 界面输入 `cn=admin,ou=Users,dc=ldap,dc=abc,dc=com`，点击 *Next*
+2. *[Entry Creation Method(图 14)](https://github.com/Statemood/documents/raw/master/images/ldap-14.png)* 界面选择 *Create entry from scratch*，点击 *Next*
+3. *[Object Classes(图 15)](https://github.com/Statemood/documents/raw/master/images/ldap-15.png)* 界面添加 `OpenLDAPperson`，点击 *Next*
+4. *[Distinguished Name(图 16)](https://github.com/Statemood/documents/raw/master/images/ldap-16.png)* 界面输入 `cn=admin,ou=Users,dc=ldap,dc=abc,dc=com`，点击 *Next*
 5. *Attributes* 界面点击 *Finish* 即可完成 Entry *admin* 的创建
    + 此步骤如报错，请检查 *Attributes* 界面中 *黑色加粗* 属性对应的值是否输入正确
 
 #### 创建一个Group Entry: jenkins
 1. 主界面 选中 *ou=Groups,dc=ldap,dc=abc,dc=com*，右键选择 *New* -> *New Context Entry*
-2. *[Entry Creation Method(图)](https://github.com/Statemood/documents/raw/master/images/ldap-14.png)* 界面选择 *Create entry from scratch*，点击 *Next*
-3. *[Object Classes(图)](https://github.com/Statemood/documents/raw/master/images/ldap-15.png)* 界面添加 `groupOfUniqueNames`，点击 *Next*
-4. *[Distinguished Name(图)](https://github.com/Statemood/documents/raw/master/images/ldap-16.png)* 界面输入 `cn=jenkins,ou=Groups,dc=ldap,dc=abc,dc=com`，点击 *Next*
+2. *[Entry Creation Method(图 14)](https://github.com/Statemood/documents/raw/master/images/ldap-14.png)* 界面选择 *Create entry from scratch*，点击 *Next*
+3. *[Object Classes(图 15)](https://github.com/Statemood/documents/raw/master/images/ldap-15.png)* 界面添加 `groupOfUniqueNames`，点击 *Next*
+4. *[Distinguished Name(图 16)](https://github.com/Statemood/documents/raw/master/images/ldap-16.png)* 界面输入 `cn=jenkins,ou=Groups,dc=ldap,dc=abc,dc=com`，点击 *Next*
 5. *Attributes* 界面 *uniqueMember* 中输入 `cn=admin,ou=Users,dc=ldap,dc=abc,dc=com`
 6. *Attributes* 界面点击 *Finish* 即可完成 Entry *jenkins* 的创建
 
 #### 从文件导入 Entries
 1. 修改 *template.ldif* 文件，如缺少所需属性，请自行增加，也可以在导入后增加
-2. [主界面(图)](https://github.com/Statemood/documents/raw/master/images/ldap-18.png) 选中 *Root DSE*，右键选择 *Import* -> *LDIF Import*
-3. *[LDAP Import(图)](https://github.com/Statemood/documents/raw/master/images/ldap-19.png)* 界面中 *LDIF File* 输入或浏览(Browse)要导入的文件路径
+2. [主界面(图 18)](https://github.com/Statemood/documents/raw/master/images/ldap-18.png) 选中 *Root DSE*，右键选择 *Import* -> *LDIF Import*
+3. *[LDAP Import(图 19)](https://github.com/Statemood/documents/raw/master/images/ldap-19.png)* 界面中 *LDIF File* 输入或浏览(Browse)要导入的文件路径
 4. 可以勾选 *Update existing entries* 来 *覆盖已存在的相同数据*
 5. 点击 *Finish* 开始导入
 
