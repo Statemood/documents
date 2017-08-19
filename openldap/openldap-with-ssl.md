@@ -92,14 +92,14 @@ CentOS 7 x86_64 minimal
 3. 打开 Apache Directory Studio
 4. [新建一个LDAP连接](https://github.com/Statemood/documents/raw/master/images/ldap-10.png)，参考: 点击图中蓝色框内图标
 5. [New LDAP Connection](https://github.com/Statemood/documents/raw/master/images/ldap-11.png)，输入网络信息
-  *  LDAP Port 默认为 *389*，LDAPS Port 默认为 *636*
-  *  *Encryption method* 选择使用 *No encryption*，如启用了 *SSL* 则选择 *Use SSL encryption(ldaps://)*，且下方 *Provider* 须选择 *JNDI*
-  *  输入完成点击 *Check Network Parameter*, 如果提示 successfully 则Hostname与Port信息正确，否则返回检查
-  *  点击 *Next* 进入用户信息输入界面
+*   LDAP Port 默认为 *389*，LDAPS Port 默认为 *636*
+*   *Encryption method* 选择使用 *No encryption*，如启用了 *SSL* 则选择 *Use SSL encryption(ldaps://)*，且下方 *Provider* 须选择 *JNDI*
+*   输入完成点击 *Check Network Parameter*, 如果提示 successfully 则Hostname与Port信息正确，否则返回检查
+*   点击 *Next* 进入用户信息输入界面
 6. [New LDAP Connection](https://github.com/Statemood/documents/raw/master/images/ldap-12.png)，输入用户信息
-  *  *Bind DN or user* 输入 `cn=Manager,dc=ldap,dc=abc,dc=com`
-  *  *Bind password* 输入DN密码，点击 *Check Authentication*，如果提示 successfully 则以上信息正确，否则返回检查
-  *  点击 *Finish* 完成连接向导
+*   *Bind DN or user* 输入 `cn=Manager,dc=ldap,dc=abc,dc=com`
+*   *Bind password* 输入DN密码，点击 *Check Authentication*，如果提示 successfully 则以上信息正确，否则返回检查
+*   点击 *Finish* 完成连接向导
 7. 双击新创建的LDAP完成连接
 
 #### 创建 Entry domain

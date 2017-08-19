@@ -14,5 +14,5 @@ CentOS 7 x86_64 minimal
 ## 安装
 
 #### 安装 xl2tpd
-1. 下载 https://github.com/xelerance/xl2tpd/releases/tag/v1.3.8
-2. 
+1. 下载 <https://github.com/xelerance/xl2tpd/releases/tag/v1.3.8>
+*
