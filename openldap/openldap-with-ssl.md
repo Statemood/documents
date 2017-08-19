@@ -14,7 +14,8 @@
 
 #### 修改 slapd.conf, 使用 slapd-without-ssl.conf
 `[root@ldap ~]# vim /etc/slapd.conf`
-    `include     /etc/openldap/schema/core.schema
+
+    include     /etc/openldap/schema/core.schema
     include     /etc/openldap/schema/cosine.schema
     include     /etc/openldap/schema/inetorgperson.schema
     include     /etc/openldap/schema/openldap.schema
@@ -46,7 +47,7 @@
     index ou,cn,mail,surname,givenname      eq,pres,sub
     index uidNumber,gidNumber,loginShell    eq,pres
     index uid,memberUid                     eq,pres,sub
-    index nisMapName,nisMapEntry            eq,pres,sub`
+    index nisMapName,nisMapEntry            eq,pres,sub
 
 * 使用 slappasswd 生成DN密码, 并将输出的密码字串复制到 rootpw 字段后, 保存退出即可。
 
