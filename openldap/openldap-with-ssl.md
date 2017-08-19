@@ -6,7 +6,7 @@
 `[root@ldap ~]# yum install -y openldap-servers openldap openldap-clients openldap-devel`
 
 #### SSL 证书
-###### 参见 [使用 OpenLDAP 集中管理用户帐号, Mike O'Reilly, IBM DeveloperWorks](https://www.ibm.com/developerworks/cn/linux/l-openldap/) 
+###### 参见 [使用 OpenLDAP 集中管理用户帐号, Mike O'Reilly, IBM DeveloperWorks](https://www.ibm.com/developerworks/cn/linux/l-openldap/)
 
 ## 配置
 
@@ -30,9 +30,9 @@ rootdn      "cn=Manager,dc=ldap,dc=abc,dc=com"
 rootpw      # password
 directory   /var/lib/ldap
 
-# access control policy:
-# Restrict password access to change by owner and authentication.
-# Allow read access by everyone to all other attributes.
+\# access control policy:
+\# Restrict password access to change by owner and authentication.
+\# Allow read access by everyone to all other attributes.
 
 access to attrs=shadowLastChange,userPassword
    by self write
@@ -41,7 +41,7 @@ access to attrs=shadowLastChange,userPassword
 access to *
    by * read
 
-# Indices to maintain for this database
+\# Indices to maintain for this database
 index objectClass                       eq,pres
 index ou,cn,mail,surname,givenname      eq,pres,sub
 index uidNumber,gidNumber,loginShell    eq,pres
