@@ -1,0 +1,36 @@
+version: 1
+
+dn: dc=ldap,dc=abc,dc=com
+objectClass: top
+objectClass: domain
+dc: ldap
+
+dn: ou=Users,dc=ldap,dc=abc,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: Users
+
+dn: cn=admin,ou=Users,dc=ldap,dc=abc,dc=com
+objectClass: pilotPerson
+objectClass: OpenLDAPperson
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+cn: admin
+sn: System
+uid: 1
+mail: admin@abc.com
+mobile: 13800138000
+userPassword:: e1NTSEF9alBua3c3WFhNZnhXOC9RMUNOdFlRZ2FORmhCeWREV1E0TmE3M0E9PQ==
+
+dn: ou=Groups,dc=ldap,dc=abc,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: Groups
+
+dn: cn=jenkins,ou=Groups,dc=ldap,dc=abc,dc=com
+objectClass: top
+objectClass: groupOfUniqueNames
+cn: jenkins
+uniqueMember: cn=admin,ou=Users,dc=ldap,dc=abc,dc=com

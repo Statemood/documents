@@ -36,4 +36,15 @@
 
 ## 初始化LDAP
 
-* 使用 [Apache Directory Studio](http://directory.apache.org/studio/downloads.html) 进行连接和管理LDAP组织与人员
+###### 连接与导入
+1. 使用 [Apache Directory Studio](http://directory.apache.org/studio/downloads.html) 进行连接LDAP管理组织与人员
+2. 修改 template.ldif 并导入
+3. 如缺少所需属性，请自行增加
+4. 按导入的模版查看 BaseDN、Groups和其下group属性、Users与其下user属性
+5. 可以根据已有数据进行复制与修改
+
+
+## 其它
+###### 批量创建用户
+* 复制模版信息中用户段信息，批量创建写入文件再导入即可
+* 模版中密码为六位数字: 123456, SSHA 加密
