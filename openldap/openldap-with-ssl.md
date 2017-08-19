@@ -14,39 +14,39 @@
 
 #### 修改 slapd.conf, 使用 slapd-without-ssl.conf
 `[root@ldap ~]# vim /etc/slapd.conf`
-`include     /etc/openldap/schema/core.schema
-include     /etc/openldap/schema/cosine.schema
-include     /etc/openldap/schema/inetorgperson.schema
-include     /etc/openldap/schema/openldap.schema
-include     /etc/openldap/schema/nis.schema
+    `include     /etc/openldap/schema/core.schema
+    include     /etc/openldap/schema/cosine.schema
+    include     /etc/openldap/schema/inetorgperson.schema
+    include     /etc/openldap/schema/openldap.schema
+    include     /etc/openldap/schema/nis.schema
 
-pidfile     /run/openldap/slapd.pid
-argsfile    /run/openldap/slapd.args
+    pidfile     /run/openldap/slapd.pid
+    argsfile    /run/openldap/slapd.args
 
-database    bdb
-cachesize   10000
-suffix      "dc=ldap,dc=abc,dc=com"
-rootdn      "cn=Manager,dc=ldap,dc=abc,dc=com"
-rootpw      # password
-directory   /var/lib/ldap
+    database    bdb
+    cachesize   10000
+    suffix      "dc=ldap,dc=abc,dc=com"
+    rootdn      "cn=Manager,dc=ldap,dc=abc,dc=com"
+    rootpw      # password
+    directory   /var/lib/ldap
 
-\# access control policy:
-\# Restrict password access to change by owner and authentication.
-\# Allow read access by everyone to all other attributes.
+    # access control policy:
+    # Restrict password access to change by owner and authentication.
+    # Allow read access by everyone to all other attributes.
 
-access to attrs=shadowLastChange,userPassword
-   by self write
-   by * auth
+    access to attrs=shadowLastChange,userPassword
+       by self write
+       by * auth
 
-access to *
-   by * read
+    access to *
+       by * read
 
-\# Indices to maintain for this database
-index objectClass                       eq,pres
-index ou,cn,mail,surname,givenname      eq,pres,sub
-index uidNumber,gidNumber,loginShell    eq,pres
-index uid,memberUid                     eq,pres,sub
-index nisMapName,nisMapEntry            eq,pres,sub`
+    # Indices to maintain for this database
+    index objectClass                       eq,pres
+    index ou,cn,mail,surname,givenname      eq,pres,sub
+    index uidNumber,gidNumber,loginShell    eq,pres
+    index uid,memberUid                     eq,pres,sub
+    index nisMapName,nisMapEntry            eq,pres,sub`
 
 * 使用 slappasswd 生成DN密码, 并将输出的密码字串复制到 rootpw 字段后, 保存退出即可。
 
