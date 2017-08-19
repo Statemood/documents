@@ -3,8 +3,10 @@
 ## 安装
 
 #### 使用 yum 安装 OpenLDAP
-`[root@ldap ~]# yum install -y openldap-servers openldap.x86_64 openldap-clients openldap-devel openldap-servers-sql`
+`[root@ldap ~]# yum install -y openldap-servers openldap openldap-clients openldap-devel`
 
+#### SSL 证书
+###### 参见 [使用 OpenLDAP 集中管理用户帐号, Mike O'Reilly, IBM DeveloperWorks](https://www.ibm.com/developerworks/cn/linux/l-openldap/) 
 
 ## 配置
 
