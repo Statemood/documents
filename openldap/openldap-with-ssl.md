@@ -14,6 +14,7 @@
 
 #### 修改 slapd.conf, 使用 slapd-without-ssl.conf
 `[root@ldap ~]# vim /etc/slapd.conf`
+
     include     /etc/openldap/schema/core.schema
     include     /etc/openldap/schema/cosine.schema
     include     /etc/openldap/schema/inetorgperson.schema
