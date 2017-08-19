@@ -59,10 +59,10 @@ CentOS 7 x86_64 minimal
 
 #### 防火墙与端口
 1. 开放 **udp 500 1701 4500** 端口
-    `WAN_IP=网卡外网IP地址`
-    `iptables -A INPUT -m conntrack --ctstate NEW -p udp -s WAN_IP -m multiport --dport 500,1701,4500 -j ACCEPT`
+    + `WAN_IP=网卡外网IP地址`
+    + `iptables -A INPUT -m conntrack --ctstate NEW -p udp -s WAN_IP -m multiport --dport 500,1701,4500 -j ACCEPT`
 2. MASQUERADE
-    `iptables -t nat -A POSTROUTING -j MASQUERADE`
+    + `iptables -t nat -A POSTROUTING -j MASQUERADE`
 
 #### 其它设置
 1. 修改文件 /etc/sysctl.conf，**启用 IPv4 转发**
