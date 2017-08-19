@@ -11,7 +11,7 @@ CentOS 7 x86_64 minimal
 
 #### 软件版本
 1. [openswan](https://github.com/xelerance/Openswan): [2.6.49](https://github.com/xelerance/Openswan/archive/v2.6.49.tar.gz)
-2. [xl2tpd](https://github.com/xelerance/xl2tpd):  [1.3.8](https://github.com/xelerance/xl2tpd/releases/tag/v1.3.8)
+2. [xl2tpd](https://github.com/xelerance/xl2tpd)    : [1.3.8](https://github.com/xelerance/xl2tpd/archive/v1.3.8.tar.gz)
 
 
 ## 安装
@@ -26,7 +26,7 @@ CentOS 7 x86_64 minimal
 4. 执行命令 `make programs install` 进行安装
 
 #### 安装 xl2tpd
-1. 下载文件 <https://github.com/xelerance/xl2tpd/releases/tag/v1.3.8>
+1. 下载文件 <https://github.com/xelerance/xl2tpd/archive/v1.3.8.tar.gz>
 2. 解压文件 `tar zxf v1.3.8`
 3. 进入目录 `cd xl2tpd-1.3.8`
 4. 执行安装 `make && make install`
