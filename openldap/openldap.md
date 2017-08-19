@@ -8,6 +8,6 @@
 ## 配置
 
 ### 修改 slapd.conf
-`vim /etc/slapd.conf`
+`# vim /etc/slapd.conf`
 ![vim /etc/slapd.conf](https://github.com/Statemood/documents/raw/master/openldap/vim-slapd.conf.png)
 * 使用 slappasswd 生成密码, 并将输出的密码字串复制到 rootpw 字段后, 保存退出即可。
