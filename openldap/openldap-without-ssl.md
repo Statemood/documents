@@ -7,9 +7,8 @@
 
 ## 配置
 
-#### 修改 slapd.conf
+#### 修改 slapd.conf, 使用 slapd-without-ssl.conf
 `# vim /etc/slapd.conf`
-![vim /etc/slapd.conf](https://github.com/Statemood/documents/raw/master/openldap/vim-slapd.conf.png)
 * 使用 slappasswd 生成密码, 并将输出的密码字串复制到 rootpw 字段后, 保存退出即可。
 
 #### 清空 /etc/openldap/slapd.d 内数据并重新生成以便使 /etc/openldap/slapd.conf 变更生效
@@ -36,3 +35,5 @@
 
 
 ## 初始化LDAP
+
+* 使用 [Apache Directory Studio](http://directory.apache.org/studio/downloads.html) 进行连接和管理LDAP组织与人员
