@@ -1,5 +1,11 @@
 # OpenLDAP with SSL 安装与配置
 
+## 环境
+
+#### 操作系统
+CentOS 7 x86_64 minimal
+
+
 ## 安装
 
 #### 使用 yum 安装 OpenLDAP
