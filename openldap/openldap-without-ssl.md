@@ -9,6 +9,7 @@
 
 #### 修改 slapd.conf, 使用 slapd-without-ssl.conf
 `# vim /etc/slapd.conf`
+
 * 使用 slappasswd 生成密码, 并将输出的密码字串复制到 rootpw 字段后, 保存退出即可。
 
 #### 清空 /etc/openldap/slapd.d 内数据并重新生成以便使 /etc/openldap/slapd.conf 变更生效
