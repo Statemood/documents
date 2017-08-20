@@ -68,7 +68,7 @@ CentOS 7 x86_64 minimal
 1. 修改文件 /etc/sysctl.conf，**启用 IPv4 转发**
     + `net.ipv4.ip_forward = 1`
     + 保存退出后，执行 `sysctl -p` 生效
-2. 开机启动 IPSec:  `systemctl enable ipsec`
+2. 开机启动 IPSec:  `chkconfig ipsec on`
 3. 开机启动 xl2tpd: `echo xl2tpd >> /etc/rc.local`
 4. 确保 /etc/rc.local 可以执行: `chmod 755 /etc/rc.local`
 
@@ -90,16 +90,16 @@ CentOS 7 x86_64 minimal
 ## 连接
 #### Mac OS X
 1. 打开 **系统偏好设置(System Preferences)** -> **网络(Network)**
-2. 点击左下角 **+** 进行新建连接设置
-    + 接口(Interface)       选择 **VPN**
-    + VPN类型(VPN Type)     选择 **IPSec 上的 L2TP(L2TP over IPSec)**
-    + 服务名称(Service Name) 输入容易识别的名称(自定义)
+2. 点击左下角 **+(Plus)** 进行新建连接设置
+    + 接口(Interface)      : **VPN**
+    + VPN类型(VPN Type)    : **IPSec 上的 L2TP(L2TP over IPSec)**
+    + 服务名称(Service Name): 连接名称(自定义)(Define a name)
     + 之后点击 **创建(Create)**
-3. 服务器地址(Server Address)，输入VPN服务器的外网IP地址或域名
-4. 账户名称(Account Name), 输入VPN用户名
+3. 服务器地址(Server Address): VPN服务器的外网IP地址或域名(VPN Server IP or Hostname)
+4. 账户名称(Account Name): VPN用户名(VPN Username)
 5. 点击 **鉴定设置(Authentication Settings)**
-    + 密码(Password)输入 VPN 密码
-    + 共享的密钥(Shared Secret) 输入 **预共享密钥**
+    + 密码(Password): VPN 密码
+    + 共享的密钥(Shared Secret): **预共享密钥**
     + 点击 **好(OK)**
 6. 点击 **高级(Advanced)**
     + 在 **选项(Options)** 中勾上 **通过VPN连接发送所有通信(Send all trafic over VPN connections)**
@@ -107,15 +107,15 @@ CentOS 7 x86_64 minimal
 7. 点击 **连接(Connect)** 即可连接
 
 #### iOS
-1. 点击 **设置** -> **通用** -> **VPN**
-2. 点击 **添加VPN配置**
-    + 类型选择 **L2TP**
-    + 描述输入 容易识别的名称
-    + 服务器输入 输入VPN服务器的外网IP地址或域名
-    + 账户输入 VPN用户名
-    + 密码输入 VPN 密码
-    + 密钥输入 **预共享密钥**
-    + 发送所有流量 打开
+1. 点击 **设置(Settings)** -> **通用(General)** -> **VPN**
+2. 点击 **添加VPN配置(Add VPN Configuration)**
+    + 类型(Type): **L2TP**
+    + 描述(Description): 连接名称(自定义)(Define a name)
+    + 服务器(Server): VPN服务器IP地址或域名(VPN Server IP or Hostname)
+    + 账户(Account): VPN用户名(VPN Username)
+    + 密码(Password): VPN 密码(VPN Password)
+    + 密钥(Secret): **预共享密钥(PSK)**
+    + 发送所有流量 打开(Send all trafic)
 3. 点击 **右上角 完成** 后即可连接使用
 
 #### Windows 7
