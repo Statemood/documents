@@ -32,6 +32,7 @@
 
 - ###### 为 kubernetes 签发证书
     - kubernetes.cnf
+    
             [ req ]
             req_extensions = v3_req
             distinguished_name = req_distinguished_name
@@ -71,6 +72,7 @@
 
 - ###### 为 admin 签发证书
     - admin.cnf
+
             [ req ]
             req_extensions = v3_req
             distinguished_name = req_distinguished_name
@@ -101,7 +103,7 @@
             [root@19-50 ssl]# openssl req -new -key kube-proxy.key -out kube-proxy.csr -subj "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config kube-proxy.cnf
 
     - 签发证书
-    
+
             [root@19-50 ssl]# openssl x509 -req -in kube-proxy.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out kube-proxy.pem -days 1095 -extfile kube-proxy.cnf -extensions v3_req
 
 
