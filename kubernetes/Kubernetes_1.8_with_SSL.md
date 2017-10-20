@@ -19,9 +19,11 @@
             basicConstraints = critical, CA:true, pathlen:2
 
 - ###### 创建 CA Key
+
         [root@19-50 ssl]# openssl genrsa -out ca.key 3072
 
 - ###### 签发CA
+
         [root@19-50 ssl]# openssl req -x509 -new -nodes -key ca.key -days 1095 -out ca.pem -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config ca.cnf -extensions v3_req
 
     - 有效期 **1095** (d) = 3y
@@ -54,13 +56,16 @@
             DNS.5 = kubernetes.default.svc.cluster.local
 
     - 生成 key
+
             [root@19-50 ssl]# openssl genrsa -out kubernetes.key 3072
 
     - 生成证书请求
+
             [root@19-50 ssl]# openssl req -new -key kubernetes.key -out kubernetes.csr -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config client.cnf
 
     - 签发证书
             # 注意: 需要先去掉 client.cnf 注释掉的两行
+
             [root@19-50 ssl]# openssl x509 -req -in kubernetes.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out kubernetes.pem -days 1095 -extfile kubernetes.cnf -extensions v3_req
 
 
@@ -75,22 +80,28 @@
             keyUsage = critical, digitalSignature, keyEncipherment
 
     - 生成 key
+
             [root@19-50 ssl]# openssl genrsa -out admin.key 3072
 
     - 生成证书请求
+
             [root@19-50 ssl]# openssl req -new -key admin.key -out admin.csr -subj "/CN=admin/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:masters" -config admin.cnf
 
     - 签发证书
+
             [root@19-50 ssl]# openssl x509 -req -in admin.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out admin.pem -days 1095 -extfile admin.cnf -extensions v3_req
 
 - ###### 为 kube-proxy 签发证书
     - 生成 key
+
             [root@19-50 ssl]# openssl genrsa -out kube-proxy.key 3072
 
     - 生成证书请求
+
             [root@19-50 ssl]# openssl req -new -key kube-proxy.key -out kube-proxy.csr -subj "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config kube-proxy.cnf
 
     - 签发证书
+    
             [root@19-50 ssl]# openssl x509 -req -in kube-proxy.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out kube-proxy.pem -days 1095 -extfile kube-proxy.cnf -extensions v3_req
 
 
@@ -104,21 +115,25 @@
 
 ##### 2. 生成kubectl的kubeconfig文件
 - 设置集群参数
+
         [root@19-50 ~]# kubectl config set-cluster kubernetes \
                         --certificate-authority=/etc/kubernetes/ssl/ca.pem --embed-certs=true \
                         --server=https://192.168.19.50:6443
 
 - 设置客户端认证参数
+
         [root@19-50 ~]# kubectl config set-credentials admin \
                         --client-certificate=/etc/kubernetes/ssl/admin.pem --embed-certs=true \
                         --client-key=/etc/kubernetes/ssl/admin.key
 
 - 设置上下文参数
+
         [root@19-50 ~]# kubectl config set-context kubernetes \
                         --cluster=kubernetes \
                         --user=admin
 
 - 设置默认上下文
+
         [root@19-50 ~]# kubectl config use-context kubernetes
 
     - admin.pem证书的OU字段值为system:masters，kube-apiserver预定义的RoleBinding cluster-admin 将 Group system:masters 与 Role cluster-admin 绑定，该Role授予了调用kube-apiserver相关API的权限
@@ -127,6 +142,7 @@
 
 ##### 3. 生成kubelet的bootstrapping kubeconfig文件
 - 生成kubelet的bootstrapping kubeconfig文件
+
         [root@19-50 ~]# kubectl config set-cluster kubernetes \
                         --certificate-authority=/etc/kubernetes/ssl/ca.pem \
                         --embed-certs=true \
@@ -134,17 +150,20 @@
                         --kubeconfig=bootstrap.kubeconfig
 
 - 设置客户端认证参数
+
         [root@19-50 ~]# kubectl config set-credentials kubelet-bootstrap \
                         --token=aca563b43426de202353ae3f7ccd1fb8 \
                         --kubeconfig=bootstrap.kubeconfig
 
 - 设置默认上下文参数
+
         [root@19-50 ~]# kubectl config set-context default \
                         --cluster=kubernetes \
                         --user=kubelet-bootstrap \
                         --kubeconfig=bootstrap.kubeconfig
 
 - 设置默认上下文
+
         [root@19-50 ~]# kubectl config use-context default \
                         --kubeconfig=bootstrap.kubeconfig
 
@@ -154,6 +173,7 @@
 
 ##### 4. 生成kube-proxy的kubeconfig文件
 - 设置集群参数
+
         [root@19-50 ~]# kubectl config set-cluster kubernetes \
                         --certificate-authority=/etc/kubernetes/ssl/ca.pem \
                         --embed-certs=true \
@@ -161,6 +181,7 @@
                         --kubeconfig=kube-proxy.kubeconfig    
 
 - 设置客户端认证参数
+
         [root@19-50 ~]# kubectl config set-credentials kube-proxy \
                         --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
                         --client-key=/etc/kubernetes/ssl/kube-proxy.key \
@@ -168,12 +189,14 @@
                         --kubeconfig=kube-proxy.kubeconfig
 
 - 设置上下文参数
+
         [root@19-50 ~]# kubectl config set-context default \
                         --cluster=kubernetes \
                         --user=kube-proxy \
                         --kubeconfig=kube-proxy.kubeconfig
 
 - 设置默认上下文
+
         [root@19-50 ~]# kubectl config use-context default \
                         --kubeconfig=kube-proxy.kubeconfig
 
@@ -182,6 +205,7 @@
 
 ##### 5. 将kubeconfig文件复制至所有节点上
 - 将生成的两个 kubeconfig 文件复制到所有节点的 /etc/kubernetes 目录内
+
         [root@19-50 ~]# cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
 
 
