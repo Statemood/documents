@@ -115,14 +115,14 @@
 ##### 3.  将添加 etcd3 时的输出增加到第二、三节点 /etc/etcd/etcd.conf 文件中
 ###### File: /etc/etcd/etcd.conf
     [member]
-    ETCD_NAME=**etcd2**
-    ETCD_DATA_DIR="/var/lib/etcd/**etcd2**"
+    ETCD_NAME=etcd2
+    ETCD_DATA_DIR="/var/lib/etcd/etcd2"
     ETCD_LISTEN_PEER_URLS="https://192.168.19.50:2380"
     ETCD_LISTEN_CLIENT_URLS="https://192.168.19.50:2379"
     [cluster]
     ETCD_INITIAL_ADVERTISE_PEER_URLS="https://192.168.19.50:2380"
     ETCD_INITIAL_CLUSTER="etcd1=https://192.168.19.50:2380,etcd2=https://192.168.19.51:2380,etcd3=https://192.168.19.52:2380"
-    ETCD_INITIAL_CLUSTER_STATE="**exsting**"
+    ETCD_INITIAL_CLUSTER_STATE="exsting"
     ETCD_ADVERTISE_CLIENT_URLS="https://192.168.19.50:2379"
     [security]
     ETCD_CERT_FILE="/etc/etcd/ssl/etcd.pem"
@@ -136,7 +136,7 @@
     ETCD_PEER_TRUSTED_CA_FILE="/etc/kubernetes/ssl/ca.pem"
     ETCD_PEER_AUTO_TLS="true"
 
-    # 注意修改 **ETCD_NAME**
+    # 注意修改 ETCD_NAME
 
 ##### 4.  将第二、三节点启动
     [root@19-51 ~]# systemctl start etcd
