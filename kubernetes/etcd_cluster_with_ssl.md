@@ -14,13 +14,51 @@
 
 +   etcd 3.2.5
 
-
 ### 二、安装
 ###### 在各节点依次执行 yum install -y etcd 进行安装
     [root@19-50 ~]# yum install -y etcd
 
 ### 三、配置
-##### 1.  签发证书请参考 [Kubernetes 1.8 with SSL](https://github.com/Statemood/documents/blob/master/kubernetes/Kubernetes_1.8_with_SSL.md#二签发客户端证书)
+##### 1.  签发证书
+
+- ##### 准备客户端配置文件 client.cnf
+        # client.cnf
+        [ req ]
+        req_extensions = v3_req
+        distinguished_name = req_distinguished_name
+        [req_distinguished_name]
+        [ v3_req ]
+        basicConstraints = CA:FALSE
+        keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+        subjectAltName = @alt_names
+        [alt_names]
+        IP.1 = 192.168.1.20
+        # IP.1 为客户端IP, 可以为多个, 如 IP.2 = xxx
+
+- ###### 为 etcd 签发证书
+    - 把 client.cnf 文件中 IP.1 改为 etcd 的IP
+    - 注释掉 client.cnf 中以下两行
+            #subjectKeyIdentifier = hash
+            #authorityKeyIdentifier = keyid:always,issuer
+
+    - 生成 etcd.key
+            [root@19-50 ssl]# openssl genrsa -out etcd.key 3072
+
+    - 生成证书请求
+            [root@19-50 ssl]# openssl req -new -key etcd.key -out etcd.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config client.cnf
+
+    - 签发证书
+            [root@19-50 ssl]# openssl x509 -req -in etcd.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out etcd.pem -days 1095 -extfile client.cnf -extensions v3_req
+
+        - 注意:
+            - 需要先去掉 client.cnf 注释掉的两行
+        - 注意: CN=**etcd**
+
+    - 把 etcd.key 和 etcd.pem 放到各 etcd /etc/etcd/ssl 目录下
+            [root@19-50 ssl]# cp etcd.key etcd.pem /etc/etcd/ssl
+
+    - 把 ca.pem 复制到 /etc/kubernetes/ssl 目录下
+            [root@19-50 ssl]# cp ca.pem /etc/kubernetes/ssl
 
 ##### 2.  将 etcd.key 和 etcd.pem 放到 /etc/etcd/ssl 目录下
     # File: /etc/etcd/etcd.conf
@@ -146,6 +184,19 @@
 ##### 5.  查看集群成员
     [root@19-52 ~]# etcdctl --endpoints=https://192.168.19.50:2379 --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/etcd/ssl/etcd.pem --key-file=/etc/etcd/ssl/etcd.key member list
 
-### 五、参考资料
+### 五、为 flanneld 增加网络配置
+
+##### 1. 创建目录 /etcd-cluster/network
+    [root@19-51 ~]# etcdctl --endpoints=https://192.168.19.50:2379 --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/etcd/ssl/etcd.pem --key-file=/etc/etcd/ssl/etcd.key mkdir /etcd-cluster/network
+
+##### 2. 设置网络
+    [root@19-51 ~]# etcdctl --endpoints=https://192.168.19.50:2379 --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/etcd/ssl/etcd.pem --key-file=/etc/etcd/ssl/etcd.key set /etcd-cluster/network/config '{"Network": "10.20.0.0/16"}'
+
+- 设置 Kubernetes 集群网络为 10.20.0.0/16
+
+##### 3. 查看已分配网络
+    [root@19-51 ~]# etcdctl --endpoints=https://192.168.19.50:2379 --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/etcd/ssl/etcd.pem --key-file=/etc/etcd/ssl/etcd.key ls /etcd-cluster/network/subnet
+
+### 六、参考资料
 
 1.  [Kubernetes 1.8 with SSL](https://github.com/Statemood/documents/blob/master/kubernetes/Kubernetes_1.8_with_SSL.md)
