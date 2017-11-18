@@ -322,12 +322,12 @@
 
 - ##### 创建多个文件系统
     - ###### 需要先执行以下命令启用多文件系统选项
-        [root@10-55 ~]# ceph fs flag set enable_multiple true --yes-i-really-mean-it
+            [root@10-55 ~]# ceph fs flag set enable_multiple true --yes-i-really-mean-it
 
     - ###### 开始创建另外的文件系统
-        [root@10-55 ~]# ceph osd pool create logs_data 32
-        [root@10-55 ~]# ceph osd pool create logs_metadata 32
-        [root@10-55 ~]# ceph fs new logs logs_metadata logs_data
+            [root@10-55 ~]# ceph osd pool create logs_data 32
+            [root@10-55 ~]# ceph osd pool create logs_metadata 32
+            [root@10-55 ~]# ceph fs new logs logs_metadata logs_data
 
 - ##### 使用 ceph-fuse 在 10-50 上挂载文件系统
     - 使用 `yum install -y ceph-fuse` 安装
