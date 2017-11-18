@@ -331,18 +331,18 @@
 
 - ##### 使用 ceph-fuse 在 10-50 上挂载文件系统
     - 使用 `yum install -y ceph-fuse` 安装
-          [root@10-50 ~]# yum install -y ceph-fuse
+            [root@10-50 ~]# yum install -y ceph-fuse
 
     - 从Ceph集群复制 ceph.conf 与 ceph.client.admin.keyring 文件到主机 10-50 /etc/ceph 目录下
     - 使用 `ceph fs dump` 查看文件系统编号
-          [root@10-55 ~]# ceph fs dump
+            [root@10-55 ~]# ceph fs dump
 
     - 创建挂载点目录 /data
-          [root@10-50 ~]# test -d /data || mkdir /data
+            [root@10-50 ~]# test -d /data || mkdir /data
 
     - 使用 `ceph-fuse` 挂载
-          [root@10-50 ~]# ceph-fuse -m 192.168.10.55，192.168.10.56:6789 /data/files --client_mds_namespace 1
-          [root@10-50 ~]# ceph-fuse -m 192.168.10.55，192.168.10.56:6789 /data/logs  --client_mds_namespace 2
+            [root@10-50 ~]# ceph-fuse -m 192.168.10.55，192.168.10.56:6789 /data/files --client_mds_namespace 1
+            [root@10-50 ~]# ceph-fuse -m 192.168.10.55，192.168.10.56:6789 /data/logs  --client_mds_namespace 2
 
     - 至此，即可直接使用ceph文件系统了
 
