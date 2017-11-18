@@ -63,7 +63,7 @@
       [root@10-55 ~]# firewall-cmd --reload
 
 #### 4. 时间同步
-- ##### 本步骤要在每一个节点上执行
+###### 本步骤要在每一个节点上执行
 - ##### ceph 对节点时间一致性要求较高，需要同步时间
 - ##### 全部节点应使用同一个时间服务器
 - ##### 时间服务器使用 cn.pool.ntp.org
@@ -89,11 +89,12 @@
 - ##### 替换 ceph.repo 服务器
   - 由于官网服务器下载速度较慢，需要替换 ceph.repo 文件中服务器地址为 **[清华镜像站进行](https://mirrors.tuna.tsinghua.edu.cn)**
   - 使用下方命令进行替换
-        [root@10-55 ~]#  sed -i 's#htt.*://download.ceph.com#https://mirrors.tuna.tsinghua.edu.cn/ceph#g' /etc/yum.repos.d/ceph.repo
+          [root@10-55 ~]#  sed -i 's#htt.*://download.ceph.com#https://mirrors.tuna.tsinghua.edu.cn/ceph#g' /etc/yum.repos.d/ceph.repo
 
       <!--* For close star-->
 
   - 或直接复制下方文本内容替换 /etc/yum.repos.d/ceph.repo
+
         [Ceph]
         name=Ceph packages for $basearch
         baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-jewel/el7/$basearch
@@ -192,14 +193,16 @@
           systemctl restart ceph\*.service ceph\*.target
 
     - ###### 如启动时遇到错误，先检查日志，再检查Journal磁盘分区权限
-      - /dev/sdb1 /dev/sdb2 等需要确保 ceph 用户拥有可写权限，如无，则通过下方命令更改
-              chown ceph:ceph /dev/sdb1 /dev/sdb2 /dev/sdb3
+        - /dev/sdb1 /dev/sdb2 等需要确保 ceph 用户拥有可写权限，如无，则通过下方命令更改
+                chown ceph:ceph /dev/sdb1 /dev/sdb2 /dev/sdb3
 
       - 上述命令执行完毕后再次重启Ceph
+                systemctl restart ceph\*.service ceph\*.target
 
 #### 2. 部署 MDS 元数据服务
 - ##### 如果需要以POSIX标准形式挂载 ceph-fs，则需要启动 MDS 服务
       [root@10-55 ceph-install]# ceph-deploy mds create 10-55 10-56
+      
     - 上方命令会在 10-55 和 10-57 上启动MDS
 
 #### 3. 清除操作
