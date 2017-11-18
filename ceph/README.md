@@ -195,10 +195,12 @@
 
     - ###### 如启动时遇到错误，先检查日志，再检查Journal磁盘分区权限
         - /dev/sdb1 /dev/sdb2 等需要确保 ceph 用户拥有可写权限，如无，则通过下方命令更改
-              chown ceph:ceph /dev/sdb1 /dev/sdb2 /dev/sdb3
+
+            chown ceph:ceph /dev/sdb1 /dev/sdb2 /dev/sdb3
 
       - 上述命令执行完毕后再次重启Ceph
-              systemctl restart ceph\*.service ceph\*.target
+
+            systemctl restart ceph\*.service ceph\*.target
 
 #### 2. 部署 MDS 元数据服务
 - ##### 如果需要以POSIX标准形式挂载 ceph-fs，则需要启动 MDS 服务
@@ -218,7 +220,7 @@
 - ##### 性能
   OSD 为客户端处理数据复制，复制多份时 OSD 间的网络负载势必会影响到客户端和 ceph 集群 的通讯，包括延时增加、产生性能问题;恢复和重均衡也会显著增加公共网延时。
 - ##### 安全
-  大多数人都是良民，很少的一撮人喜欢折腾拒绝服务攻击(DoS)。当 OSD 间的流量瓦解时， 归置组再也不能达到 active+clean 状态，这样用户就不能读写数据了。挫败此类攻击的一种好方法是 维护一个完全独立的集群网，使之不能直连互联网;另外，请考虑用签名防止欺骗攻击。
+  很少的一撮人喜欢折腾拒绝服务攻击(DoS)。当 OSD 间的流量瓦解时， 归置组再也不能达到 active+clean 状态，这样用户就不能读写数据了。挫败此类攻击的一种好方法是 维护一个完全独立的集群网，使之不能直连互联网;另外，请考虑用签名防止欺骗攻击。
 
 #### 2. 分离公共网络和集群网络(推荐、可选)
 - ##### 按下方所列修改配置文件 ceph.conf (在目录 ~/ceph-install 下操作，注意替换 fsid )
