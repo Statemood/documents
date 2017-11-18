@@ -377,6 +377,6 @@
 ## 附录
 
 #### 参考文档
-##### 1. [Ceph 文档中文译本](https://github.com/drunkard/ceph-readable-doc)
+##### 1. [Ceph 中文文档](http://docs.ceph.org.cn/)
 ##### 2. [Ceph Documentation](http://docs.ceph.com/docs/master/)
 ##### 3. [在 CentOS 7.1 上安装分布式存储系统 Ceph](https://www.vpsee.com/2015/07/install-ceph-on-centos-7/)
