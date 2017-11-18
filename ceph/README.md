@@ -199,7 +199,7 @@
               chown ceph:ceph /dev/sdb1 /dev/sdb2 /dev/sdb3
 
         - 上述命令执行完毕后再次重启Ceph
-        
+
               systemctl restart ceph\*.service ceph\*.target
 
 #### 2. 部署 MDS 元数据服务
@@ -322,12 +322,12 @@
 
 - ##### 创建多个文件系统
     - ###### 需要先执行以下命令启用多文件系统选项
-          [root@10-55 ~]# ceph fs flag set enable_multiple true --yes-i-really-mean-it
+        [root@10-55 ~]# ceph fs flag set enable_multiple true --yes-i-really-mean-it
 
     - ###### 开始创建另外的文件系统
-          [root@10-55 ~]# ceph osd pool create logs_data 32
-          [root@10-55 ~]# ceph osd pool create logs_metadata 32
-          [root@10-55 ~]# ceph fs new logs logs_metadata logs_data
+        [root@10-55 ~]# ceph osd pool create logs_data 32
+        [root@10-55 ~]# ceph osd pool create logs_metadata 32
+        [root@10-55 ~]# ceph fs new logs logs_metadata logs_data
 
 - ##### 使用 ceph-fuse 在 10-50 上挂载文件系统
     - 使用 `yum install -y ceph-fuse` 安装
