@@ -196,7 +196,7 @@
     - ###### 如启动时遇到错误，先检查日志，再检查Journal磁盘分区权限
         - /dev/sdb1 /dev/sdb2 等需要确保 ceph 用户拥有可写权限，如无，则通过下方命令更改
 
-              chown ceph:ceph /dev/sdb1 /dev/sdb2 /dev/sdb3
+                chown ceph:ceph /dev/sdb1 /dev/sdb2 /dev/sdb3
 
       - 上述命令执行完毕后再次重启Ceph
 
