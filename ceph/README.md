@@ -362,7 +362,7 @@
       [root@10-50 ~]# cd /data/files
 
 - ##### 执行测试
-      [root@10-50 files]#  fio -direct=1 -iodepth=128 -rw=randwrite -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=iotest -name=Rand_Write_Testing
+      [root@10-50 files]# fio -direct=1 -iodepth=128 -rw=randwrite -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=iotest -name=Rand_Write_Testing
 
 - ###### 更多 fio 信息请查阅相关文档
 
