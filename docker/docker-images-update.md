@@ -112,4 +112,5 @@
 
 ## 四、附录
 #### 1. 参考文档
+  - [harbor](https://github.com/vmware/harbor), [vmware](https://github.com/vmware)
   - [python-harborclient](https://github.com/int32bit/python-harborclient),  [int32bit](https://github.com/int32bit)
