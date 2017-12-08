@@ -1,0 +1,70 @@
+#! /bin/bash
+
+harbor_rc="~/.admin-harborrc"
+
+msg(){
+    case $1 in
+        # e: Print messages and exit 1
+        e)  echo -e "\033[1;41mERROR\033[0m: \033[1m$2\033[0m" && exit 1  ;;
+    esac
+}
+
+# Get IDs of all projects
+list_all_projects(){
+    harbor project-list     | \
+    awk -F '|' '{print $2}' | \
+    awk '{print $1}'        | \
+    egrep -v '^$|project_id'
+}
+
+output(){
+    echo "$severity=$count, $image_name" >> vulnerable.list
+    continue
+}
+
+test -f $harbor_rc && . $harbor_rc || msg e "File not found: $harbor_rc"
+test -z "$HARBOR_URL"              && msg e "ERROR: Undefined variable: HARBOR_URL"
+
+
+# Define project_id
+#
+#project_id=`list_all_projects` # get IDs of all projects
+project_id="1"
+
+for p in $project_id
+do
+    HARBOR_PROJECT=$p
+
+    harbor list             | \
+    awk -F '|' '{print $2}' | \
+    awk '{print $1}'        | \
+    egrep -v '^$|^name$'    | \
+    tr "/" " "              | \
+    tr ":" " "              | \
+    while read project name tag
+    do
+        test -z "$tag" && tag="latest"
+
+        image_name="$project/$name:$tag"
+
+        printf "\n`date +'%F %T'` Processing \033[1m%-32s\033[0m" "$image_name"
+
+        harbor show $image_name     | \
+        grep 'tag_scan_overview'    | \
+        awk -F '|' '{print $3}'     | \
+        awk -F '[' '{print $2}'     | \
+        awk -F ']' '{print $1}'     | \
+        sed 's/},/},\n/g'           | \
+        sed 's/}/ }/g'              | \
+        sed 's/,/ ,/g'              | \
+        sed 's/^ //g'               | \
+        awk '{print $2,$5}'         | \
+        while read count severity
+        do
+            test -z "$severity" || test -z "$count"  && continue
+
+            test $severity = 5  && test $count -ge 1 && output || continue
+            test $severity = 4  && test $count -ge 5 && output || continue
+        done
+    done
+done

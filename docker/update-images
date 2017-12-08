@@ -1,0 +1,29 @@
+#! /bin/bash -
+
+                f="vulnerable.list"
+    registry_user=""
+registry_password=""
+  registry_server=""
+
+
+test $UID = 0 || sudo="sudo"
+
+$sudo docker login -u $registry_user -p $registry_password $registry_server
+
+sed 's/=/ /g' $f    | \
+sed 's/,/ /g'       | \
+sed 's#/# #g'       | \
+sed 's/:/ /g'       | \
+while read severity count project name tag
+do
+    d="$PWD"
+    n="$project/$name"
+    i="$registry_server/$n:$tag"
+
+    cd $n
+
+    $sudo docker build -t $i $tag
+    $sudo docker push     $i
+
+    cd $d
+done
