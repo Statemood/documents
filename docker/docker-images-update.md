@@ -106,4 +106,10 @@
 - **使用脚本 update-images**
 - 修改 registry_user, 为可以推送镜像的用户名
 - 修改 registry_password, 为可以推送镜像的用户密码
-- 修改 registry_server 为 Harbor 地址即可，不包括 http:// 或者 https://
+- 修改 registry_server 为 Harbor 地址，**不包括** http:// 或者 https://
+  - 如 registry_server="registry.abc.com"
+
+
+## 四、附录
+#### 1. 参考文档
+  - [python-harborclient](https://github.com/int32bit/python-harborclient),  [int32bit](https://github.com/int32bit)
