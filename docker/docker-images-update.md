@@ -104,3 +104,6 @@
 
 #### 2. 直接使用脚本更新Docker镜像
 - ###### 使用脚本 update-images 即可
+- 修改 registry_user, 为可以推送镜像的用户名
+- 修改 registry_password, 为可以推送镜像的用户密码
+- 修改 registry_server 为 Harbor 地址即可，不包括 http:// 或者 https://
