@@ -27,7 +27,7 @@
 - 设定每日 00:00 自动对全部镜像进行扫描
 
 #### 2. 获取镜像列表
-###### 使用 int32bit 提供的 [harborclient](https://github.com/int32bit/harborclient) 获取 Harbor 内镜像信息
+###### 使用 int32bit 的 [harborclient](https://github.com/int32bit/harborclient) 获取 Harbor 内镜像信息
 ###### harborclient 安装及配置请参考 [文档](https://github.com/int32bit/python-harborclient/blob/master/README.zh.md)
 
 - 获取镜像列表
