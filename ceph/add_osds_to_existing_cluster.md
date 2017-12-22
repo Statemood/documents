@@ -94,8 +94,16 @@
 
         iptables -A INPUT -m conntrack --ctstate NEW -p tcp --dport 6800:6810  -j ACCEPT
 
+#### 8. 磁盘权限
+  - 确保 /dev/{journal-ssd}1 ceph 用户可写
 
-#### 8. 启动 OSD
+        chown ceph /dev/{journal-ssd}1
+
+  - 确保 /dev/{disk}1 ceph 用户可写
+
+        chown ceph /dev/{disk}1
+
+#### 9. 启动 OSD
   - 启动
 
         systemctl start ceph-osd@{osd-number}
