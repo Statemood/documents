@@ -1,5 +1,7 @@
 # 向已存在的Ceph集群添加OSD
 
+#### 0. 环境
+  - Ceph 12.2.2 luminous
 
 #### 1. 创建一个OSD
   - 本命令在 monitor 上执行
