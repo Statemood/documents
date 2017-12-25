@@ -1,6 +1,10 @@
 # 向已存在的Ceph集群添加OSD
 
+## Ceph Cluster 在线扩容
+
+
 #### 0. 环境
+  - CentOS 7 minimal x86_64
   - Ceph 12.2.2 luminous
 
 #### 1. 创建一个OSD
