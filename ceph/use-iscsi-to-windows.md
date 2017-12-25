@@ -1,6 +1,7 @@
-# 使用 iSCSI 协议连接到 Windows Server
+# 使用 iSCSI 将 Ceph 存储连接到 Windows Server
 
-### 通过 iSCSI 协议将 Ceph 连接到 Windows Server
+- ### 通过 iSCSI 将 Ceph 存储连接到 Windows Server
+- ### 支持在线伸缩
 
 ### 1. 环境
 
