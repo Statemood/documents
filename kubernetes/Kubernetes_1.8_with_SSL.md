@@ -7,18 +7,18 @@
 
 ## 二、环境
 
-#### 1. 系统
+### 1. 系统
 - CentOS 7.4 minimal x86_64
 
-#### 2. Firewalld
+### 2. Firewalld
 - 由于 iptables 会被 kube-proxy 接管，因此需 **禁用** Firewalld
 
       systemctl disable firewalld && systemctl stop firewalld
 
-#### 3. SELinux
+### 3. SELinux
 - ##### enforcing
 
-#### 4. 主机
+### 4. 主机
 
 | 节点 | IP | 角色 | 配置 | 备注 |
 | :---: | :--: | :--: | :--: | :--: |
