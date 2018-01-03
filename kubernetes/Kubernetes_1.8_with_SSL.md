@@ -28,16 +28,16 @@
 
 
 ## 三、安装
-#### 1. 从二进制安装包进行安装
-- 使用 curl 命令下载
+### 1. 从二进制安装包进行安装
+- #### 使用 curl 命令下载
 
       [root@50-55 ~]# curl -O https://github.com/kubernetes/kubernetes/releases/download/v1.8.1/kubernetes.tar.gz
 
-- 解压
+- #### 解压
 
       [root@50-55 ~]# tar zxf kubernetes.tar.gz
 
-- 安装
+- #### 安装
 
       [root@50-55 ~]# cd kubernetes/server/bin
       [root@50-55 bin]# ll
@@ -102,26 +102,26 @@
   - 复制到 /usr/bin 目录下
   - **在普通节点上，仅需安装 kubelet 和 kube-proxy 两个服务**
 
-#### 2. 复制配置文件
-- **将 etc-kubernetes 目录复制保存为 /etc/kubernetes**
+### 2. 复制配置文件
+- #### 将 etc-kubernetes 目录复制保存为 /etc/kubernetes
 
-#### 3. 复制 systemctl 配置文件
-- **将 systemctl 目录内文件复制到 /usr/lib/systemd/system/**
+### 3. 复制 systemctl 配置文件
+- #### 将 systemctl 目录内文件复制到 /usr/lib/systemd/system/
   - ###### 在普通节点上，仅需安装 kubelet 和 kube-proxy 两个服务
 
-- 执行 **systemctl daemon-reload**
+- #### 执行 systemctl daemon-reload
 
       [root@50-55 ~]# systemctl daemon-reload
 
 ## 四、证书
 
-#### 1. 签发CA，在 50-55 上进行(可以是任一安装 openssl 的主机)
-- ##### 创建 /etc/ssl/gen 目录并进入
+### 1. 签发CA，在 50-55 上进行(可以是任一安装 openssl 的主机)
+- #### 创建 /etc/ssl/gen 目录并进入
 
       [root@50-55 ～]# mkdir /etc/ssl/gen
       [root@50-55 ～]# cd /etc/ssl/gen
 
-- ##### 准备额外的选项, 配置文件 ca.cnf
+- #### 准备额外的选项, 配置文件 ca.cnf
   - File: ca.cnf
 
         [ req ]
@@ -136,21 +136,21 @@
         authorityKeyIdentifier = keyid:always,issuer
         basicConstraints = critical, CA:true, pathlen:2
 
-- ##### 创建 CA Key
+- #### 创建 CA Key
 
       [root@50-55 gen]# openssl genrsa -out ca.key 3072
 
-- ##### 签发CA
+- #### 签发CA
 
       [root@50-55 gen]# openssl req -x509 -new -nodes -key ca.key -days 1095 -out ca.pem -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config ca.cnf -extensions v3_req
 
     - 有效期 **1095** (d) = 3y
     - 注意 -subj 参数中仅 'CN' 与 'Shanghai' 可以修改，**其它保持原样**，否则集群会遇到权限异常问题
 
-#### 2. 签发客户端证书
+### 2. 签发客户端证书
 
-- ##### 为 API Server 签发证书
-  - apiserver.cnf
+- #### 为 API Server 签发证书
+  - ##### apiserver.cnf
 
         [ req ]
         req_extensions = v3_req
@@ -176,24 +176,24 @@
 
     - IP.3 与 IP.4 加入到证书中，方便 API Server 后期的高可用
 
-  - 生成 key
+  - ##### 生成 key
 
         [root@50-55 gen]# openssl genrsa -out apiserver.key 3072
 
-  - 生成证书请求
+  - ##### 生成证书请求
 
         [root@50-55 gen]# openssl req -new -key apiserver.key -out apiserver.csr -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config apiserver.cnf
 
       - 注意 -subj 参数中仅 'CN' 与 'Shanghai' 可以修改，**其它保持原样**，否则集群会遇到权限异常问题
 
-  - 签发证书
+  - ##### 签发证书
 
         [root@50-55 gen]# openssl x509 -req -in apiserver.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out apiserver.pem -days 1095 -extfile apiserver.cnf -extensions v3_req
 
     - 注意: 需要先去掉 apiserver.cnf 注释掉的两行
 
-- ##### 为 Kubelet 签发证书
-  - kubelet.cnf
+- #### 为 Kubelet 签发证书
+  - ##### kubelet.cnf
 
         [ req ]
         req_extensions = v3_req
@@ -203,63 +203,69 @@
         basicConstraints = critical, CA:FALSE
         keyUsage = critical, digitalSignature, keyEncipherment
 
-  - 生成 key
+  - ##### 生成 key
 
         [root@50-55 gen]# openssl genrsa -out kubelet.key 3072
 
-  - 生成证书请求
+  - ##### 生成证书请求
 
         [root@50-55 gen]# openssl req -new -key kubelet.key -out kubelet.csr -subj "/CN=admin/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:masters" -config kubelet.cnf
 
-  - 签发证书
+  - ##### 签发证书
 
         [root@50-55 gen]# openssl x509 -req -in kubelet.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out kubelet.pem -days 1095 -extfile kubelet.cnf -extensions v3_req
 
-- ##### 为 kube-proxy 签发证书
-  - 复制 kubelet.cnf 文件
+- #### 为 kube-proxy 签发证书
+  - ##### 复制 kubelet.cnf 文件
 
         [root@50-55 gen]# cp kubelet.cnf kube-proxy.cnf
 
-  - 生成 key
+  - ##### 生成 key
 
         [root@50-55 gen]# openssl genrsa -out kube-proxy.key 3072
 
-  - 生成证书请求
+  - ##### 生成证书请求
 
         [root@50-55 gen]# openssl req -new -key kube-proxy.key -out kube-proxy.csr -subj "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config kube-proxy.cnf
 
-  - 签发证书
+  - ##### 签发证书
 
         [root@50-55 ssl]# openssl x509 -req -in kube-proxy.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out kube-proxy.pem -days 1095 -extfile kube-proxy.cnf -extensions v3_req
 
 
+- #### 为 Etcd 集群签发证书
+
+  - ##### [Etcd Cluster with SSL](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster_with_ssl.md)
+
+- #### 为 Flannel 签发证书
+  - ##### [Flanneld with SSL](https://github.com/Statemood/documents/blob/master/kubernetes/flanneld_with_ssl.md)
 
 ## 四、配置
-#### 2. 生成Token文件
+### 2. 生成Token文件
 - Kubelet在首次启动时，会向kube-apiserver发送TLS Bootstrapping请求。如果kube-apiserver验证其与自己的token.csv一致，则为kubelete生成CA与key
 
         [root@50-55 ~]# echo "`head -c 16 /dev/urandom | od -An -t x | tr -d ' '`,kubelet-bootstrap,10001,\"system:kubelet-bootstrap\"" > token.csv
 
-#### 3. 生成kubectl的kubeconfig文件
-- 设置集群参数
+### 3. 生成kubectl的kubeconfig文件
+- #### 设置集群参数
 
         [root@50-55 ~]# kubectl config set-cluster kubernetes \
                         --certificate-authority=/etc/kubernetes/ssl/ca.pem --embed-certs=true \
                         --server=https://192.168.50.55:6443
 
-- 设置客户端认证参数
+- #### 设置客户端认证参数
 
         [root@50-55 ~]# kubectl config set-credentials admin \
                         --client-certificate=/etc/kubernetes/ssl/admin.pem --embed-certs=true \
                         --client-key=/etc/kubernetes/ssl/admin.key
 
-- 设置上下文参数
+- #### 设置上下文参数
 
         [root@50-55 ~]# kubectl config set-context kubernetes \
                         --cluster=kubernetes \
                         --user=admin
 
-- 设置默认上下文
+- #### 设置默认上下文
 
         [root@50-55 ~]# kubectl config use-context kubernetes
 
@@ -267,8 +273,8 @@
 
     - 生成的kubeconfig被保存到~/.kube/config文件
 
-#### 4. 生成kubelet的bootstrapping kubeconfig文件
-- 生成kubelet的bootstrapping kubeconfig文件
+### 4. 生成kubelet的bootstrapping kubeconfig文件
+- #### 生成kubelet的bootstrapping kubeconfig文件
 
         [root@50-55 ~]# kubectl config set-cluster kubernetes \
                         --certificate-authority=/etc/kubernetes/ssl/ca.pem \
@@ -276,20 +282,20 @@
                         --server=https://192.168.50.55:6443 \
                         --kubeconfig=bootstrap.kubeconfig
 
-- 设置客户端认证参数
+- #### 设置客户端认证参数
 
         [root@50-55 ~]# kubectl config set-credentials kubelet-bootstrap \
                         --token=aca563b43426de202353ae3f7ccd1fb8 \
                         --kubeconfig=bootstrap.kubeconfig
 
-- 设置默认上下文参数
+- #### 设置默认上下文参数
 
         [root@50-55 ~]# kubectl config set-context default \
                         --cluster=kubernetes \
                         --user=kubelet-bootstrap \
                         --kubeconfig=bootstrap.kubeconfig
 
-- 设置默认上下文
+- #### 设置默认上下文
 
         [root@50-55 ~]# kubectl config use-context default \
                         --kubeconfig=bootstrap.kubeconfig
@@ -298,8 +304,8 @@
     - 设置kubelet客户端认证参数时没有指定秘钥和证书，后续由kube-apiserver自动生成
     - 生成的bootstrap.kubeconfig文件会在当前文件路径下
 
-#### 5. 生成kube-proxy的kubeconfig文件
-- 设置集群参数
+### 5. 生成kube-proxy的kubeconfig文件
+- #### 设置集群参数
 
         [root@50-55 ~]# kubectl config set-cluster kubernetes \
                         --certificate-authority=/etc/kubernetes/ssl/ca.pem \
@@ -307,7 +313,7 @@
                         --server=https://192.168.50.55:6443 \
                         --kubeconfig=kube-proxy.kubeconfig    
 
-- 设置客户端认证参数
+- #### 设置客户端认证参数
 
         [root@50-55 ~]# kubectl config set-credentials kube-proxy \
                         --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
@@ -315,14 +321,14 @@
                         --embed-certs=true \
                         --kubeconfig=kube-proxy.kubeconfig
 
-- 设置上下文参数
+- #### 设置上下文参数
 
         [root@50-55 ~]# kubectl config set-context default \
                         --cluster=kubernetes \
                         --user=kube-proxy \
                         --kubeconfig=kube-proxy.kubeconfig
 
-- 设置默认上下文
+- #### 设置默认上下文
 
         [root@50-55 ~]# kubectl config use-context default \
                         --kubeconfig=kube-proxy.kubeconfig
@@ -330,14 +336,14 @@
     - --embed-cert 都为 true，这会将certificate-authority、client-certificate和client-key指向的证书文件内容写入到生成的kube-proxy.kubeconfig文件中
     - kube-proxy.pem证书中CN为system:kube-proxy，kube-apiserver预定义的 RoleBinding cluster-admin将User system:kube-proxy与Role system:node-proxier绑定，该Role授予了调用kube-apiserver Proxy相关API的权限
 
-#### 6. 将kubeconfig文件复制至所有节点上
-- 将生成的两个 kubeconfig 文件复制到所有节点的 /etc/kubernetes 目录内
+### 6. 将kubeconfig文件复制至所有节点上
+- #### 将生成的两个 kubeconfig 文件复制到所有节点的 /etc/kubernetes 目录内
 
         [root@50-55 ~]# cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
 
 
-#### 7. 修改文件 /etc/kubernetes/apiserver
-- File: /etc/kubernetes/apiserver
+### 7. 修改文件 /etc/kubernetes/apiserver
+- #### File: /etc/kubernetes/apiserver
 
         ###
         # kubernetes system config
@@ -379,8 +385,8 @@
     -   缺省情况下kubernetes对象保存在etcd /registry路径下，可以通过--etcd-prefix参数进行调整
 
 
-#### 8. 修改文件 /etc/kubernetes/controller-manager
-- File: /etc/kubernetes/controller-manager
+### 8. 修改文件 /etc/kubernetes/controller-manager
+- #### File: /etc/kubernetes/controller-manager
 
         ###
         # The following values are used to configure the kubernetes controller-manager
@@ -399,8 +405,8 @@
     - --leader-elect=true部署多台机器组成的master集群时选举产生一处于工作状态的 kube-controller-manager进程
 
 
-#### 9. 修改文件 /etc/kubernetes/scheduler
-- File: /etc/kubernetes/scheduler
+### 9. 修改文件 /etc/kubernetes/scheduler
+- #### File: /etc/kubernetes/scheduler
 
         ###
         # kubernetes scheduler config
@@ -411,21 +417,57 @@
         KUBE_SCHEDULER_ARGS="--address=127.0.0.1 --master=http://192.168.50.55:8080 --kubeconfig=/etc/kubernetes/kube-config-cm.yaml --leader-elect=true"
 
 ## 五、启动
-#### 1. 启动 apiserver
+### 1. 在 API Server 节点
+  - #### 启动 & 启用 kube-apiserver
 
-    [root@50-55 kubernetes]# systemctl start kube-apiserver
+        [root@50-55 kubernetes]# systemctl start  kube-apiserver
+        [root@50-55 kubernetes]# systemctl enable kube-apiserver
+
+  - #### 启动 & 启用 controller-manager
+
+        [root@50-55 kubernetes]# systemctl start  kube-controller-manager
+        [root@50-55 kubernetes]# systemctl enable kube-controller-manager
+
+  - #### 启动 & 启用 scheduler
+
+        [root@50-55 kubernetes]# systemctl start  kube-scheduler
+        [root@50-55 kubernetes]# systemctl enable kube-scheduler
+
+  - #### 启动 & 启用 kubelet
+
+        [root@50-55 kubernetes]# systemctl start  kubelet
+        [root@50-55 kubernetes]# systemctl enable kubelet
+
+  - #### 启动 & 启用 kube-proxy
+
+        [root@50-55 kubernetes]# systemctl start  kube-proxy
+        [root@50-55 kubernetes]# systemctl enable kube-proxy
+
+  - #### 快速启动
+
+        [root@50-55 kubernetes]# for k in kube-apiserver \
+                                          kube-controller-manager \
+                                          kube-scheduler \
+                                          kubelet \
+                                          kube-proxy \
+                                 do systemctl start $k ; \
+                                    systemctl enable $k; \
+                                 done
 
 
-#### 2. 启动 controller-manager
+### 2. 在 kubelet 节点
+  - #### 启动 & 启用 kubelet
 
-    [root@50-55 kubernetes]# systemctl start kube-controller-manager
+        [root@50-56 ~]# systemctl start  kubelet
+        [root@50-56 ~]# systemctl enable kubelet
+
+  - #### 启动 & 启用 kube-proxy
+
+        [root@50-56 ~]# systemctl start  kube-proxy
+        [root@50-56 ~]# systemctl enable kube-proxy
 
 
-#### 3. 启动 scheduler
-
-    [root@50-55 kubernetes]# systemctl start kube-scheduler
-
-#### 4. 检查集群状态
+### 4. 检查集群状态
 
     [root@50-55 kubernetes]# kubectl get componentstatuses
     NAME                 STATUS    MESSAGE              ERROR
