@@ -279,9 +279,9 @@
                               --ca-file=/etc/kubernetes/ssl/ca.pem \
                               --cert-file=/etc/etcd/ssl/etcd.pem \
                               --key-file=/etc/etcd/ssl/etcd.key \
-                              set /k8s/network/config '{"Network": "10.20.0.0/16","Backend": {"Type": "vxlan"}}'
+                              set /k8s/network/config '{"Network": "10.64.0.0/10","Backend": {"Type": "vxlan"}}'
 
-  - ##### 设置 Kubernetes 集群网络为 10.20.0.0/16, 模式为 vxlan
+  - ##### 设置 Kubernetes 集群网络为 10.64.0.0/10, 模式为 vxlan, 可用IP数量 4,194,304
 
 ### 3. 查看已分配网络
 - #### 确认配置

@@ -29,6 +29,16 @@
 ### 5. swap
 - ##### Disabled
 
+### 6. Network
+- #### Flannel
+  - ##### vxlan
+
+- #### Subnet
+  - ##### Service Network
+    - ##### 10.0.0.0/10
+  - ##### Pod Network
+    - ##### 10.80.0.0/9
+
 ## Certificate
 ### 1. 签发CA，在 50-55 上进行(可以是任一安装 openssl 的主机)
 - #### 创建 /etc/ssl/gen 目录并进入(也可以是其它目录)
@@ -79,7 +89,7 @@
         #authorityKeyIdentifier = keyid:always,issuer
         subjectAltName = @alt_names
         [alt_names]
-        IP.1 = 10.20.0.1
+        IP.1 = 10.0.0.1
         IP.2 = 192.168.50.55
         IP.3 = 192.168.50.56
         IP.4 = 192.168.50.57
@@ -424,7 +434,7 @@
       KUBE_ETCD_SERVERS="--etcd-servers=https://192.168.50.55:2379,https://192.168.50.56:2379,https://192.168.50.57:2379"
 
       # Address range to use for services
-      KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.20.0.0/16"
+      KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.0.0.0/12"
 
       # default admission control policies
       KUBE_ADMISSION_CONTROL="--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
@@ -454,7 +464,7 @@
       # defaults from config and apiserver should be adequate
 
       # Add your own!
-      KUBE_CONTROLLER_MANAGER_ARGS="--master=https://192.168.50.55:6443 --service_account_private_key_file=/etc/kubernetes/ssl/ca.key --root-ca-file=/etc/kubernetes/ssl/ca.pem --allocate-node-cidrs=true --cluster-name=kubernetes --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem --cluster-signing-key-file=/etc/kubernetes/ssl/ca.key --leader-elect=true --service-cluster-ip-range=10.10.0.0/16 --cluster-cidr=10.20.0.0/16 --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
+      KUBE_CONTROLLER_MANAGER_ARGS="--master=https://192.168.50.55:6443 --service_account_private_key_file=/etc/kubernetes/ssl/ca.key --root-ca-file=/etc/kubernetes/ssl/ca.pem --allocate-node-cidrs=true --cluster-name=kubernetes --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem --cluster-signing-key-file=/etc/kubernetes/ssl/ca.key --leader-elect=true --service-cluster-ip-range=10.0.0.0/12 --cluster-cidr=10.64.0.0/10 --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
 
     - --address值必须为127.0.0.1，因为当前kube-apiserver期望scheduler 和 controller-manager在同一台机器
     - --master=http://{MASTER_IP}:8080：使用非安全8080端口与kube-apiserver 通信
