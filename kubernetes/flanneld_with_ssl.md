@@ -8,7 +8,7 @@
 
 ## 二、证书
 ### 1. 为 flannel (50-55) 签发证书
-- #### File: flanneld.cnf
+- #### File: flannel.cnf
 
       [ req ]
       req_extensions = v3_req

@@ -173,8 +173,9 @@
 ### 4. Kubernetes
 - #### 使用 curl 命令下载二进制安装包
 
-      [root@50-55 ~]# curl -O https://github.com/kubernetes/kubernetes/releases/download/v1.8.1/kubernetes.tar.gz
+      [root@50-55 ~]# curl -O https://dl.k8s.io/v1.8.1/kubernetes-server-linux-amd64.tar.gz
 
+  - ##### 更多下载信息 >> [CHANGELOG-1.8.md#downloads-for-v181](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.8.md#downloads-for-v181)
 - #### 解压
 
       [root@50-55 ~]# tar zxf kubernetes.tar.gz
