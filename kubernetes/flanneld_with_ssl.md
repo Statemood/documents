@@ -36,7 +36,7 @@
 
 - #### 签发证书
 
-  - ##### 注意: 需要先去掉 flanneld.cnf 注释掉的两行
+  - ##### 注意: 需要先去掉 flannel.cnf 注释掉的两行
 
           [root@50-55 ssl]# openssl x509 -req -CA ca.pem -CAkey ca.key -CAcreateserial -in $fn.csr -out $fn.pem -days 1095 -extfile flannel.cnf -extensions v3_req
 
