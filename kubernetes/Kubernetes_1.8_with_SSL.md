@@ -546,7 +546,7 @@
       # default config should be adequate
 
       # Add your own!
-      KUBE_PROXY_ARGS="--bind-address=192.168.50.55 --cluster-cidr=10.10.0.0/16 --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
+      KUBE_PROXY_ARGS="--bind-address=192.168.50.55 --cluster-cidr=10.0.0.0/12 --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
 
 
 ### 14. Group & User
