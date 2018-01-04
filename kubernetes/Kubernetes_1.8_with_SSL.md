@@ -234,6 +234,11 @@
   - 复制到 /usr/bin 目录下
   - **在普通节点上，仅需安装 kubelet 和 kube-proxy 两个服务**
 
+- #### SELinux
+
+      [root@50-55 bin]# for i in * \
+                        do chcon -u system_u -t bin_t /usr/bin/$i; done
+
 - #### 复制配置文件
   - ##### 将 etc-kubernetes 目录复制保存为 /etc/kubernetes
 
