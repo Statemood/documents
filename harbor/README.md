@@ -9,6 +9,7 @@
 | NAME    | INFO          |
 | --      | --            |
 | OS      | CentOS 7.4    |
+| SELinux | **enforcing** |
 | IP      | 192.168.50.57 |
 | Domain  | img.linge.io  |
 | Schema  | **HTTPS**     |
