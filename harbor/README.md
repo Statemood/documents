@@ -72,7 +72,7 @@
 
 - #### 签发证书
 
-      openssl x509 -req -in img.linge.io.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out img.linge.io.pem
+      openssl x509 -req -in img.linge.io.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out img.linge.io.pem -days 1095
 
 
 - #### 查看证书信息
@@ -137,6 +137,8 @@
       token_expiration = 30
       project_creation_restriction = everyone
       verify_remote_cert = on
+
+  - ##### E-Mail & 认证设置可以后期在Harbor中直接修改
 
 - #### 安装 Harbor
 
