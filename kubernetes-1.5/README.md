@@ -33,7 +33,7 @@
   - ##### kubelet
   - ##### kube-proxy
 
-- #### 简单使用，未配置 etcd 集群，将在后续的 1.8.1 版本教程中配置基于 SSL 的 Etcd 集群
+- #### 使用简单配置 etcd 集群，将在后续的 1.8.1 版本教程中配置基于 SSL 的 Etcd 集群
 
 ## 三、Etcd
 ### 1. [Etcd 集群快速安装指南](https://github.com/Statemood/documents/blob/master/kubernetes-1.5/etcd-cluster-without-ssl.md)
