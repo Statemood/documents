@@ -16,10 +16,11 @@
 
 ### 3. Firewalld
 - ##### Stop & Disable
-- ##### 交由 k8s 管理
+- ##### 由 k8s 自行管理
 
 ## 二、安装
 ##### 在各节点依次执行 yum install -y etcd 进行安装
+
     [root@50-55 ~]# yum install -y etcd
 
 ## 三、配置
