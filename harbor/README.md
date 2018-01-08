@@ -20,6 +20,11 @@
 ## 证书
 #### 如已有证书，可跳过本段
 ### 1. CA
+- ##### 创建并进入证书目录
+    
+      mkdir -p /data/cert
+      cd /data/cert
+
 - ##### 生成 CA Key
 
       openssl genrsa -out ca.key 3072
