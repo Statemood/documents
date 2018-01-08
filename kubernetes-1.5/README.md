@@ -5,6 +5,14 @@
 ### 1. 前言
 - 基于 yum 安装，约 60 分钟即可完成全部配置
 - 适用于初入门者及基本功能演示
+- ##### 为何仍使用 1.5.2 ?
+  - yum 安装
+  - 配置简单
+  - 易于理解
+  - 更高版本增加了如RBAC，SSL等功能特性，上手难度大
+  - 目前仍然是一些生产或者测试环境所用版本
+
+
 
 ### 2. [Kubernetes 简介](https://github.com/Statemood/documents/blob/master/kubernetes-1.5/Kubernetes-1.5.md)
 

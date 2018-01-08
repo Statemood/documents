@@ -72,7 +72,7 @@
 
 - #### 签发证书
 
-      openssl x509 -req -in img.linge.io.csr -CA ca.pem -CAkey ca.key  -out img.linge.io.pem -days 1095
+      openssl x509 -req -in img.linge.io.csr -CA ca.pem -CAkey ca.key  -out img.linge.io.pem -days 1095 -CAcreateserial
 
 
 - #### 查看证书信息
