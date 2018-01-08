@@ -89,6 +89,7 @@
   - ##### 执行 update-ca-trust enable
   - ##### 执行 update-ca-trust extract
   - ##### 如 Docker 已启动，则重启
+  - ####  在其它节点上重复上述命令，以便导入并信任此CA证书
 
 ## Docker
 
