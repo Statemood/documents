@@ -1,3 +1,3 @@
-# Thanks for help to the following people:
+# Thanks to the people for their help and support in wrtring this document:
 
 - #### Boo
