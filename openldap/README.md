@@ -82,8 +82,8 @@ CentOS 7 x86_64 minimal
 
 ## 连接与管理
 
-#### 开放防火墙 tcp 389 端口
-`[root@ldap ~]# iptables -I INPUT -m conntrack --ctstate NEW -p tcp -s 10.0.0.0/16 --dport 389 -j ACCEPT`
+#### 开放防火墙 tcp 636 端口
+`[root@ldap ~]# iptables -I INPUT -m conntrack --ctstate NEW -p tcp -s 10.0.0.0/16 --dport 636 -j ACCEPT`
 * 请自行替换 `10.0.0.0/16`
 
 #### 连接

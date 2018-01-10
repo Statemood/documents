@@ -107,7 +107,7 @@
       Error from server (Forbidden): pods is forbidden: User "development" cannot list pods in the namespace "kube-system"
 
 | Resources               | get   | list  | watch |
-| --                      | :---: | :---: | :---: |
+| ---                     | :---: | :---: | :---: |
 | pods                    | √     | √     | √     |
 | pods/log                | √     | √     | √     |
 | replicationcontrollers  | √     | √     | √     |
