@@ -208,7 +208,42 @@
 
     - 上方命令会在 10-55 和 10-57 上启动MDS
 
-#### 3. 清除操作
+#### 3. 部署 mgr
+- ##### luminous 版本需要启动 mgr, 否则 ceph -s 会有 no active mgr 提示
+- ##### 官方建议在每个 monitor 上都启动一个 mgr
+
+  - **50-55**
+
+        [root@10-55 ceph-install]# ceph auth get-or-create mgr.50-55 mon 'allow *' osd 'allow *' mds 'allow *'
+
+        [root@50-55 ceph-install]# mkdir /var/lib/ceph/mgr/ceph-50-55
+
+        [root@50-55 ceph-install]# ceph auth get mgr.50-55 -o  /var/lib/ceph/mgr/ceph-50-55/keyring
+
+        [root@50-55 ceph-install]# ceph-mgr -i
+
+  - **50-56**
+
+        [root@50-56 ~]# ceph auth get-or-create mgr.50-56 mon 'allow *' osd 'allow *' mds 'allow *'
+
+        [root@50-56 ~]# mkdir /var/lib/ceph/mgr/ceph-50-56
+
+        [root@50-56 ~]# ceph auth get mgr.50-56 -o  /var/lib/ceph/mgr/ceph-50-56/keyring
+
+        [root@50-56 ~]# ceph-mgr -i
+
+  - **50-57**
+
+        [root@50-57 ~]# ceph auth get-or-create mgr.50-57 mon 'allow *' osd 'allow *' mds 'allow *'
+
+        [root@50-57 ~]# mkdir /var/lib/ceph/mgr/ceph-50-57
+
+        [root@50-57 ~]# ceph auth get mgr.50-57 -o  /var/lib/ceph/mgr/ceph-50-57/keyring
+
+        [root@50-57 ~]# ceph-mgr -i
+
+
+#### 4. 清除操作
 - ##### 安装过程中如遇到奇怪的错误，可以通过以下步骤清除操作从头再来
       [root@10-55 ceph-install]# ceph-deploy purge 10-55 10-56 10-57
       [root@10-55 ceph-install]# ceph-deploy purgedata 10-55 10-56 10-57

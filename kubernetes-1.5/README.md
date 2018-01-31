@@ -13,20 +13,23 @@
   - 目前仍然是一些生产或者测试环境所用版本
 
 
-
 ### 2. [Kubernetes 简介](https://github.com/Statemood/documents/blob/master/kubernetes-1.5/Kubernetes-1.5.md)
 
 ## 二、环境
-### 1. 防火墙
+### 1. 系统
+- #### CentOS 7.4
+  - ##### 分区：默认
+
+### 2. 防火墙
 - #### 停止 Firewalld 服务，由 k8s 管理 iptables
 
       systemctl stop    firewalld
       systemctl disable firewalld
 
-### 2. SELinux
+### 3. SELinux
 - #### 保持默认的 enforcing 状态即可
 
-### 3. 节点与服务
+### 4. 节点与服务
 
 | hostname | ip            | app       |
 | :------: |:-------------:| --------  |
@@ -42,6 +45,19 @@
   - ##### kube-proxy
 
 - #### 使用简单配置 etcd 集群，将在后续的 1.8.1 版本教程中配置基于 SSL 的 Etcd 集群
+
+### 5. 集群网络
+- #### Flannel
+  - ##### 类型：vxlan
+
+- #### Pod
+  - ##### 10.20.0.0/16
+
+- #### Service
+  - ##### 10.10.0.0/16
+
+### 6. Registry(Harbor)
+  - ##### img.rulin.me
 
 ## 三、Etcd
 ### 1. [Etcd 集群快速安装指南](https://github.com/Statemood/documents/blob/master/kubernetes-1.5/etcd-cluster-without-ssl.md)

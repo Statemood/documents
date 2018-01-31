@@ -54,11 +54,6 @@
 
         [root@50-55 ssl]# openssl req -new -key etcd.key -out etcd.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config etcd.cnf
 
-    - 先注释掉 etcd.cnf 中以下两行
-
-            #subjectKeyIdentifier = hash
-            #authorityKeyIdentifier = keyid:always,issuer
-
 
   - 签发证书
 

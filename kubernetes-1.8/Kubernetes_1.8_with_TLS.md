@@ -1,9 +1,11 @@
-# Kubernetes 1.8 with SSL
+# Kubernetes 1.8 with TLS & RBAC
 
 ## 简介
 
-- 本文档适用于从零开始全新安装 Kubernetes 1.8.1。
-- 从 1.5 升级请注意提示部分。
+- 本文档适用于从零开始全新安装 Kubernetes 1.8.x
+- 从 1.5 升级请注意提示部分
+- RBAC 支持
+- TLS 支持
 
 ## Environment
 
@@ -36,8 +38,15 @@
 - #### Subnet
   - ##### Service Network
     - ##### 10.0.0.0/12
+      - ###### 1,048,576
   - ##### Pod Network
     - ##### 10.64.0.0/10
+      - ###### 4,194,304
+
+### 7. Docker
+- #### Docker 1.12.6
+
+- #### Docker-CE 17.12.0
 
 ## Certificate
 ### 1. 签发CA，在 50-55 上进行(可以是任一安装 openssl 的主机)
@@ -159,18 +168,26 @@
 
 ## Install
 ### 1. Etcd
-- #### [>> Etcd with SSL](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster_with_ssl.md)
+- #### [>> Etcd with SSL](https://github.com/Statemood/documents/blob/master/kubernetes-1.8/etcd_cluster_with_ssl.md)
 
 ### 2. Flannel
-- #### [>> Flannel with SSL](https://github.com/Statemood/documents/blob/master/kubernetes/flanneld_with_ssl.md)
+- #### [>> Flannel with SSL](https://github.com/Statemood/documents/blob/master/kubernetes-1.8/flanneld_with_ssl.md)
 
 ### 3. Docker
-- #### 使用 yum 安装 Docker, 依次在各节点执行安装
+- #### 使用 yum 安装 Docker 1.12, 依次在各节点执行安装
 
       [root@50-55 ~]# yum install -y docker
 
+- #### 或通过以下方法安装 Docker-CE
 
-### 4. Kubernetes
+### 4. 使用 yum 安装 libnetfilter_conntrack conntrack-tools
+
+      [root@50-55 ~]# yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-tools
+
+- #### 针对 k8s 1.8.1 以上版本
+- #### 在所有节点执行
+
+### 5. Kubernetes
 - #### 使用 curl 命令下载二进制安装包
 
       [root@50-55 ~]# curl -O https://dl.k8s.io/v1.8.1/kubernetes-server-linux-amd64.tar.gz
@@ -534,7 +551,7 @@
       # pod infrastructure container
       KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=registry.abc.com/library/pod-infrastructure:latest"
 
-      KUBELET_ARGS="--cluster_dns=10.10.0.10 --cluster_domain=cluster.local --cgroup-driver=systemd --tls-cert-file=/etc/kubernetes/ssl/kubelet.pem --tls-private-key-file=/etc/kubernetes/ssl/kubelet.key --kubeconfig=/etc/kubernetes/kubelet.kubeconfig --experimental-bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig --require-kubeconfig --hairpin-mode promiscuous-bridge --cert-dir=/etc/kubernetes/ssl"
+      KUBELET_ARGS="--cluster_dns=10.0.0.10 --cluster_domain=cluster.local --cgroup-driver=systemd --tls-cert-file=/etc/kubernetes/ssl/kubelet.pem --tls-private-key-file=/etc/kubernetes/ssl/kubelet.key --kubeconfig=/etc/kubernetes/kubelet.kubeconfig --experimental-bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig --hairpin-mode promiscuous-bridge --cert-dir=/etc/kubernetes/ssl"
 
   - #### --api-server 参数 kubelet 已不再使用
 
@@ -570,6 +587,14 @@
 
       [root@50-55 kubernetes]# setfacl -m u:kube:r /etc/kubernetes/*.kubeconfig
 
+    *-*
+
+### 17. For 1.8.7
+- #### 在 1.8.7 上，需要在每个节点安装以下包
+
+      [root@50-55 kubernetes]# yum install -y  conntrack-tools libnetfilter_conntrack libnetfilter_conntrack-devel
+
+  - **此操作为解决问题**: Jan 31 14:16:43 localhost kube-proxy: E0131 14:16:43.924024   30629 proxier.go:1716] Failed to delete stale service IP 10.0.0.10 connections, error: error deleting connection tracking state for UDP service IP: 10.0.0.10, error: error looking for path of conntrack: exec: "**conntrack**": executable file not found in $PATH            
 
 ## **Startup**
 ### 1. 在 API Server 节点
@@ -607,9 +632,9 @@
                            kube-scheduler \
                            kubelet \
                            kube-proxy \
-                  do systemctl start $k ; \
-                     systemctl enable $k; \
-                     systemctl status $k; \
+                  do  systemctl start  $k; \
+                      systemctl enable $k; \
+                      systemctl status $k; \
                   done
 
 ### 2. On Kubelet Nodes

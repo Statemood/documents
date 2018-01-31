@@ -18,8 +18,6 @@
       basicConstraints = critical, CA:FALSE
       keyUsage = critical, digitalSignature, keyEncipherment
       extendedKeyUsage = serverAuth, clientAuth
-      #subjectKeyIdentifier = hash
-      #authorityKeyIdentifier = keyid:always,issuer
       subjectAltName = @alt_names
       [ alt_names ]
       IP.1 = 192.168.50.55
@@ -35,8 +33,6 @@
       [root@50-55 ssl]# openssl req -new -key $fn.key -out $fn.csr -subj "/CN=flanneld/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config flannel.cnf
 
 - #### 签发证书
-
-  - ##### 注意: 需要先去掉 flannel.cnf 注释掉的两行
 
           [root@50-55 ssl]# openssl x509 -req -CA ca.pem -CAkey ca.key -CAcreateserial -in $fn.csr -out $fn.pem -days 1095 -extfile flannel.cnf -extensions v3_req
 
