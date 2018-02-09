@@ -160,7 +160,7 @@
       [root@10-55 ceph-install]# ceph-deploy new 10-55 10-56 10-57
 
 - ##### 在全部节点上安装Ceph
-      [root@10-55 ceph-install]# ceps-deploy install 10-55 10-56 10-57
+      [root@10-55 ceph-install]# ceph-deploy install 10-55 10-56 10-57
     - ###### 或在每个节点上手动执行 `yum install -y ceph`
 
 - ##### 创建和初始化监控节点
