@@ -5,10 +5,10 @@
 #### 各命令参数的更多信息可以通过 docker command-name --help 获得
 
 ## 目录
-### [管理命令 Management Commands](#Management-Commands)
-- ##### [config](#config)
+### [管理命令 Management Commands](#management-commands)
+- ##### [config](#config-1)
 
-### [基本命令 Base Commands](#Base-Commands)
+### [基本命令 Base Commands](#base-commands)
 
 ## Management Commands
 #### config
