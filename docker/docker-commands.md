@@ -11,7 +11,7 @@
 ### [基本命令 Base Commands](#基本命令 Base Commands)
 
 ## 管理命令 Management Commands
-#### [config](https://docs.docker.com/engine/reference/commandline/config/)
+#### config
   - Manage Docker configs
   - 管理Docker配置(文件)
   - 创建配置(文件)提供给一或多个容器使用
