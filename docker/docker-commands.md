@@ -7,7 +7,7 @@
 ## 目录
 ### [管理命令 Management Commands](#management-commands)
 - ##### [config](#config-1)
-- ##### [container](#base-commands)
+- ##### [container](#container-1)
 - ##### [image](#image-1)
 - ##### [node](#node-1)
 - ##### [plugin](#plugin-1)
@@ -24,7 +24,7 @@
 - ##### [build](#build-1)
 - ##### [commit](#commit-1)
 - ##### [cp](#cp-1)
-- ##### [create](#create-1)
+- ##### [create](#create-2)
 - ##### [diff](#diff-1)
 - ##### [events](#events-1)
 - ##### [exec](#exec-1)
@@ -98,19 +98,19 @@
     - 删除未使用的镜像
   - **其余命令与基本命令对比如下**
 
-| docker image commands | docker base commands|
-| --                    | --                  |
-| docker image build    | docker build        |
-| docker image history  | docker history      |
-| docker image import   | docker import       |
-| docker image inspect  | docker inspect      |
-| docker image load     | docker load         |
-| docker image ls       | docker images       |
-| docker image pull     | docker pull         |
-| docker image push     | docker push         |
-| docker image rm       | docker rmi          |
-| docker image save     | docker save         |
-| docker image tag      | docker tag          |
+| docker image commands | docker base commands        |
+| --                    | --                          |
+| docker image build    | [docker build](#build-1)    |
+| docker image history  | [docker history](#history-1)|
+| docker image import   | [docker import](#import-1)  |
+| docker image inspect  | [docker inspect](#inspect-2)|
+| docker image load     | [docker load](#load-1)      |
+| docker image ls       | [docker images](#images-1)  |
+| docker image pull     | [docker pull](#pull-1)      |
+| docker image push     | [docker push](#push-1)      |
+| docker image rm       | [docker rmi](#rmi-1)        |
+| docker image save     | [docker save](#save-1)      |
+| docker image tag      | [docker tag](#tag-1)        |
 
 #### [node](https://docs.docker.com/engine/reference/commandline/node/#description)
   - Manage Swarm nodes
@@ -119,7 +119,7 @@
 #### [plugin](https://docs.docker.com/engine/reference/commandline/plugin/#child-commands)
   - Manage plugins
   - 管理插件
-
+  
 #### [secret](https://docs.docker.com/engine/reference/commandline/secret/)
   - Manage Docker secrets
   - 管理 Docker Secrets
