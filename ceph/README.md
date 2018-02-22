@@ -1,6 +1,7 @@
 # Ceph 快速安装指南
 
 ## 目录
+  - #### [环境](#环境-1)
   - #### [准备](#准备-1)
   - #### [安装](#安装-1)
   - #### [配置](#配置-1)
@@ -15,8 +16,9 @@
     - ##### [添加OSD(在线扩容)](https://github.com/Statemood/documents/blob/master/ceph/add_osds_to_existing_cluster.md)
     - ##### [删除OSD](https://github.com/Statemood/documents/blob/master/ceph/maintenance-ceph.md#%E5%88%A0%E9%99%A4-osd)
 
-## 环境
+  - #### [监控](#monitor)
 
+## 环境
 #### 系统
   - CentOS 7 minimal x86_64
 
@@ -423,6 +425,9 @@
 
 - ###### 更多 fio 信息请查阅相关文档
 
+## Monitor
+#### 使用 Zabbix 监控 Ceph 集群
+- ##### [Shell 脚本 check_ceph](https://github.com/Statemood/monitor/blob/master/zabbix/check_ceph)
 
 ## 附录
 
