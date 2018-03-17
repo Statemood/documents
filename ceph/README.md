@@ -98,7 +98,7 @@
 #### 5. 安装 yum 源 与 ceph-deploy
 ###### 本步骤要在每一个节点上执行
 - ##### 安装 EPEL 源
-      [root@50-55 ~]# rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      [root@50-55 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/centos/7/extras/x86_64/Packages/epel-release-7-9.noarch.rpm
 
 - ##### 安装 Ceph 源
       [root@50-55 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-jewel/el7/noarch/ceph-release-1-1.el7.noarch.rpm
@@ -227,7 +227,7 @@
 
 #### 3. 部署 mgr
 - ##### luminous 版本需要启动 mgr, 否则 ceph -s 会有 no active mgr 提示
-- ##### 官方建议在每个 monitor 上都启动一个 mgr
+- ##### 官方文档建议在每个 monitor 上都启动一个 mgr
 
   - **50-55**
 
@@ -247,7 +247,7 @@
 
         [root@50-56 ~]# ceph auth get mgr.50-56 -o  /var/lib/ceph/mgr/ceph-50-56/keyring
 
-        [root@50-56 ~]# ceph-mgr -i 50-55
+        [root@50-56 ~]# ceph-mgr -i 50-56
 
   - **50-57**
 
@@ -257,8 +257,7 @@
 
         [root@50-57 ~]# ceph auth get mgr.50-57 -o  /var/lib/ceph/mgr/ceph-50-57/keyring
 
-        [root@50-57 ~]# ceph-mgr -i 50-55
-
+        [root@50-57 ~]# ceph-mgr -i 50-57
 
 #### 4. 清除操作
 - ##### 安装过程中如遇到奇怪的错误，可以通过以下步骤清除操作从头再来
@@ -393,6 +392,7 @@
             [root@50-50 ~]# test -d /data || mkdir /data
 
     - ###### 使用 `ceph-fuse` 挂载
+
             [root@50-50 ~]# ceph-fuse -m 192.168.50.55，192.168.50.56:6789 /data/files --client_mds_namespace 1
             [root@50-50 ~]# ceph-fuse -m 192.168.50.55，192.168.50.56:6789 /data/logs  --client_mds_namespace 2
 
