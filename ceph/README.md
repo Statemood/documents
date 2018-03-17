@@ -47,6 +47,15 @@
 | 50-57         | em0: 192.168.50.57(**Public**)<br />em1: 172.16.50.57(**Cluster**)   | MON<br />OSD | Intel Xeon X5650 2.67GHz \* 2<br />32G MEM<br />73G SAS x 2 RAID 1(**OS**)<br />SAMSUNG 850PRO 512G SSD \* 1(**Journal**)<br />DELL 600G SAS 10KRPM \* 3(**OSD**)|
 
 
+#### 主机配置及角色(最小化配置，供测试及学习)
+|  主机          |  IP            |  角色        | 配置        |
+| :----------:  | :------------: | :----------: | ---------- |
+| 50-55         | em0: 192.168.50.55(**Public**)<br />em1: 172.16.50.55(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
+| 50-56         | em0: 192.168.50.56(**Public**)<br />em1: 172.16.50.56(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
+| 50-57         | em0: 192.168.50.57(**Public**)<br />em1: 172.16.50.57(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
+
+- OSD 磁盘单块10G也可以
+
 ## 准备
 
 ### 一. 系统设置
