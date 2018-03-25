@@ -123,7 +123,8 @@
 
         [root@50-55 gen]# openssl req -new -key apiserver.key -out apiserver.csr -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config apiserver.cnf
 
-      - 注意 -subj 参数中仅 'CN' 与 'Shanghai' 可以修改，**其它保持原样**，否则集群会遇到权限异常问题
+      - CN、OU、O 字段为认证时使用, 请勿修改
+      - 注意 -subj 参数中仅 'C'、'ST' 与 'L' 可以修改，**其它保持原样**，否则集群会遇到权限异常问题
 
   - ##### 签发证书
 
@@ -286,10 +287,12 @@
 
 ## Configurations
 ### 1. 生成Token文件
-- Kubelet在首次启动时，会向kube-apiserver发送TLS Bootstrapping请求。如果kube-apiserver验证其与自己的token.csv一致，则为kubelete生成CA与key
+- kubelet在首次启动时，会向kube-apiserver发送TLS Bootstrapping请求。如果kube-apiserver验证其与自己的token.csv一致，则为kubelet生成CA与key
 
         [root@50-55 ~]# cd /etc/kubernetes
         [root@50-55 kubernetes]# echo "`head -c 16 /dev/urandom | od -An -t x | tr -d ' '`,kubelet-bootstrap,10001,\"system:kubelet-bootstrap\"" > token.csv
+
+  - 在使用Dashboard时，可以使用 token 进行认证
 
 ### 2. 生成kubectl的kubeconfig文件
 - #### 设置集群参数
@@ -297,14 +300,13 @@
       [root@50-55 kubernetes]# \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --embed-certs=true \
                   --server=https://192.168.50.55:6443
 
 - #### 设置客户端认证参数
 
       [root@50-55 kubernetes]# \
                   kubectl config set-credentials admin \
-                  --client-certificate=/etc/kubernetes/ssl/kubelet.pem --embed-certs=true \
+                  --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
                   --client-key=/etc/kubernetes/ssl/kubelet.key
 
 - #### 设置上下文参数
@@ -328,7 +330,6 @@
       [root@50-55 kubernetes]# \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --embed-certs=true \
                   --server=https://192.168.50.55:6443 \
                   --kubeconfig=bootstrap.kubeconfig
 
@@ -365,7 +366,6 @@
       [root@50-55 kubernetes]# \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --embed-certs=true \
                   --server=https://192.168.50.55:6443 \
                   --kubeconfig=kubelet.kubeconfig    
 
@@ -375,7 +375,6 @@
                   kubectl config set-credentials kubelet \
                   --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
                   --client-key=/etc/kubernetes/ssl/kubelet.key \
-                  --embed-certs=true \
                   --kubeconfig=kubelet.kubeconfig
 
 - #### 生成上下文参数
@@ -399,7 +398,6 @@
       [root@50-55 kubernetes]# \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --embed-certs=true \
                   --server=https://192.168.50.55:6443 \
                   --kubeconfig=kube-proxy.kubeconfig    
 
@@ -409,7 +407,6 @@
                   kubectl config set-credentials kube-proxy \
                   --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
                   --client-key=/etc/kubernetes/ssl/kube-proxy.key \
-                  --embed-certs=true \
                   --kubeconfig=kube-proxy.kubeconfig
 
 - #### 生成上下文参数
