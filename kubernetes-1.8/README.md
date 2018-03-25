@@ -104,16 +104,20 @@
         subjectAltName = @alt_names
         [alt_names]
         IP.1 = 10.0.0.1
-        IP.2 = 192.168.50.55
-        IP.3 = 192.168.50.56
-        IP.4 = 192.168.50.57
+        IP.2 = 192.168.50.51
+        IP.3 = 192.168.50.55
+        IP.4 = 192.168.50.56
         DNS.1 = kubernetes
         DNS.2 = kubernetes.default
         DNS.3 = kubernetes.default.svc
         DNS.4 = kubernetes.default.svc.cluster
         DNS.5 = kubernetes.default.svc.cluster.local
 
-    - IP.3 与 IP.4 加入到证书中，方便 API Server 后期的高可用
+    - IP.2、IP.3 与 IP.4 加入到证书中，方便 API Server 后期的高可用
+      - IP.2 为 HA VIP
+      - IP.3 为 API Server 1
+      - IP.4 为 API Server 2
+    - 如果需要, 可以加上其它IP, 如额外的API Server
 
   - ##### 生成 key
 
