@@ -2,9 +2,9 @@
 
 ### 资源配置
 | 类型 | 地址/名称 | 配置 | 备注 |
-| --  |
-| ECS | 192.168.10.10 | 8 核心 16GB | |
-| ECS | 192.168.10.11 | 8 核心 16GB | |
+| --  | -- | -- | -- |
+| ECS | 192.168.10.10 | 8 核心 16GB | - |
+| ECS | 192.168.10.11 | 8 核心 16GB | - |
 | RDS | xxx.mysql.rds.aliyuncs.com | 4核16G独享/250G | harbor db: MySQL |
 | RDS | xxx.pg.rds.aliyuncs.com | 4核8G/80G | Clair db: Postgresql 9.4 |
 | RDS | xxx.redis.rds.aliyuncs.com | 2G | Session/Metadata: Redis|
