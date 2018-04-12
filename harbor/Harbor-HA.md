@@ -150,3 +150,8 @@
 
           docker-compose down
           docker-compose up -d
+
+
+- #### 致谢
+  - 感谢 Habor 开源项目群2 提供技术支持
+  - 特别感谢 yixing@VMware 
