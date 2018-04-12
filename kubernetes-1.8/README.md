@@ -446,10 +446,10 @@
       #
 
       # The address on the local server to listen to.
-      KUBE_API_ADDRESS="--bind-address=192.168.50.55 --insecure-bind-address=127.0.0.1"
+      KUBE_API_ADDRESS="--bind-address=192.168.50.55 --insecure-bind-address=192.168.50.55"
 
       # The port on the local server to listen on.
-      KUBE_API_PORT="--secure-port=6443 --port=8080"
+      KUBE_API_PORT="--secure-port=6443 --insecure-port=8080"
 
       # Port minions listen on
       # KUBELET_PORT="--kubelet-port=10250"
@@ -464,7 +464,19 @@
       KUBE_ADMISSION_CONTROL="--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
 
       # Add your own!
-      KUBE_API_ARGS="--allow-privileged=true --service_account_key_file=/etc/kubernetes/ssl/apiserver.key --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key --client-ca-file=/etc/kubernetes/ssl/ca.pem --etcd-cafile=/etc/kubernetes/ssl/ca.pem --etcd-certfile=/etc/etcd/ssl/etcd.pem --etcd-keyfile=/etc/etcd/ssl/etcd.key --token-auth-file=/etc/kubernetes/token.csv --runtime-config=rbac.authorization.k8s.io/v1alpha1 --authorization-mode=RBAC --kubelet-https=true --enable-bootstrap-token-auth"
+      KUBE_API_ARGS="--allow-privileged=true \
+                     --service_account_key_file=/etc/kubernetes/ssl/apiserver.key \
+                     --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem \
+                     --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key \
+                     --client-ca-file=/etc/kubernetes/ssl/ca.pem \
+                     --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
+                     --etcd-certfile=/etc/etcd/ssl/etcd.pem \
+                     --etcd-keyfile=/etc/etcd/ssl/etcd.key \
+                     --token-auth-file=/etc/kubernetes/token.csv \
+                     --runtime-config=rbac.authorization.k8s.io/v1alpha1 \
+                     --authorization-mode=RBAC \
+                     --kubelet-https=true \
+                     --enable-bootstrap-token-auth"
 
     -   kube-apiserver 1.6版本开始使用etcd v3 API和存储格式
     -   --authorization-mode=RBAC指定在安全端口使用RBAC授权模式，拒绝未通过授权的请求
@@ -488,7 +500,18 @@
       # defaults from config and apiserver should be adequate
 
       # Add your own!
-      KUBE_CONTROLLER_MANAGER_ARGS="--master=https://192.168.50.55:6443 --service_account_private_key_file=/etc/kubernetes/ssl/ca.key --root-ca-file=/etc/kubernetes/ssl/ca.pem --allocate-node-cidrs=true --cluster-name=kubernetes --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem --cluster-signing-key-file=/etc/kubernetes/ssl/ca.key --leader-elect=true --service-cluster-ip-range=10.0.0.0/12 --cluster-cidr=10.64.0.0/10 --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
+      KUBE_CONTROLLER_MANAGER_ARGS="\
+          --master=https://192.168.50.55:6443 \
+          --service_account_private_key_file=/etc/kubernetes/ssl/ca.key \
+          --root-ca-file=/etc/kubernetes/ssl/ca.pem \
+          --allocate-node-cidrs=true \
+          --cluster-name=kubernetes \
+          --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem \
+          --cluster-signing-key-file=/etc/kubernetes/ssl/ca.key \
+          --leader-elect=true \
+          --service-cluster-ip-range=10.0.0.0/12 \
+          --cluster-cidr=10.64.0.0/10 \
+          --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
 
     - --address值必须为127.0.0.1，因为当前kube-apiserver期望scheduler 和 controller-manager在同一台机器
     - --master=http://{MASTER_IP}:8080：使用非安全8080端口与kube-apiserver 通信
@@ -508,7 +531,10 @@
       # default config should be adequate
 
       # Add your own!
-      KUBE_SCHEDULER_ARGS="--address=127.0.0.1 --kubeconfig=/etc/kubernetes/kubelet.kubeconfig --leader-elect=true"
+      KUBE_SCHEDULER_ARGS="\
+          --address=127.0.0.1 \
+          --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+          --leader-elect=true"
 
 ### 11. 修改文件 /etc/kubernetes/config
 - #### File: /etc/kubernetes/config
@@ -555,11 +581,18 @@
       #KUBELET_API_SERVER="--api-server=https://192.168.50.55:6443"
 
       # pod infrastructure container
-      KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=registry.abc.com/library/pod-infrastructure:latest"
+      KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=img.rulin.me/library/pod-infrastructure:latest"
 
-      KUBELET_ARGS="--cluster_dns=10.0.0.10 --cluster_domain=cluster.local --cgroup-driver=systemd --tls-cert-file=/etc/kubernetes/ssl/kubelet.pem --tls-private-key-file=/etc/kubernetes/ssl/kubelet.key --kubeconfig=/etc/kubernetes/kubelet.kubeconfig --experimental-bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig --hairpin-mode promiscuous-bridge --cert-dir=/etc/kubernetes/ssl"
+      KUBELET_ARGS="--cgroup-driver=systemd \
+                    --tls-cert-file=/etc/kubernetes/ssl/kubelet-50-55.pem \
+                    --tls-private-key-file=/etc/kubernetes/ssl/kubelet-50-55.key \
+                    --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+                    --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
+                    --cert-dir=/etc/kubernetes/ssl"
 
   - #### --api-server 参数 kubelet 已不再使用
+  - #### --experimental-bootstrap-kubeconfig 已弃用，使用新参数 --bootstrap-kubeconfig
+  - #### 在其它节点上，注意修改为正确的证书文件名
 
 ### 13. 修改文件 /etc/kubernetes/proxy
 - #### File: /etc/kubernetes/proxy
@@ -570,7 +603,9 @@
       # default config should be adequate
 
       # Add your own!
-      KUBE_PROXY_ARGS="--bind-address=192.168.50.55 --cluster-cidr=10.0.0.0/12 --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
+      KUBE_PROXY_ARGS="--bind-address=192.168.50.55 \
+                       --cluster-cidr=10.0.0.0/12 \
+                       --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
 
 
 ### 14. Group & User
