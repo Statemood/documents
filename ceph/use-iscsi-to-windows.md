@@ -15,7 +15,7 @@
 ### 2. 安装 & 配置 tgt
   - ##### 安装编译依赖
 
-        [root@20-50 ~]# yum -y install rpm-build gcc ceph librbd1-devel libibverbs-devel librdmacm-devel libaio-devel sg3_utils perl-Config-General
+        [root@20-50 ~]# yum -y install rpm-build gcc ceph librbd1-devel libibverbs-devel librdmacm-devel libaio-devel sg3_utils perl-Config-General libxslt-devel docbook-style-xsl
 
   - ##### 下载源码
 
@@ -26,6 +26,14 @@
         export CEPH_RBD = 1
 
     - 修改为 export CEPH_RBD = 1
+
+  - ##### 修改文件 scripts/tgtd.spec
+
+    - 在倒数第二行插入:
+
+          /usr/lib/tgt/backing-store/bs_rbd.so
+
+    - 完成后保存退出
 
   - ##### 编译 rpm
 
