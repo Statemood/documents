@@ -110,18 +110,19 @@
 #### 1. kubectl 基本命令
 - 获取 kubectl 帮助信息
 
-      [development@log-view ~]$ kubectl
+      [qtt-backend@k8s_node2 ~]$ kubectl
 
 
 #### 2. 查看 Pod
 - ##### 列出指定命名空间全部 Pods
 
-      [development@log-view ~]$ kubectl get po -n pay-qa
-      NAME                                         READY     STATUS    RESTARTS   AGE
-      acs-574fd5d685-r66jr                         1/1       Running   40         9d
-      oss-5bcd5c768c-tfd9h                         1/1       Running   1          3d
-      fcw-6f58bb96bc-rqf5n                         1/1       Running   0          2d
-      voucher-6b8f569976-h9kck                     0/1       Running   216        21h
+      [qtt-backend@k8s_node2 ~]$ kubectl get po -o wide
+      NAME                              READY     STATUS    RESTARTS   AGE       IP             NODE
+      auth-service-75b574b95f-hkwd5     1/1       Running   0          4h        172.30.33.7    10.0.101.228
+      browser-d7bc96ff7-bblbq           1/1       Running   0          24m       172.30.39.10   10.0.101.229
+      browser-service-886c77c57-gc5xx   1/1       Running   0          4h        172.30.50.8    10.0.101.227
+      content-service-544d55d95-8mkqx   1/1       Running   0          24m       172.30.82.8    10.0.101.222
+      user-service-597687c75c-pll82     1/1       Running   0          4h        172.30.82.6    10.0.101.222
 
   - NAME， Pod 名称格式为: 项目名称-Deployment模版Hash值-随机字符串
   - READY， 第一个数字等于 0 则表示此服务未就绪(启动未完成、Readiness检查失败等等)
@@ -135,15 +136,18 @@
     - Error
 
   - RESTARTS，为此 Pod 已重启次数(健康检查失败、启动出错等等)
+  - AGE, Pod 创建时间
+  - IP, Pod IP
+  - NODE, Pod 运行所在的节点
 
 - ##### 进入指定容器执行操作
   - 方法1:
 
-        [development@log-view ~]$ kubectl exec -it acs-574fd5d685-r66jr /bin/bash -n pay-qa
+        [qtt-backend@k8s_node2 ~]$ kubectl exec -it auth-service-75b574b95f-hkwd5 /bin/bash
 
   - 方法2:
 
-        [development@log-view ~]$ inc n pay-qa p acs-574fd5d685-r66jr
+        [qtt-backend@k8s_node2 ~]$ inc p auth-service-75b574b95f-hkwd5
 
 
 - ##### 替代命令
@@ -162,16 +166,19 @@
 #### 3. 查看 Deployment
 - 使用命令
 
-      [development@log-view ~]$ kubectl get deploy -n pay-qa
-      NAME                        DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
-      acs                         1         1         1            1           10d
-      fcw                         1         1         1            1           4d
+      [qtt-backend@k8s_node2 ~]$ kubectl get deploy
+      NAME              DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+      auth-service      1         1         1            1           4h
+      browser           1         1         1            1           33m
+      browser-service   1         1         1            1           4h
+      content-service   1         1         1            1           34m
+      user-service      1         1         1            1           4h
 
   - NAME:       项目名称
   - DESIRED:    期望运行副本数量
   - CURRENT:    当前运行副本数量
-  - UP-TO-DATE: 
-
+  - UP-TO-DATE:
+  - AGE:        创建时间
 
 ### 四、其它
 #### 1. 健康检查

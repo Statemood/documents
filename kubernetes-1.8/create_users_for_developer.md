@@ -62,6 +62,8 @@
               --cluster=kubernetes \
               --user=development
 
+  - 如指定默认 NAMESPACE, 则使用 --namespace=NAMESPACE
+
 - #### 设置默认上下文
 
       kubectl config use-context kubernetes
@@ -79,6 +81,10 @@
       - apiGroups: [""]
         resources: ["pods", "pods/log", "services", "replicationcontrollers"]
         verbs:     ["get", "watch", "list"]
+      # Allow user into pod by 'exec'
+      - apiGroups: [""]
+        resources: ["pods/exec"]
+        verbs:     ["create"]
       - apiGroups: ["extensions", "apps"]
         resources: ["deployments", "replicasets", "statefulsets"]
         verbs:     ["get", "list", "watch"]
@@ -105,15 +111,3 @@
   - ##### 越权提示:
 
       Error from server (Forbidden): pods is forbidden: User "development" cannot list pods in the namespace "kube-system"
-
-| Resources               | get   | list  | watch |
-| ---                     | :---: | :---: | :---: |
-| pods                    | √     | √     | √     |
-| pods/log                | √     | √     | √     |
-| replicationcontrollers  | √     | √     | √     |
-| services                | √     | √     | √     |
-| deployments             | √     | √     | √     |
-| replicasets             | √     | √     | √     |
-| statefulsets            | √     | √     | √     |
-| cronjobs                | √     | √     | √     |
-| jobs                    | √     | √     | √     |
