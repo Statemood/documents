@@ -16,6 +16,10 @@
     - default object size is 2MB
 
 ### replicated size
+  - ##### 查看 pool 副本数量
+
+        ceph osd pool get rbd size
+
   - ##### Set replicated size = 2 for pool rbd
 
         ceph osd pool set rbd size 2

@@ -13,7 +13,7 @@
     - ##### Ceph RBD for kubernetes
 
   - #### [管理](https://github.com/Statemood/documents/blob/master/ceph/maintenance-ceph.md)
-    - ##### [添加OSD(在线扩容)](https://github.com/Statemood/documents/blob/master/ceph/add_osds_to_existing_cluster.md)
+    - ##### [添加OSD(在线扩容)](https://github.com/Statemood/documents/blob/master/ceph/add_osds_to_existing_cluster-the-easy-way.md)
     - ##### [删除OSD](https://github.com/Statemood/documents/blob/master/ceph/maintenance-ceph.md#%E5%88%A0%E9%99%A4-osd)
 
   - #### [监控](#monitor)

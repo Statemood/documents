@@ -32,7 +32,7 @@
   - 公共网络(供客户端连接使用)
     - **192.168.50.0/24**
   - 集群网络(供集群内部使用，与其它网络隔离)
-    - **172.16.50.0/24**
+    - **172.20.0.0/24**
 
 #### 软件
   - Ceph 12.2.4 luminous
@@ -42,17 +42,17 @@
 #### 主机配置及角色
 |  主机          |  IP            |  角色        | 配置        |
 | :----------:  | :------------: | :----------: | ---------- |
-| 50-55         | em0: 192.168.50.55(**Public**)<br />em1: 172.16.50.55(**Cluster**)   | MON<br />OSD | Intel Xeon X5650 2.67GHz \* 2<br />32G MEM<br />73G SAS x 2 RAID 1(**OS**)<br />SAMSUNG 850PRO 512G SSD \* 1(**Journal**)<br />DELL 600G SAS 10KRPM \* 3(**OSD**)|
-| 50-56         | em0: 192.168.50.56(**Public**)<br />em1: 172.16.50.56(**Cluster**)   | MON<br />OSD | Intel Xeon X5650 2.67GHz \* 2<br />32G MEM<br />73G SAS x 2 RAID 1(**OS**)<br />SAMSUNG 850PRO 512G SSD \* 1(**Journal**)<br />DELL 600G SAS 10KRPM \* 3(**OSD**)|
-| 50-57         | em0: 192.168.50.57(**Public**)<br />em1: 172.16.50.57(**Cluster**)   | MON<br />OSD | Intel Xeon X5650 2.67GHz \* 2<br />32G MEM<br />73G SAS x 2 RAID 1(**OS**)<br />SAMSUNG 850PRO 512G SSD \* 1(**Journal**)<br />DELL 600G SAS 10KRPM \* 3(**OSD**)|
+| ceph-0         | em0: 192.168.50.20(**Public**)<br />em1: 172.20.0.20(**Cluster**)   | MON<br />OSD | Intel Xeon X5650 2.67GHz \* 2<br />32G MEM<br />73G SAS x 2 RAID 1(**OS**)<br />SAMSUNG 850PRO 512G SSD \* 1(**Journal**)<br />DELL 600G SAS 10KRPM \* 3(**OSD**)|
+| ceph-1         | em0: 192.168.50.21(**Public**)<br />em1: 172.20.0.21(**Cluster**)   | MON<br />OSD | Intel Xeon X5650 2.67GHz \* 2<br />32G MEM<br />73G SAS x 2 RAID 1(**OS**)<br />SAMSUNG 850PRO 512G SSD \* 1(**Journal**)<br />DELL 600G SAS 10KRPM \* 3(**OSD**)|
+| ceph-2         | em0: 192.168.50.22(**Public**)<br />em1: 172.20.0.22(**Cluster**)   | MON<br />OSD | Intel Xeon X5650 2.67GHz \* 2<br />32G MEM<br />73G SAS x 2 RAID 1(**OS**)<br />SAMSUNG 850PRO 512G SSD \* 1(**Journal**)<br />DELL 600G SAS 10KRPM \* 3(**OSD**)|
 
 
 #### 主机配置及角色(最小化配置，供测试及学习)
 |  主机          |  IP            |  角色        | 配置        |
 | :----------:  | :------------: | :----------: | ---------- |
-| 50-55         | em0: 192.168.50.55(**Public**)<br />em1: 172.16.50.55(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
-| 50-56         | em0: 192.168.50.56(**Public**)<br />em1: 172.16.50.56(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
-| 50-57         | em0: 192.168.50.57(**Public**)<br />em1: 172.16.50.57(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
+| ceph-0         | em0: 192.168.50.20(**Public**)<br />em1: 172.20.0.20(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
+| ceph-1         | em0: 192.168.50.21(**Public**)<br />em1: 172.20.0.21(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
+| ceph-2         | em0: 192.168.50.22(**Public**)<br />em1: 172.20.0.22(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
 
 - OSD 磁盘单块10G也可以
 
@@ -60,33 +60,34 @@
 
 ### 一. 系统设置
 #### 1. 绑定主机名
+###### 如有本地DNS, 则在DNS中解析即可
 ###### 本步骤要在每一个节点上执行
 - ##### 由于后续安装及配置都涉及到主机名，故此需先绑定
 - ##### 依次在三个节点上执行以下命令完成hosts绑定
-      [root@50-55 ~]#  echo -e "\n# Ceph Cluster\n192.168.50.55\t50-55\n192.168.50.56\t50-56\n192.168.50.57\t50-57" >> /etc/hosts
+      [root@ceph-0 ~]#  echo -e "\n# Ceph Cluster\n192.168.50.20\tceph-0\n192.168.50.21\tceph-1\n192.168.50.22\tceph-2" >> /etc/hosts
 
 #### 2. SSH RSA Key
-###### 在50-55上操作
+###### 在ceph-0上操作
 - ##### 进入 ~/.ssh 目录，如果不存在则创建(.ssh目录权限700)
-      [root@50-55 ~]# test -d .ssh || mkdir -m 700 .ssh
-      [root@50-55 ~]# cd .ssh
+      [root@ceph-0 ~]# test -d .ssh || mkdir -m 700 .ssh
+      [root@ceph-0 ~]# cd .ssh
 
 - ##### 生成RSA Key
-      [root@50-55 ~]# ssh-keygen -t rsa -b 3072
+      [root@ceph-0 ~]# ssh-keygen -t rsa -b 3072
     - 使用 ssh-keygen 命令生成一个3072位的RSA Key
     - 默认生成为 id_rsa，如当前目录已存在可以直接使用，或生成时选择其它名称
 
-- ##### 将RSA Key分发到三个节点(**包括 50-55 自身**)
-      [root@50-55 ~]# for i in 50-55 50-56 50-57; do ssh-copy-id $i; done
+- ##### 将RSA Key分发到三个节点(**包括 ceph-0 自身**)
+      [root@ceph-0 ~]# for i in ceph-0 ceph-1 ceph-2; do ssh-copy-id $i; done
     - 可以使用 ssh-copy-id **-i** ~/.ssh/id_rsa_ceph.pub 分发指定的Key
     - 分发时会提示 "Are you sure you want to continue connecting (yes/no)? ", **务必输入 yes 回车**
 
 #### 3. 防火墙
 - ##### 本步骤要在每一个节点上执行
 - ##### 打开 tcp 6789、6800-7100 端口
-      [root@50-55 ~]# firewall-cmd --zone=public --add-port=6789/tcp --permanent
-      [root@50-55 ~]# firewall-cmd --zone=public --add-port=6800-7100/tcp --permanent
-      [root@50-55 ~]# firewall-cmd --reload
+      [root@ceph-0 ~]# firewall-cmd --zone=public --add-port=6789/tcp --permanent
+      [root@ceph-0 ~]# firewall-cmd --zone=public --add-port=6800-7100/tcp --permanent
+      [root@ceph-0 ~]# firewall-cmd --reload
 
 #### 4. 时间同步
 ###### 本步骤要在每一个节点上执行
@@ -94,29 +95,29 @@
 - ##### 全部节点应使用同一个时间服务器
 - ##### 时间服务器使用 cn.pool.ntp.org
 - ##### 安装 ntpdate
-      [root@50-55 ~]# yum install -y ntpdate
+      [root@ceph-0 ~]# yum install -y ntpdate
 
 - ##### 先同步一下时间
-      [root@50-55 ~]# ntpdate cn.pool.ntp.org
+      [root@ceph-0 ~]# ntpdate cn.pool.ntp.org
 
 - ##### 将 ntpdate 设置到计划任务中
-      [root@50-55 ~]# echo -e "\n00  00  *  *  * \troot\tntpdate cn.pool.ntp.org" >> /etc/crontab
+      [root@ceph-0 ~]# echo -e "\n00  00  *  *  * \troot\tntpdate cn.pool.ntp.org" >> /etc/crontab
   - 设置每天 00:00 执行同步
   - 如果机器比较老旧，可以更频繁的进行同步，如每隔6小时一次
 
 #### 5. 安装 yum 源 与 ceph-deploy
 ###### 本步骤要在每一个节点上执行
 - ##### 安装 EPEL 源
-      [root@50-55 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/centos/7/extras/x86_64/Packages/epel-release-7-9.noarch.rpm
+      [root@ceph-0 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/centos/7/extras/x86_64/Packages/epel-release-7-11.noarch.rpm
 
 - ##### 安装 Ceph 源
-      [root@50-55 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-jewel/el7/noarch/ceph-release-1-1.el7.noarch.rpm
+      [root@ceph-0 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-jewel/el7/noarch/ceph-release-1-1.el7.noarch.rpm
 
 - ##### 替换 ceph.repo 服务器
   - 由于官网服务器下载速度较慢，需要替换 ceph.repo 文件中服务器地址为 **[清华镜像站进行](https://mirrors.tuna.tsinghua.edu.cn)**
   - 使用下方命令进行替换
 
-        [root@50-55 ~]#  sed -i 's#htt.*://download.ceph.com#https://mirrors.tuna.tsinghua.edu.cn/ceph#g' /etc/yum.repos.d/ceph.repo
+        [root@ceph-0 ~]#  sed -i 's#htt.*://download.ceph.com#https://mirrors.tuna.tsinghua.edu.cn/ceph#g' /etc/yum.repos.d/ceph.repo
 
       <!--* For close star-->
 
@@ -149,11 +150,11 @@
 
 #### 6. 安装 ceph-deploy
 - ##### 使用 yum 安装 ceph-deploy
-      [root@50-55 ~]# yum install -y ceph-deploy
+      [root@ceph-0 ~]# yum install -y ceph-deploy
 
 - ##### 创建 ceph-install 目录并进入，安装时产生的文件都将在这个目录
-      [root@50-55 ~]# mkdir ceph-install && cd ceph-install
-      [root@50-55 ceph-install]#
+      [root@ceph-0 ~]# mkdir ceph-install && cd ceph-install
+      [root@ceph-0 ceph-install]#
 
 
 ### 二. 准备硬盘
@@ -161,7 +162,7 @@
 ###### 本步骤要在每一个节点上执行
 - ##### 在每个节点上为Journal磁盘分区, 分别为 sdb1, sdb2, 各自对应本机的2个OSD
 - ##### 使用 parted 命令进行创建分区操作
-      [root@50-55 ~]# parted /dev/sdb
+      [root@ceph-0 ~]# parted /dev/vdb
           mklabel gpt
           mkpart primary xfs  0% 50%
           mkpart primary xfs 50% 100%
@@ -171,7 +172,7 @@
 #### 2. OSD 磁盘
 - ##### 对于OSD磁盘我们不做处理，交由ceph-deploy进行操作
 - ##### 如果OSD磁盘上已存在分区，则通过以下步骤进行删除分区操作
-      [root@50-55 ~]# parted /dev/sdc
+      [root@ceph-0 ~]# parted /dev/vdc
           p     # 显示已有分区，第一列数字为分区编号
           rm 1  # 删除第一个分区，依次删除全部分区
           q     # 退出
@@ -182,35 +183,35 @@
 ### 三. 安装 Ceph
 #### 1. 使用 ceph-deploy 安装 Ceph
 - ##### 创建一个新的Ceph 集群
-      [root@50-55 ceph-install]# ceph-deploy new 50-55 50-56 50-57
+      [root@ceph-0 ceph-install]# ceph-deploy new ceph-0 ceph-1 ceph-2
 
 - ##### 在全部节点上安装Ceph
-      [root@50-55 ceph-install]# ceph-deploy install 50-55 50-56 50-57
+      [root@ceph-0 ceph-install]# ceph-deploy install ceph-0 ceph-1 ceph-2
     - ###### 或在每个节点上手动执行 `yum install -y ceph`
 
 - ##### 创建和初始化监控节点
-      [root@50-55 ceph-install]# ceph-deploy mon create-initial
+      [root@ceph-0 ceph-install]# ceph-deploy mon create-initial
 
 - ##### 清空OSD磁盘(sdc, sdd)
-      [root@50-55 ceph-install]# ceph-deploy disk zap 50-55 sdc sdd
-      [root@50-55 ceph-install]# ceph-deploy disk zap 50-56 sdc sdd
-      [root@50-55 ceph-install]# ceph-deploy disk zap 50-57 sdc sdd
+      [root@ceph-0 ceph-install]# ceph-deploy disk zap ceph-0 sdc sdd
+      [root@ceph-0 ceph-install]# ceph-deploy disk zap ceph-1 sdc sdd
+      [root@ceph-0 ceph-install]# ceph-deploy disk zap ceph-2 sdc sdd
 
 - ##### 创建OSD存储节点
-      [root@50-55 ceph-install]# ceph-deploy osd create 50-55 --data /dev/sdc --journal /dev/sdb1
-      [root@50-55 ceph-install]# ceph-deploy osd create 50-55 --data /dev/sdd --journal /dev/sdb2
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-0 --data /dev/vdc --journal /dev/vdb1
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-0 --data /dev/vdd --journal /dev/vdb2
 
-      [root@50-55 ceph-install]# ceph-deploy osd create 50-56 --data /dev/sdc --journal /dev/sdb1
-      [root@50-55 ceph-install]# ceph-deploy osd create 50-56 --data /dev/sdd --journal /dev/sdb2
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-1 --data /dev/vdc --journal /dev/vdb1
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-1 --data /dev/vdd --journal /dev/vdb2
 
-      [root@50-55 ceph-install]# ceph-deploy osd create 50-57 --data /dev/sdc --journal /dev/sdb1
-      [root@50-55 ceph-install]# ceph-deploy osd create 50-57 --data /dev/sdd --journal /dev/sdb2
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-2 --data /dev/vdc --journal /dev/vdb1
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-2 --data /dev/vdd --journal /dev/vdb2
 
 - ##### 将配置文件同步到其它节点
-      [root@50-55 ceph-install]# ceph-deploy --overwrite-conf admin 50-55 50-56 50-57
+      [root@ceph-0 ceph-install]# ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
 
 - ##### 使用 ceph -s 命令查看集群状态
-      [root@50-55 ceph-install]# ceph -s
+      [root@ceph-0 ceph-install]# ceph -s
 
     - ###### 如集群正常则显示 health HEALTH_OK
 
@@ -219,21 +220,21 @@
 
 #### 2. 部署 MDS 元数据服务
 - ##### 如果需要以POSIX标准形式挂载 ceph-fs，则需要启动 MDS 服务
-      [root@50-55 ceph-install]# ceph-deploy mds create 50-55 50-56
+      [root@ceph-0 ceph-install]# ceph-deploy mds create ceph-0 ceph-1 ceph-2
 
-    - 上方命令会在 50-55 和 50-56 上启动MDS
+    - 上方命令会在 ceph-0 和 ceph-1 上启动MDS
 
 #### 3. 部署 mgr
 - ##### luminous 版本需要启动 mgr, 否则 ceph -s 会有 no active mgr 提示
 - ##### 官方文档建议在每个 monitor 上都启动一个 mgr
 
-      [root@50-55 ceph-install]# ceph-deploy mgr create 50-55:50-55 50-56:50-56 50-57:50-57
+      [root@ceph-0 ceph-install]# ceph-deploy mgr create ceph-0:ceph-0 ceph-1:ceph-1 ceph-2:ceph-2
 
 #### 4. 清除操作
 - ##### 安装过程中如遇到奇怪的错误，可以通过以下步骤清除操作从头再来
-      [root@50-55 ceph-install]# ceph-deploy purge 50-55 50-56 50-57
-      [root@50-55 ceph-install]# ceph-deploy purgedata 50-55 50-56 50-57
-      [root@50-55 ceph-install]# ceph-deploy forgetkeys
+      [root@ceph-0 ceph-install]# ceph-deploy purge ceph-0 ceph-1 ceph-2
+      [root@ceph-0 ceph-install]# ceph-deploy purgedata ceph-0 ceph-1 ceph-2
+      [root@ceph-0 ceph-install]# ceph-deploy forgetkeys
 
 
 ## 配置
@@ -251,26 +252,26 @@
       # 注意替换 fsid
       fsid = dca70270-3292-4078-91c3-1fbefcd3bd62
 
-      mon_initial_members = 50-55,50-56,50-57
-      mon_host = 192.168.50.55,192.168.50.56,192.168.50.57
+      mon_initial_members = ceph-0,ceph-1,ceph-2
+      mon_host = 192.168.50.20,192.168.50.21,192.168.50.22
       auth_cluster_required = cephx
       auth_service_required = cephx
       auth_client_required = cephx
 
       public network  = 192.168.50.0/24
-      cluster network = 172.16.50.0/24
+      cluster network = 172.20.0.0/24
 
       [mon.a]
-      host = 50-55
-      mon addr = 192.168.50.55:6789
+      host = ceph-0
+      mon addr = 192.168.50.20:6789
 
       [mon.b]
-      host = 50-56
-      mon addr = 192.168.50.56:6789
+      host = ceph-1
+      mon addr = 192.168.50.21:6789
 
       [mon.c]
-      host = 50-57
-      mon addr = 192.168.50.57:6789
+      host = ceph-2
+      mon addr = 192.168.50.22:6789
 
       [osd]
       osd data = /var/lib/ceph/osd/ceph-$id
@@ -310,15 +311,15 @@
       rbd cache max dirty age = 5
 
 - ##### 将配置文件同步到其它节点
-      [root@50-55 ceph-install]# ceph-deploy --overwrite-conf admin 50-55 50-56 50-57
+      [root@ceph-0 ceph-install]# ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
 
 - ##### 逐个令重启各个节点
       systemctl restart ceph\*.service ceph\*.target
 
 - ##### 此时
   - ceph-mon 进程应监听在 192.168.50.0 网段IP上
-  - ceph-osd 应分别监听在 192.168.50.0 和 172.16.50.0 两个网段IP上
-  - 172.16.50.0 网段为集群内部复制数据时使用
+  - ceph-osd 应分别监听在 192.168.50.0 和 172.20.0.0 两个网段IP上
+  - 172.20.0.0 网段为集群内部复制数据时使用
   - 192.168.50.0 网段为客户端连接时使用
 
 
@@ -326,29 +327,20 @@
 ###### 本操作可以在任一节点上执行
 #### 1. pool 存储池
 - ##### 查看存储池
-      [root@50-55 ~]# ceph osd pool ls
+      [root@ceph-0 ~]# ceph osd pool ls
 
 - ##### 创建存储池
-      [root@50-55 ~]# ceph osd pool create pool_name 64
+      [root@ceph-0 ~]# ceph osd pool create pool_name 64
     - 创建一个名为 pool_name的存储池，pg = 64
 
 #### 2. ceph-fs 文件系统
 - ##### 查看已有文件系统
-      [root@50-55 ~]# ceph fs ls
+      [root@ceph-0 ~]# ceph fs ls
 
 - ##### 创建一个名称为 files 的文件系统
-      [root@50-55 ~]# ceph osd pool create files_data 32
-      [root@50-55 ~]# ceph osd pool create files_metadata 32
-      [root@50-55 ~]# ceph fs new files files_metadata files_data
-
-- ##### 创建多个文件系统
-    - ###### 需要先执行以下命令启用多文件系统选项
-            [root@50-55 ~]# ceph fs flag set enable_multiple true --yes-i-really-mean-it
-
-    - ###### 开始创建另外的文件系统
-            [root@50-55 ~]# ceph osd pool create logs_data 32
-            [root@50-55 ~]# ceph osd pool create logs_metadata 32
-            [root@50-55 ~]# ceph fs new logs logs_metadata logs_data
+      [root@ceph-0 ~]# ceph osd pool create files_data 32
+      [root@ceph-0 ~]# ceph osd pool create files_metadata 32
+      [root@ceph-0 ~]# ceph fs new files files_metadata files_data
 
 - ##### 使用 ceph-fuse 在 50-50 上挂载文件系统
     - ###### 使用 `yum install -y ceph-fuse` 安装
@@ -356,15 +348,14 @@
 
     - 从Ceph集群复制 ceph.conf 与 ceph.client.admin.keyring 文件到主机 50-50 /etc/ceph 目录下
     - ###### 使用 `ceph fs dump` 查看文件系统编号
-            [root@50-55 ~]# ceph fs dump
+            [root@ceph-0 ~]# ceph fs dump
 
     - ###### 创建挂载点目录 /data
             [root@50-50 ~]# test -d /data || mkdir /data
 
     - ###### 使用 `ceph-fuse` 挂载
 
-            [root@50-50 ~]# ceph-fuse -m 192.168.50.55，192.168.50.56:6789 /data/files --client_mds_namespace 1
-            [root@50-50 ~]# ceph-fuse -m 192.168.50.55，192.168.50.56:6789 /data/logs  --client_mds_namespace 2
+            [root@50-50 ~]# ceph-fuse -m ceph-0,ceph-1,ceph-2:6789 /data/files
 
     - ###### 至此，即可直接使用ceph文件系统了
 
@@ -375,10 +366,10 @@
 ### 测试Ceph性能
 #### 1. 使用 rados bench 测试 rbd
 - ##### 使用 `rados -p rbd bench 60 write` 进行 顺序写入
-      [root@50-55 ~]# rados -p rbd bench 60 write
+      [root@ceph-0 ~]# rados -p rbd bench 60 write
 
 - ##### 使用 `rados -p rbd -b 4096 bench 60 write -t 256 --run-name test1` 进行 4k 写入
-      [root@50-55 ~]# rados -p rbd -b 4096 bench 60 write -t 128 --run-name test1
+      [root@ceph-0 ~]# rados -p rbd -b 4096 bench 60 write -t 128 --run-name test1
 
 - ##### rados bench 更多信息请参阅 [官方文档](http://docs.ceph.com/docs/master/)
 
