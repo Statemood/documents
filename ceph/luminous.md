@@ -373,6 +373,8 @@
 #### 3. rbd
 - ##### 关于 rbd 的更多信息，请参阅文档 [RBD – MANAGE RADOS BLOCK DEVICE (RBD) IMAGES]](http://docs.ceph.com/docs/master/man/8/rbd/)
 
+- ##### 若要在其它主机上使用 rbd, 需安装 ceph-common (提供 rbd 命令), 否则将无法创建文件系统
+
 ## 测试
 ### 测试Ceph性能
 #### 1. 使用 rados bench 测试 rbd
