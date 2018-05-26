@@ -207,6 +207,17 @@
       [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-2 --data /dev/vdc --journal /dev/vdb1
       [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-2 --data /dev/vdd --journal /dev/vdb2
 
+  - ###### 错误排查
+    - 在 Running command: vgcreate --force --yes xxxx, 返回:
+          stderr: Device /dev/vdd excluded by a filter.
+         --> Was unable to complete a new OSD, will rollback changes
+         --> OSD will be fully purged from the cluster, because the ID was generated
+
+      解决办法:
+        DISK=OSD 磁盘名称
+        dd if=/dev/urandom of=/dev/DISK bs=512 count=64
+
+
 - ##### 将配置文件同步到其它节点
       [root@ceph-0 ceph-install]# ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
 
