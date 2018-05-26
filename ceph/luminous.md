@@ -324,7 +324,7 @@
 - ##### 将配置文件同步到其它节点
       [root@ceph-0 ceph-install]# ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
 
-- ##### 逐个令重启各个节点
+- ##### 逐一重启各个节点
       systemctl restart ceph\*.service ceph\*.target
 
 - ##### 此时
