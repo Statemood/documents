@@ -213,9 +213,9 @@
          --> Was unable to complete a new OSD, will rollback changes
          --> OSD will be fully purged from the cluster, because the ID was generated
 
-      解决办法:
-        DISK=OSD 磁盘名称
-        dd if=/dev/urandom of=/dev/DISK bs=512 count=64
+      - 解决办法:
+        - DISK=OSD 磁盘名称
+        - dd if=/dev/urandom of=/dev/DISK bs=512 count=64
 
 
 - ##### 将配置文件同步到其它节点
