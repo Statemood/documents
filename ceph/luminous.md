@@ -111,8 +111,7 @@
       [root@ceph-0 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/centos/7/extras/x86_64/Packages/epel-release-7-11.noarch.rpm
 
 - ##### 安装 Ceph 源
-      [root@ceph-0 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-jewel/el7/noarch/ceph-release-1-1.el7.noarch.rpm
-
+      [root@ceph-0 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-luminous/el7/noarch/ceph-release-1-1.el7.noarch.rpm
 - ##### 替换 ceph.repo 服务器
   - 由于官网服务器下载速度较慢，需要替换 ceph.repo 文件中服务器地址为 **[清华镜像站进行](https://mirrors.tuna.tsinghua.edu.cn)**
   - 使用下方命令进行替换
@@ -151,6 +150,10 @@
 #### 6. 安装 ceph-deploy
 - ##### 使用 yum 安装 ceph-deploy
       [root@ceph-0 ~]# yum install -y ceph-deploy
+
+  - 执行 ceph-deploy --version, 确认版本
+      [root@ceph-0 ~]# ceph-deploy --version
+      ceph version 12.2.5 (cad919881333ac92274171586c827e01f554a70a) luminous (stable)
 
 - ##### 创建 ceph-install 目录并进入，安装时产生的文件都将在这个目录
       [root@ceph-0 ~]# mkdir ceph-install && cd ceph-install
@@ -196,6 +199,9 @@
       [root@ceph-0 ceph-install]# ceph-deploy disk zap ceph-0 sdc sdd
       [root@ceph-0 ceph-install]# ceph-deploy disk zap ceph-1 sdc sdd
       [root@ceph-0 ceph-install]# ceph-deploy disk zap ceph-2 sdc sdd
+
+  - 也可以通过 parted 将 sdc sdd 删除之前存在的分区，无分区可忽略此步骤
+
 
 - ##### 创建OSD存储节点
       [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-0 --data /dev/vdc --journal /dev/vdb1

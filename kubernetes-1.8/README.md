@@ -490,6 +490,7 @@
     -   --service-node-port-range=${NODE_PORT_RANGE}指定 NodePort 的端口范围
     -   缺省情况下kubernetes对象保存在etcd /registry路径下，可以通过--etcd-prefix参数进行调整
 
+    - #### For 1.10+, 参数 --service_account_key_file 变为 --service-account-key-file
 
 ### 9. 修改文件 /etc/kubernetes/controller-manager
 - #### File: /etc/kubernetes/controller-manager
@@ -513,7 +514,6 @@
           --cluster-cidr=10.64.0.0/10 \
           --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
 
-    - --address值必须为127.0.0.1，因为当前kube-apiserver期望scheduler 和 controller-manager在同一台机器
     - --master=http://{MASTER_IP}:8080：使用非安全8080端口与kube-apiserver 通信
     - --cluster-cidr指定Cluster中Pod的CIDR范围，该网段在各Node间必须路由可达(flanneld保证)
     - --service-cluster-ip-range参数指定Cluster中Service的CIDR范围，该网络在各 Node间必须路由不可达，必须和kube-apiserver中的参数一致
@@ -521,6 +521,8 @@
     - --root-ca-file用来对kube-apiserver证书进行校验，指定该参数后，才会在Pod容器的ServiceAccount中放置该CA证书文件
     - --leader-elect=true部署多台机器组成的master集群时选举产生一处于工作状态的 kube-controller-manager进程
 
+    - #### For 1.10+:
+      - 参数 --service_account_key_file 变为 --service-account-key-file
 
 ### 10. 修改文件 /etc/kubernetes/scheduler
 - #### File: /etc/kubernetes/scheduler
@@ -594,6 +596,15 @@
   - #### --experimental-bootstrap-kubeconfig 已弃用，使用新参数 --bootstrap-kubeconfig
   - #### 在其它节点上，注意修改为正确的证书文件名
 
+  - #### For 1.10+:
+    - 弃用参数:
+      - --address
+      - --allow-privileged
+      - --cgroup-driver
+      - --tls-cert-file
+      - --tls-private-key-file
+
+
 ### 13. 修改文件 /etc/kubernetes/proxy
 - #### File: /etc/kubernetes/proxy
 
@@ -611,12 +622,14 @@
 ### 14. Group & User
 - #### Add Group & User
 
-      [root@50-55 kubernetes]# useradd -g kube kube -d / -s /sbin/nologin -M
+      [root@50-55 kubernetes]# groupadd -g 200 kube
+      [root@50-55 kubernetes]# useradd -g kube kube -u 200 -d / -s /sbin/nologin -M
 
 ### 15. Work directory: /var/lib/kubelet
 - #### Create directory
 
       [root@50-55 kubernetes]# mkdir /var/lib/kubelet
+      [root@50-55 kubernetes]# chown kube 
 
 - #### Set SELinux rules
 
