@@ -330,7 +330,7 @@
 - ##### 将配置文件同步到其它节点
       [root@ceph-0 ceph-install]# ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
 
-- ##### 逐个令重启各个节点
+- ##### 逐一重启各个节点
       systemctl restart ceph\*.service ceph\*.target
 
 - ##### 此时
@@ -378,6 +378,9 @@
 
 #### 3. rbd
 - ##### 关于 rbd 的更多信息，请参阅文档 [RBD – MANAGE RADOS BLOCK DEVICE (RBD) IMAGES]](http://docs.ceph.com/docs/master/man/8/rbd/)
+
+- ##### 若要在其它主机上使用 rbd, 需安装 ceph-common (提供 rbd 命令), 否则将无法创建文件系统
+  - 对于 k8s, kube-controller-manager 所在系统也需要安装 ceph-common 
 
 ## 测试
 ### 测试Ceph性能
