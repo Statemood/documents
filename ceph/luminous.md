@@ -112,6 +112,7 @@
 
 - ##### 安装 Ceph 源
       [root@ceph-0 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-luminous/el7/noarch/ceph-release-1-1.el7.noarch.rpm
+      
 - ##### 替换 ceph.repo 服务器
   - 由于官网服务器下载速度较慢，需要替换 ceph.repo 文件中服务器地址为 **[清华镜像站进行](https://mirrors.tuna.tsinghua.edu.cn)**
   - 使用下方命令进行替换
