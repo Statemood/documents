@@ -2,7 +2,7 @@
 
 ## 1. 环境
 
-- #### Kubernetes 版本 1.8.1
+- #### Kubernetes 版本 1.8 +
 - #### 集群启用 SSL
 - #### 集群启用 RBAC
 
@@ -10,16 +10,16 @@
 - #### 证书签发需要Kubernetes集群 ca.pem ca.key 两个文件
 - #### 文件 development.cnf
 
-      [ req ]
-      req_extensions = v3_req
-      distinguished_name = req_distinguished_name
-      [req_distinguished_name]
-      [ v3_req ]
-      basicConstraints = critical, CA:FALSE
-      keyUsage = critical, digitalSignature, keyEncipherment
-      extendedKeyUsage = serverAuth, clientAuth
-      subjectKeyIdentifier = hash
-      authorityKeyIdentifier = keyid:always,issuer
+    [ req ]
+    req_extensions = v3_req
+    distinguished_name = req_distinguished_name
+    [req_distinguished_name]
+    [ v3_req ]
+    basicConstraints = critical, CA:FALSE
+    keyUsage = critical, digitalSignature, keyEncipherment
+    #subjectAltName = @alt_names
+    #[alt_names]
+    #IP.1 = 192.168.50.33
 
 - #### 创建 key
 
