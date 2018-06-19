@@ -10,16 +10,16 @@
 - #### 证书签发需要Kubernetes集群 ca.pem ca.key 两个文件
 - #### 文件 development.cnf
 
-    [ req ]
-    req_extensions = v3_req
-    distinguished_name = req_distinguished_name
-    [req_distinguished_name]
-    [ v3_req ]
-    basicConstraints = critical, CA:FALSE
-    keyUsage = critical, digitalSignature, keyEncipherment
-    #subjectAltName = @alt_names
-    #[alt_names]
-    #IP.1 = 192.168.50.33
+      [ req ]
+      req_extensions = v3_req
+      distinguished_name = req_distinguished_name
+      [req_distinguished_name]
+      [ v3_req ]
+      basicConstraints = critical, CA:FALSE
+      keyUsage = critical, digitalSignature, keyEncipherment
+      #subjectAltName = @alt_names
+      #[alt_names]
+      #IP.1 = 192.168.50.33
 
 - #### 创建 key
 
