@@ -48,7 +48,7 @@
 - #### Docker-CE 17.12 或更新版本
  
 ### 8. kubernetes
-- #### 以下版本均已经过测试
+- #### 以下版本均已经过测试
   - 1.8.1
   - 1.8.7
   - 1.10.5
@@ -391,7 +391,7 @@
 
           chown kube:kube /data/kubelet
 
-    - 修改 SELinux 权限
+    - 修改 SELinux 权限
 
           chcon -u system_u -t svirt_sandbox_file_t /data/kubelet
 
