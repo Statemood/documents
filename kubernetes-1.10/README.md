@@ -416,35 +416,35 @@
 - kubelet在首次启动时，会向kube-apiserver发送TLS Bootstrapping请求。如果kube-apiserver验证其与自己的token.csv一致，则为kubelet生成CA与key
 
         cd /etc/kubernetes
-        [root@50-51 kubernetes]# echo "`head -c 16 /dev/urandom | od -An -t x | tr -d ' '`,kubelet-bootstrap,10001,\"system:kubelet-bootstrap\"" > token.csv
+        echo "`head -c 16 /dev/urandom | od -An -t x | tr -d ' '`,kubelet-bootstrap,10001,\"system:kubelet-bootstrap\"" > token.csv
 
   - 在使用Dashboard时，可以使用 token 进行认证
 
 ### 2. 生成kubectl的kubeconfig文件
 - #### 设置集群参数
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
                   --server=https://192.168.50.51:6443
 
 - #### 设置客户端认证参数
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config set-credentials admin \
                   --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
                   --client-key=/etc/kubernetes/ssl/kubelet.key
 
 - #### 设置上下文参数
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config set-context kubernetes \
                   --cluster=kubernetes \
                   --user=admin
 
 - #### 设置默认上下文
 
-      [root@50-51 kubernetes]# kubectl config use-context kubernetes
+      kubectl config use-context kubernetes
 
     - kubelet.pem 证书的OU字段值为system:masters，kube-apiserver预定义的RoleBinding cluster-admin 将 Group system:masters 与 Role cluster-admin 绑定，该Role授予了调用kube-apiserver相关API的权限
 
@@ -453,7 +453,7 @@
 ### 3. 生成kubelet的bootstrapping kubeconfig文件
 - #### 生成kubelet的bootstrapping kubeconfig文件
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
                   --server=https://192.168.50.51:6443 \
@@ -461,14 +461,14 @@
 
 - #### 设置客户端认证参数
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config set-credentials kubelet-bootstrap \
                   --token=`awk -F ',' '{print $1}' token.csv` \
                   --kubeconfig=bootstrap.kubeconfig
 
 - #### 生成默认上下文参数
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config set-context default \
                   --cluster=kubernetes \
                   --user=kubelet-bootstrap \
@@ -476,7 +476,7 @@
 
 - #### 切换默认上下文
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config use-context default \
                   --kubeconfig=bootstrap.kubeconfig
 
@@ -489,7 +489,7 @@
 
 - #### 设置集群参数
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
                   --server=https://192.168.50.51:6443 \
@@ -505,7 +505,7 @@
 
 - #### 生成上下文参数
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config set-context default \
                   --cluster=kubernetes \
                   --user=kubelet \
@@ -513,7 +513,7 @@
 
 - #### 切换默认上下文
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config use-context default \
                   --kubeconfig=kubelet.kubeconfig
 
@@ -521,7 +521,7 @@
 ### 6. 生成kube-proxy的kubeconfig文件
 - #### 设置集群参数
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
                   --server=https://192.168.50.51:6443 \
@@ -537,7 +537,7 @@
 
 - #### 生成上下文参数
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config set-context default \
                   --cluster=kubernetes \
                   --user=kube-proxy \
@@ -545,7 +545,7 @@
 
 - #### 切换默认上下文
 
-      [root@50-51 kubernetes]# \
+      \
                   kubectl config use-context default \
                   --kubeconfig=kube-proxy.kubeconfig
 
@@ -555,7 +555,7 @@
 ### 7. 将kubeconfig文件复制至所有节点上
 - #### 将生成的两个 kubeconfig 文件复制到所有节点的 /etc/kubernetes 目录内
 
-      [root@50-51 kubernetes]# cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
+      cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
 
 
 ### 8. 修改文件 /etc/kubernetes/apiserver
@@ -747,32 +747,31 @@
 ### 14. Group & User
 - #### Add Group & User
 
-      [root@50-51 kubernetes]# groupadd -g 200 kube
-      [root@50-51 kubernetes]# useradd -g kube kube -u 200 -d / -s /sbin/nologin -M
+      groupadd -g 200 kube
+      useradd -g kube kube -u 200 -d / -s /sbin/nologin -M
 
 ### 15. Work directory: /var/lib/kubelet
 - #### 如更改此目录，请参考 [>>> 修改 kubelet 数据目录(/var/lib/kubelet)](#%E4%BF%AE%E6%94%B9-kubelet-%E6%95%B0%E6%8D%AE%E7%9B%AE%E5%BD%95varlibkubelet)
 - #### Create directory
 
-      [root@50-51 kubernetes]# mkdir /var/lib/kubelet
-      [root@50-51 kubernetes]# chown kube /var/lib/kubelet
+      mkdir /var/lib/kubelet
+      chown kube /var/lib/kubelet
 
 - #### Set SELinux rules
 
-      [root@50-51 kubernetes]# \
-                  chcon -u system_u -t svirt_sandbox_file_t /var/lib/kubelet
+      chcon -u system_u -t svirt_sandbox_file_t /var/lib/kubelet
 
 ### 16. Permission
 - #### Files Permission, ensure that kubeconfig files we created are readable for user kube
 
-      [root@50-51 kubernetes]# setfacl -m u:kube:r /etc/kubernetes/*.kubeconfig
+      setfacl -m u:kube:r /etc/kubernetes/*.kubeconfig
 
   - ##### 在包括 API Server 的每个节点上执行
 
 ### 17. For 1.8.7+
 - #### 在 1.8.7+ 上，需要在每个节点安装以下包
 
-      [root@50-51 kubernetes]# yum install -y  conntrack-tools libnetfilter_conntrack libnetfilter_conntrack-devel
+      yum install -y  conntrack-tools libnetfilter_conntrack libnetfilter_conntrack-devel
 
   - **此操作为解决问题**: Jan 31 14:16:43 localhost kube-proxy: E0131 14:16:43.924024   30629 proxier.go:1716] Failed to delete stale service IP 10.0.0.10 connections, error: error deleting connection tracking state for UDP service IP: 10.0.0.10, error: error looking for path of conntrack: exec: "**conntrack**": executable file not found in $PATH            
 
@@ -781,32 +780,32 @@
 
 - #### Start & Enable kube-apiserver
 
-      [root@50-51 kubernetes]# systemctl start  kube-apiserver
-      [root@50-51 kubernetes]# systemctl enable kube-apiserver
+      systemctl start  kube-apiserver
+      systemctl enable kube-apiserver
 
 - #### Start & Enable controller-manager
 
-      [root@50-51 kubernetes]# systemctl start  kube-controller-manager
-      [root@50-51 kubernetes]# systemctl enable kube-controller-manager
+      systemctl start  kube-controller-manager
+      systemctl enable kube-controller-manager
 
 - #### Start & Enable scheduler
 
-      [root@50-51 kubernetes]# systemctl start  kube-scheduler
-      [root@50-51 kubernetes]# systemctl enable kube-scheduler
+      systemctl start  kube-scheduler
+      systemctl enable kube-scheduler
 
 - #### Start & Enable kubelet
 
-      [root@50-51 kubernetes]# systemctl start  kubelet
-      [root@50-51 kubernetes]# systemctl enable kubelet
+      systemctl start  kubelet
+      systemctl enable kubelet
 
 - #### Start & Enable kube-proxy
 
-      [root@50-51 kubernetes]# systemctl start  kube-proxy
-      [root@50-51 kubernetes]# systemctl enable kube-proxy
+      systemctl start  kube-proxy
+      systemctl enable kube-proxy
 
 - #### Quick commands
 
-      [root@50-51 kubernetes]# \
+      \
                   for k in kube-apiserver \
                            kube-controller-manager \
                            kube-scheduler \
@@ -820,13 +819,13 @@
 ### 2. On Kubelet Nodes
   - #### Start & Enable kubelet
 
-        [root@50-52 ~]# systemctl start  kubelet
-        [root@50-52 ~]# systemctl enable kubelet
+        systemctl start  kubelet
+        systemctl enable kubelet
 
   - #### Start & Enable kube-proxy
 
-        [root@50-52 ~]# systemctl start  kube-proxy
-        [root@50-52 ~]# systemctl enable kube-proxy
+        systemctl start  kube-proxy
+        systemctl enable kube-proxy
 
   - 查看 IPVS 状态
       
@@ -843,7 +842,7 @@
 
 ### 4. 检查集群状态
 
-    [root@50-51 kubernetes]# kubectl get cs
+    [root@50-51 ~]# kubectl get cs
     NAME                 STATUS    MESSAGE              ERROR
     scheduler            Healthy   ok                   
     controller-manager   Healthy   ok                   
