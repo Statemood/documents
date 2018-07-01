@@ -1,16 +1,17 @@
-# Kubernetes 1.8 with TLS & RBAC
+# Kubernetes 1.10
 
 ## 简介
 
-- 本文档基于二进制文件全新安装 Kubernetes 1.8.x
-- 从 1.5 升级请注意提示部分
-- RBAC 支持
-- TLS 支持
+- 本文档基于二进制文件全新安装 Kubernetes 1.8 及以上版本，包括但不限于 1.10.5+
+
+- **SELinux**
+- **IPVS**
 
 ## Environment
 
 ### 1. OS
-- CentOS 7.4 minimal x86_64
+- CentOS 7.4 minimal x86_64 
+- CentOS 7.5 minimal x86_64 
 
 ### 2. Firewalld
 - 由于 iptables 会被 kube-proxy 接管，因此需 **禁用** Firewalld
@@ -44,21 +45,90 @@
       - ###### 4,194,304
 
 ### 7. Docker
-- #### Docker 1.12.6
+- #### Docker-CE 17.12 或更新版本
+- #### 安装方式
+  - 安装 Docker-CE Repo
+    
+        curl https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/docker-ce.repo \
+        -o /etc/yum.repos.d/docker-ce.repo
 
-- #### Docker-CE 17.12.0
+  - 更改为**清华镜像源**
+
+        sed -i 's#download.docker.com#mirrors.tuna.tsinghua.edu.cn/docker-ce#g' \
+        /etc/yum.repos.d/docker-ce.repo
+
+  - 安装 Docker-CE
+   
+        yum install -y docker-ce
+
+
+  - ##### 修改 Docker 目录(/var/lib/docker)
+    - **可选步骤**
+    - 如默认 /var/lib 目录容量较小时，需要进行修改
+    - 本例中将 docker 目录由 **/var/lib/docker** 改为 **/data/docker**
+    - 操作如下
+      - 创建目录
+
+            mkdir /data/docker
+
+      - 修改 docker 配置 (vim /usr/lib/systemd/system/docker.service)
+
+            [Unit]
+            Description=Docker Application Container Engine
+            Documentation=https://docs.docker.com
+            After=network.target firewalld.service
+            [Service]
+            Type=notify
+            EnvironmentFile=-/run/flannel/docker
+            EnvironmentFile=-/run/docker_opts.env
+            EnvironmentFile=-/run/flannel/subnet.env
+            EnvironmentFile=-/etc/sysconfig/docker
+            EnvironmentFile=-/etc/sysconfig/docker-storage
+            EnvironmentFile=-/etc/sysconfig/docker-network
+            EnvironmentFile=-/run/docker_opts.env
+            ExecStart=/usr/bin/dockerd \
+                  --data-root /data/docker \
+                  $DOCKER_OPT_BIP \
+                  $DOCKER_OPT_IPMASQ \
+                  $DOCKER_OPT_MTU
+            ExecReload=/bin/kill -s HUP $MAINPID
+            LimitNOFILE=infinity
+            LimitNPROC=infinity
+            LimitCORE=infinity
+            TimeoutStartSec=0
+            Delegate=yes
+            [Install]
+            WantedBy=multi-user.target
+
+        - 添加 **--data-root /data/docker**
+
+      - Reload 配置
+
+            systemctl daemon-reload
+
+      - 启动 Docker，生成目录
+        
+            systemctl start docker
+
+      - 修改 SELinux 权限
+
+            chcon -R -u system_u /data/docker
+            chcon -R -t container_var_lib_t /data/docker
+            chcon -R -t container_share_t /data/docker/overlay2 
+
 
 ### 8. kubernetes
-- #### 1.8.1
-
-- #### 1.8.7
+#### 以下版本均已经过测试
+- 1.8.1
+- 1.8.7
+- 1.10.5
 
 ## Certificate
 ### 1. 签发CA，在 50-55 上进行(可以是任一安装 openssl 的主机)
 - #### 创建 /etc/ssl/gen 目录并进入(也可以是其它目录)
 
-      [root@50-55 ～]# mkdir /etc/ssl/gen
-      [root@50-55 ～]# cd /etc/ssl/gen
+      mkdir /etc/ssl/gen
+      cd /etc/ssl/gen
 
 - #### 准备额外的选项, 配置文件 ca.cnf
   - ##### File: ca.cnf
@@ -77,11 +147,13 @@
 
 - #### 创建 CA Key
 
-      [root@50-55 gen]# openssl genrsa -out ca.key 3072
+      openssl genrsa -out ca.key 3072
 
 - #### 签发CA
 
-      [root@50-55 gen]# openssl req -x509 -new -nodes -key ca.key -days 1095 -out ca.pem -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config ca.cnf -extensions v3_req
+      openssl req -x509 -new -nodes -key ca.key -days 1095 -out ca.pem -subj \
+              "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" \
+              -config ca.cnf -extensions v3_req
 
     - 有效期 **1095** (d) = 3 years
     - 注意 -subj 参数中仅 'C=CN' 与 'Shanghai' 可以修改，**其它保持原样**，否则集群会遇到权限异常问题
@@ -121,18 +193,23 @@
 
   - ##### 生成 key
 
-        [root@50-55 gen]# openssl genrsa -out apiserver.key 3072
+        openssl genrsa -out apiserver.key 3072
 
   - ##### 生成证书请求
 
-        [root@50-55 gen]# openssl req -new -key apiserver.key -out apiserver.csr -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config apiserver.cnf
+        openssl req -new -key apiserver.key -out apiserver.csr -subj \
+                "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" \
+                -config apiserver.cnf
 
       - CN、OU、O 字段为认证时使用, 请勿修改
       - 注意 -subj 参数中仅 'C'、'ST' 与 'L' 可以修改，**其它保持原样**，否则集群会遇到权限异常问题
 
   - ##### 签发证书
 
-        [root@50-55 gen]# openssl x509 -req -in apiserver.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out apiserver.pem -days 1095 -extfile apiserver.cnf -extensions v3_req
+        openssl x509 -req -in apiserver.csr 
+                -CA ca.pem -CAkey ca.key -CAcreateserial \
+                -out apiserver.pem -days 1095 \
+                -extfile apiserver.cnf -extensions v3_req
 
     - 注意: 需要先去掉 apiserver.cnf 注释掉的两行
 
@@ -147,34 +224,53 @@
         basicConstraints = critical, CA:FALSE
         keyUsage = critical, digitalSignature, keyEncipherment
 
+  - ##### 设置名称变量
+
+        name=kubelet
+        conf=kubelet.cnf
+
   - ##### 生成 key
 
-        [root@50-55 gen]# openssl genrsa -out kubelet.key 3072
+        openssl genrsa -out $name.key 3072
 
   - ##### 生成证书请求
 
-        [root@50-55 gen]# openssl req -new -key kubelet.key -out kubelet.csr -subj "/CN=admin/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:masters" -config kubelet.cnf
+        openssl req -new -key $name.key -out $name.csr -subj \
+                "/CN=admin/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:masters" \
+                -config $conf
 
   - ##### 签发证书
 
-        [root@50-55 gen]# openssl x509 -req -in kubelet.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out kubelet.pem -days 1095 -extfile kubelet.cnf -extensions v3_req
+        openssl x509 -req -in $name.csr -CA ca.pem \
+                -CAkey ca.key -CAcreateserial -out $name.pem \
+                -days 1095 -extfile $conf -extensions v3_req
 
 - #### 为 kube-proxy 签发证书
   - ##### 复制 kubelet.cnf 文件
 
-        [root@50-55 gen]# cp kubelet.cnf kube-proxy.cnf
+        cp kubelet.cnf kube-proxy.cnf
+
+  - ##### 设置名称变量
+
+        name=kube-proxy
+        conf=kube-proxy.cnf
 
   - ##### 生成 key
 
-        [root@50-55 gen]# openssl genrsa -out kube-proxy.key 3072
+        openssl genrsa -out $name.key 3072
 
   - ##### 生成证书请求
 
-        [root@50-55 gen]# openssl req -new -key kube-proxy.key -out kube-proxy.csr -subj "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config kube-proxy.cnf
+        openssl req -new -key $name.key -out $name.csr -subj \
+                "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" \
+                -config $conf
 
   - ##### 签发证书
 
-        [root@50-55 ssl]# openssl x509 -req -in kube-proxy.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out kube-proxy.pem -days 1095 -extfile kube-proxy.cnf -extensions v3_req
+        openssl x509 -req -in $name.csr \
+                -CA ca.pem -CAkey ca.key -CAcreateserial \
+                -out $name.pem -days 1095 \
+                -extfile $conf -extensions v3_req
 
 ## Install
 ### 1. Etcd
@@ -186,13 +282,13 @@
 ### 3. Docker
 - #### 使用 yum 安装 Docker 1.12, 依次在各节点执行安装
 
-      [root@50-55 ~]# yum install -y docker
+      yum install -y docker
 
 - #### 或通过以下方法安装 Docker-CE
 
 ### 4. 使用 yum 安装 libnetfilter_conntrack conntrack-tools
 
-      [root@50-55 ~]# yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-tools
+      yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-tools
 
 - #### 针对 k8s 1.8.1 以上版本
 - #### 在所有节点执行
@@ -200,16 +296,16 @@
 ### 5. Kubernetes
 - #### 使用 curl 命令下载二进制安装包
 
-      [root@50-55 ~]# curl -O https://dl.k8s.io/v1.8.1/kubernetes-server-linux-amd64.tar.gz
+      curl -O https://dl.k8s.io/v1.8.1/kubernetes-server-linux-amd64.tar.gz
 
   - ##### 更多下载信息 >> [CHANGELOG-1.8.md#downloads-for-v181](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.8.md#downloads-for-v181)
 - #### 解压
 
-      [root@50-55 ~]# tar zxf kubernetes.tar.gz
+      tar zxf kubernetes.tar.gz
 
 - #### 安装
 
-      [root@50-55 ~]# cd kubernetes/server/bin
+      cd kubernetes/server/bin
       [root@50-55 bin]# ll
       total 1853348
       -rwxr-x---. 1 root root  54989694 Oct 12 07:38 apiextensions-apiserver
@@ -280,20 +376,21 @@
 - #### 复制配置文件
   - ##### 将 etc-kubernetes 目录复制保存为 /etc/kubernetes
 
+
 - #### 复制 systemctl 配置文件
   - ##### 将 systemctl 目录内文件复制到 /usr/lib/systemd/system/
   - ##### 在普通节点上，仅需安装 kubelet 和 kube-proxy 两个服务
 
 - #### 执行 systemctl daemon-reload
 
-      [root@50-55 ~]# systemctl daemon-reload
+      systemctl daemon-reload
 
 
 ## Configurations
 ### 1. 生成Token文件
 - kubelet在首次启动时，会向kube-apiserver发送TLS Bootstrapping请求。如果kube-apiserver验证其与自己的token.csv一致，则为kubelet生成CA与key
 
-        [root@50-55 ~]# cd /etc/kubernetes
+        cd /etc/kubernetes
         [root@50-55 kubernetes]# echo "`head -c 16 /dev/urandom | od -An -t x | tr -d ' '`,kubelet-bootstrap,10001,\"system:kubelet-bootstrap\"" > token.csv
 
   - 在使用Dashboard时，可以使用 token 进行认证
