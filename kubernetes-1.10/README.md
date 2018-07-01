@@ -830,8 +830,7 @@
 
   - 查看 IPVS 状态
       
-        ipvsadm -Ln
-
+        [root@50-52 ~]# ipvsadm -Ln
         IP Virtual Server version 1.2.1 (size=4096)
         Prot LocalAddress:Port Scheduler Flags
            -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
