@@ -751,10 +751,11 @@
       [root@50-51 kubernetes]# useradd -g kube kube -u 200 -d / -s /sbin/nologin -M
 
 ### 15. Work directory: /var/lib/kubelet
+- #### 如更改此目录，请参考 [>>> 修改 kubelet 数据目录(/var/lib/kubelet)](#%E4%BF%AE%E6%94%B9-kubelet-%E6%95%B0%E6%8D%AE%E7%9B%AE%E5%BD%95varlibkubelet)
 - #### Create directory
 
       [root@50-51 kubernetes]# mkdir /var/lib/kubelet
-      [root@50-51 kubernetes]# chown kube 
+      [root@50-51 kubernetes]# chown kube /var/lib/kubelet
 
 - #### Set SELinux rules
 
@@ -766,10 +767,10 @@
 
       [root@50-51 kubernetes]# setfacl -m u:kube:r /etc/kubernetes/*.kubeconfig
 
-    *-*
+  - ##### 在包括 API Server 的每个节点上执行
 
-### 17. For 1.8.7
-- #### 在 1.8.7 上，需要在每个节点安装以下包
+### 17. For 1.8.7+
+- #### 在 1.8.7+ 上，需要在每个节点安装以下包
 
       [root@50-51 kubernetes]# yum install -y  conntrack-tools libnetfilter_conntrack libnetfilter_conntrack-devel
 
