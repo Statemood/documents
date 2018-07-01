@@ -13,10 +13,10 @@
 KUBE_LOGTOSTDERR="--logtostderr=true"
 
 # journal message level, 0 is debug
-KUBE_LOG_LEVEL="--v=0"
+KUBE_LOG_LEVEL="--v=2"
 
 # Should this cluster be allowed to run privileged docker containers
-KUBE_ALLOW_PRIV="--allow-privileged=false"
+KUBE_ALLOW_PRIV="--allow-privileged=true"
 
 # How the controller-manager, scheduler, and proxy find the apiserver
-KUBE_MASTER="--master=http://127.0.0.1:8080"
+#KUBE_MASTER="--master=https://192.168.50.50:6443

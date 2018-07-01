@@ -25,9 +25,9 @@
 
 | 节点 | IP | 角色 | 配置 | 备注 |
 | :---: | :--: | :--: | :--: | :--: |
-| 50-55 | 192.168.50.55 | Etcd / API Server | 4 CPU, 4G MEM, 30G DISK | - |
-| 50-56 | 192.168.50.56 | Etcd / Node | 4 CPU, 4G MEM, 30G DISK | - |
-| 50-57 | 192.168.50.57 | Etcd / Node | 4 CPU, 4G MEM, 30G DISK | - |
+| 50-51 | 192.168.50.51 | Etcd / API Server | 4 CPU, 4G MEM, 30G DISK | - |
+| 50-52 | 192.168.50.52 | Etcd / Node | 4 CPU, 4G MEM, 30G DISK | - |
+| 50-53 | 192.168.50.53 | Etcd / Node | 4 CPU, 4G MEM, 30G DISK | - |
 
 ### 5. swap
 - ##### Disabled
@@ -46,85 +46,18 @@
 
 ### 7. Docker
 - #### Docker-CE 17.12 或更新版本
-- #### 安装方式
-  - 安装 Docker-CE Repo
-    
-        curl https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/docker-ce.repo \
-        -o /etc/yum.repos.d/docker-ce.repo
-
-  - 更改为**清华镜像源**
-
-        sed -i 's#download.docker.com#mirrors.tuna.tsinghua.edu.cn/docker-ce#g' \
-        /etc/yum.repos.d/docker-ce.repo
-
-  - 安装 Docker-CE
-   
-        yum install -y docker-ce
-
-
-  - ##### 修改 Docker 目录(/var/lib/docker)
-    - **可选步骤**
-    - 如默认 /var/lib 目录容量较小时，需要进行修改
-    - 本例中将 docker 目录由 **/var/lib/docker** 改为 **/data/docker**
-    - 操作如下
-      - 创建目录
-
-            mkdir /data/docker
-
-      - 修改 docker 配置 (vim /usr/lib/systemd/system/docker.service)
-
-            [Unit]
-            Description=Docker Application Container Engine
-            Documentation=https://docs.docker.com
-            After=network.target firewalld.service
-            [Service]
-            Type=notify
-            EnvironmentFile=-/run/flannel/docker
-            EnvironmentFile=-/run/docker_opts.env
-            EnvironmentFile=-/run/flannel/subnet.env
-            EnvironmentFile=-/etc/sysconfig/docker
-            EnvironmentFile=-/etc/sysconfig/docker-storage
-            EnvironmentFile=-/etc/sysconfig/docker-network
-            EnvironmentFile=-/run/docker_opts.env
-            ExecStart=/usr/bin/dockerd \
-                  --data-root /data/docker \
-                  $DOCKER_OPT_BIP \
-                  $DOCKER_OPT_IPMASQ \
-                  $DOCKER_OPT_MTU
-            ExecReload=/bin/kill -s HUP $MAINPID
-            LimitNOFILE=infinity
-            LimitNPROC=infinity
-            LimitCORE=infinity
-            TimeoutStartSec=0
-            Delegate=yes
-            [Install]
-            WantedBy=multi-user.target
-
-        - 添加 **--data-root /data/docker**
-
-      - Reload 配置
-
-            systemctl daemon-reload
-
-      - 启动 Docker，生成目录
-        
-            systemctl start docker
-
-      - 修改 SELinux 权限
-
-            chcon -R -u system_u /data/docker
-            chcon -R -t container_var_lib_t /data/docker
-            chcon -R -t container_share_t /data/docker/overlay2 
-
-
+ 
 ### 8. kubernetes
-#### 以下版本均已经过测试
-- 1.8.1
-- 1.8.7
-- 1.10.5
+- #### 以下版本均已经过测试
+  - 1.8.1
+  - 1.8.7
+  - 1.10.5
+
+- #### kube-proxy
+  - ##### 启用 IPVS 模式
 
 ## Certificate
-### 1. 签发CA，在 50-55 上进行(可以是任一安装 openssl 的主机)
+### 1. 签发CA，在 50-51 上进行(可以是任一安装 openssl 的主机)
 - #### 创建 /etc/ssl/gen 目录并进入(也可以是其它目录)
 
       mkdir /etc/ssl/gen
@@ -176,19 +109,20 @@
         subjectAltName = @alt_names
         [alt_names]
         IP.1 = 10.0.0.1
-        IP.2 = 192.168.50.51
-        IP.3 = 192.168.50.55
-        IP.4 = 192.168.50.56
+        IP.2 = 192.168.50.50
+        IP.3 = 192.168.50.51
+        IP.4 = 192.168.50.52
+        IP.5 = 192.168.50.53
         DNS.1 = kubernetes
         DNS.2 = kubernetes.default
         DNS.3 = kubernetes.default.svc
         DNS.4 = kubernetes.default.svc.cluster
         DNS.5 = kubernetes.default.svc.cluster.local
 
-    - IP.2、IP.3 与 IP.4 加入到证书中，方便 API Server 后期的高可用
       - IP.2 为 HA VIP
       - IP.3 为 API Server 1
       - IP.4 为 API Server 2
+      - IP.5 为 API Server 3
     - 如果需要, 可以加上其它IP, 如额外的API Server
 
   - ##### 生成 key
@@ -280,33 +214,103 @@
 - #### [>> Flannel with SSL](https://github.com/Statemood/documents/blob/master/kubernetes-1.8/flanneld_with_ssl.md)
 
 ### 3. Docker
-- #### 使用 yum 安装 Docker 1.12, 依次在各节点执行安装
-
-      yum install -y docker
-
-- #### 或通过以下方法安装 Docker-CE
+- #### [>> How install Docker-CE](https://github.com/Statemood/documents/blob/master/docker/how-install-docker-ce.md)
 
 ### 4. 使用 yum 安装 libnetfilter_conntrack conntrack-tools
 
-      yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-tools
+      yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-tools ipvsadm
 
 - #### 针对 k8s 1.8.1 以上版本
 - #### 在所有节点执行
 
-### 5. Kubernetes
+### 5. 加载内核模块
+- ##### 在所有节点执行 
+
+      modprobe -- ip_vs
+      modprobe -- ip_vs_rr
+      modprobe -- ip_vs_wrr
+      modprobe -- ip_vs_sh
+      modprobe -- nf_conntrack_ipv4
+
+- ##### 执行完毕后添加到 /etc/rc.local, 以便开机自动加载
+  - /etc/rc.local 权限应为 755
+ 
+        chmod 755 /etc/rc.local
+
+### 6. 节点优化
+- ##### 在所有节点执行
+- ##### 按如下配置修改 /etc/sysctl.conf，并执行 sysctl -p 生效
+
+      # sysctl settings are defined through files in
+      # /usr/lib/sysctl.d/, /run/sysctl.d/, and /etc/sysctl.d/.
+      #
+      # Vendors settings live in /usr/lib/sysctl.d/.
+      # To override a whole file, create a new file with the same in
+      # /etc/sysctl.d/ and put new settings there. To override
+      # only specific settings, add a file with a lexically later
+      # name in /etc/sysctl.d/ and put new settings there.
+      #
+      # For more information, see sysctl.conf(5) and sysctl.d(5).
+
+      kernel.sysrq                        = 0
+      kernel.core_uses_pid                = 1
+      kernel.msgmnb                       = 65536
+      kernel.msgmax                       = 65536
+      kernel.shmmax                       = 68719476736
+      kernel.shmall                       = 4294967296
+
+      fs.file-max                         = 1000000
+
+      vm.max_map_count                    = 500000
+
+      net.bridge.bridge-nf-call-iptables  = 1
+      net.core.netdev_max_backlog         = 32768
+      net.core.somaxconn                  = 32768
+      net.core.wmem_default               = 8388608
+      net.core.rmem_default               = 8388608
+      net.core.wmem_max                   = 16777216
+      net.core.rmem_max                   = 16777216
+
+      net.ipv4.ip_forward                 = 1
+      net.ipv4.tcp_max_syn_backlog        = 65536
+      net.ipv4.tcp_syncookies             = 1
+      net.ipv4.tcp_timestamps             = 0
+      net.ipv4.tcp_synack_retries         = 2
+      net.ipv4.tcp_syn_retries            = 2
+      net.ipv4.tcp_tw_recycle             = 1
+      net.ipv4.tcp_tw_reuse               = 1
+      net.ipv4.tcp_max_tw_buckets         = 300000
+      net.ipv4.tcp_mem                    = 94500000 915000000 927000000
+      net.ipv4.tcp_max_orphans            = 3276800
+      net.ipv4.tcp_keepalive_time         = 1200
+      net.ipv4.tcp_keepalive_intvl        = 30
+      net.ipv4.tcp_keepalive_probes       = 3
+      net.ipv4.tcp_fin_timeout            = 30
+      net.ipv4.icmp_echo_ignore_all       = 0
+      net.ipv4.ip_local_port_range        = 1024 65535
+      net.ipv4.conf.all.rp_filter               = 0
+      net.ipv4.conf.default.rp_filter           = 0
+      net.ipv4.conf.default.accept_source_route = 0
+      net.ipv4.conf.lo.arp_announce             = 2
+      net.ipv4.conf.all.arp_announce            = 2
+
+      net.ipv6.conf.all.disable_ipv6      = 1
+      net.ipv6.conf.all.accept_redirects  = 1
+
+### 7. Kubernetes
 - #### 使用 curl 命令下载二进制安装包
 
-      curl -O https://dl.k8s.io/v1.8.1/kubernetes-server-linux-amd64.tar.gz
+      curl -O https://dl.k8s.io/v1.10.5/kubernetes-server-linux-amd64.tar.gz
 
-  - ##### 更多下载信息 >> [CHANGELOG-1.8.md#downloads-for-v181](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.8.md#downloads-for-v181)
+  - ##### 更多下载信息 >> [CHANGELOG-1.10.md#downloads-for-v1.10.5](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.10.md#downloads-for-v1105)
 - #### 解压
 
-      tar zxf kubernetes.tar.gz
+      tar zxf kubernetes-server-linux-amd64.tar.gz
 
 - #### 安装
 
       cd kubernetes/server/bin
-      [root@50-55 bin]# ll
+      [root@50-51 bin]# ll
       total 1853348
       -rwxr-x---. 1 root root  54989694 Oct 12 07:38 apiextensions-apiserver
       -rwxr-x---. 1 root root 109034012 Oct 12 07:38 cloud-controller-manager
@@ -332,8 +336,8 @@
       -rwxr-x---. 1 root root  53754721 Oct 12 07:38 kube-scheduler
       -rw-r-----. 1 root root         7 Oct 12 07:38 kube-scheduler.docker_tag
       -rw-r-----. 1 root root  55108608 Oct 12 07:38 kube-scheduler.tar
-      [root@50-55 bin]#
-      [root@50-55 bin]# rm -rfv *.*
+      [root@50-51 bin]#
+      [root@50-51 bin]# rm -rfv *.*
       removed ‘cloud-controller-manager.docker_tag’
       removed ‘cloud-controller-manager.tar’
       removed ‘kube-aggregator.docker_tag’
@@ -346,7 +350,7 @@
       removed ‘kube-proxy.tar’
       removed ‘kube-scheduler.docker_tag’
       removed ‘kube-scheduler.tar’
-      [root@50-56 bin]# ll
+      [root@50-52 bin]# ll
       total 1228924
       -rwxr-x---. 1 root root  54989694 Oct 12 07:38 apiextensions-apiserver
       -rwxr-x---. 1 root root 109034012 Oct 12 07:38 cloud-controller-manager
@@ -360,8 +364,8 @@
       -rwxr-x---. 1 root root 137505064 Oct 12 07:38 kubelet
       -rwxr-x---. 1 root root  47866320 Oct 12 07:38 kube-proxy
       -rwxr-x---. 1 root root  53754721 Oct 12 07:38 kube-scheduler
-      [root@50-55 bin]# chmod 755 *
-      [root@50-55 bin]# cp -rf * /usr/bin
+      [root@50-51 bin]# chmod 755 *
+      [root@50-51 bin]# cp -rf * /usr/bin
 
   - **删除无用文件**
   - **更改文件权限为 755**
@@ -370,11 +374,32 @@
 
 - #### SELinux
 
-      [root@50-55 bin]# for i in * \
-                        do chcon -u system_u -t bin_t /usr/bin/$i; done
+      for i in * \
+          do chcon -u system_u -t bin_t /usr/bin/$i; done
 
 - #### 复制配置文件
   - ##### 将 etc-kubernetes 目录复制保存为 /etc/kubernetes
+
+- #### 修改 kubelet 数据目录(/var/lib/kubelet)
+  - **可选步骤**
+  - 操作如下
+    - 创建目录
+
+          mkdir -m 700 /data/kubelet
+
+    - 修改用户权限
+
+          chown kube:kube /data/kubelet
+
+    - 修改 SELinux 权限
+
+          chcon -u system_u -t svirt_sandbox_file_t /data/kubelet
+
+    - 修改 kubelet.service 文件
+      - 修改为 **WorkingDirectory=/data/kubelet**
+
+    - 修改 /etc/kubernetes/kubelet 配置文件
+      - 增加参数 **--root-dir=/data/kubelet**
 
 
 - #### 复制 systemctl 配置文件
@@ -391,35 +416,35 @@
 - kubelet在首次启动时，会向kube-apiserver发送TLS Bootstrapping请求。如果kube-apiserver验证其与自己的token.csv一致，则为kubelet生成CA与key
 
         cd /etc/kubernetes
-        [root@50-55 kubernetes]# echo "`head -c 16 /dev/urandom | od -An -t x | tr -d ' '`,kubelet-bootstrap,10001,\"system:kubelet-bootstrap\"" > token.csv
+        [root@50-51 kubernetes]# echo "`head -c 16 /dev/urandom | od -An -t x | tr -d ' '`,kubelet-bootstrap,10001,\"system:kubelet-bootstrap\"" > token.csv
 
   - 在使用Dashboard时，可以使用 token 进行认证
 
 ### 2. 生成kubectl的kubeconfig文件
 - #### 设置集群参数
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --server=https://192.168.50.55:6443
+                  --server=https://192.168.50.51:6443
 
 - #### 设置客户端认证参数
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config set-credentials admin \
                   --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
                   --client-key=/etc/kubernetes/ssl/kubelet.key
 
 - #### 设置上下文参数
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config set-context kubernetes \
                   --cluster=kubernetes \
                   --user=admin
 
 - #### 设置默认上下文
 
-      [root@50-55 kubernetes]# kubectl config use-context kubernetes
+      [root@50-51 kubernetes]# kubectl config use-context kubernetes
 
     - kubelet.pem 证书的OU字段值为system:masters，kube-apiserver预定义的RoleBinding cluster-admin 将 Group system:masters 与 Role cluster-admin 绑定，该Role授予了调用kube-apiserver相关API的权限
 
@@ -428,22 +453,22 @@
 ### 3. 生成kubelet的bootstrapping kubeconfig文件
 - #### 生成kubelet的bootstrapping kubeconfig文件
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --server=https://192.168.50.55:6443 \
+                  --server=https://192.168.50.51:6443 \
                   --kubeconfig=bootstrap.kubeconfig
 
 - #### 设置客户端认证参数
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config set-credentials kubelet-bootstrap \
                   --token=`awk -F ',' '{print $1}' token.csv` \
                   --kubeconfig=bootstrap.kubeconfig
 
 - #### 生成默认上下文参数
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config set-context default \
                   --cluster=kubernetes \
                   --user=kubelet-bootstrap \
@@ -451,7 +476,7 @@
 
 - #### 切换默认上下文
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config use-context default \
                   --kubeconfig=bootstrap.kubeconfig
 
@@ -464,15 +489,15 @@
 
 - #### 设置集群参数
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --server=https://192.168.50.55:6443 \
+                  --server=https://192.168.50.51:6443 \
                   --kubeconfig=kubelet.kubeconfig    
 
 - #### 设置客户端认证参数
 
-      [root@50-55 kubernetes]#
+      [root@50-51 kubernetes]#
                   kubectl config set-credentials kubelet \
                   --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
                   --client-key=/etc/kubernetes/ssl/kubelet.key \
@@ -480,7 +505,7 @@
 
 - #### 生成上下文参数
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config set-context default \
                   --cluster=kubernetes \
                   --user=kubelet \
@@ -488,7 +513,7 @@
 
 - #### 切换默认上下文
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config use-context default \
                   --kubeconfig=kubelet.kubeconfig
 
@@ -496,15 +521,15 @@
 ### 6. 生成kube-proxy的kubeconfig文件
 - #### 设置集群参数
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config set-cluster kubernetes \
                   --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --server=https://192.168.50.55:6443 \
+                  --server=https://192.168.50.51:6443 \
                   --kubeconfig=kube-proxy.kubeconfig    
 
 - #### 设置客户端认证参数
 
-      [root@50-55 kubernetes]#
+      [root@50-51 kubernetes]#
                   kubectl config set-credentials kube-proxy \
                   --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
                   --client-key=/etc/kubernetes/ssl/kube-proxy.key \
@@ -512,7 +537,7 @@
 
 - #### 生成上下文参数
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config set-context default \
                   --cluster=kubernetes \
                   --user=kube-proxy \
@@ -520,7 +545,7 @@
 
 - #### 切换默认上下文
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   kubectl config use-context default \
                   --kubeconfig=kube-proxy.kubeconfig
 
@@ -530,7 +555,7 @@
 ### 7. 将kubeconfig文件复制至所有节点上
 - #### 将生成的两个 kubeconfig 文件复制到所有节点的 /etc/kubernetes 目录内
 
-      [root@50-55 kubernetes]# cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
+      [root@50-51 kubernetes]# cp bootstrap.kubeconfig kube-proxy.kubeconfig /etc/kubernetes/
 
 
 ### 8. 修改文件 /etc/kubernetes/apiserver
@@ -543,51 +568,49 @@
       #
 
       # The address on the local server to listen to.
-      KUBE_API_ADDRESS="--bind-address=192.168.50.55 --insecure-bind-address=192.168.50.55"
+      KUBE_API_ADDRESS="--bind-address=192.168.50.51"
 
       # The port on the local server to listen on.
-      KUBE_API_PORT="--secure-port=6443 --insecure-port=8080"
+      KUBE_API_PORT="--secure-port=6443"
 
       # Port minions listen on
       # KUBELET_PORT="--kubelet-port=10250"
 
       # Comma separated list of nodes in the etcd cluster
-      KUBE_ETCD_SERVERS="--etcd-servers=https://192.168.50.55:2379,https://192.168.50.56:2379,https://192.168.50.57:2379"
+      KUBE_ETCD_SERVERS="--etcd-servers=https://192.168.50.51:2379,https://192.168.50.52:2379,https://192.168.50.53:2379"
 
       # Address range to use for services
       KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.0.0.0/12"
 
       # default admission control policies
-      KUBE_ADMISSION_CONTROL="--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
+      KUBE_ADMISSION_CONTROL="--enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
 
       # Add your own!
       KUBE_API_ARGS="--allow-privileged=true \
-                     --service_account_key_file=/etc/kubernetes/ssl/apiserver.key \
-                     --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem \
-                     --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key \
-                     --client-ca-file=/etc/kubernetes/ssl/ca.pem \
-                     --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
-                     --etcd-certfile=/etc/etcd/ssl/etcd.pem \
-                     --etcd-keyfile=/etc/etcd/ssl/etcd.key \
-                     --token-auth-file=/etc/kubernetes/token.csv \
-                     --runtime-config=rbac.authorization.k8s.io/v1alpha1 \
-                     --authorization-mode=RBAC \
-                     --kubelet-https=true \
-                     --enable-bootstrap-token-auth"
+                  --service-account-key-file=/etc/kubernetes/ssl/apiserver.key \
+                  --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem \
+                  --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key \
+                  --client-ca-file=/etc/kubernetes/ssl/ca.pem \
+                  --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
+                  --etcd-certfile=/etc/kubernetes/ssl/etcd-50-51.pem \
+                  --etcd-keyfile=/etc/kubernetes/ssl/etcd-50-51.key \
+                  --token-auth-file=/etc/kubernetes/token.csv \
+                  --authorization-mode=RBAC \
+                  --kubelet-https=true \
+                  --apiserver-count=3 \
+                  --default-not-ready-toleration-seconds=10 \
+                  --default-unreachable-toleration-seconds=10 \
+                  --delete-collection-workers=3 \
+                  --enable-bootstrap-token-auth"
 
-    -   kube-apiserver 1.6版本开始使用etcd v3 API和存储格式
     -   --authorization-mode=RBAC指定在安全端口使用RBAC授权模式，拒绝未通过授权的请求
-    -   kube-scheduler、kube-controller-manager和kube-apiserver部署在同一台机器上，它们使用非安全端口和kube-apiserver通信
-    -   kubelet、kube-proxy、kubectl部署在其它Node节点上，如果通过安全端口访问 kube-apiserver，则必须先通过TLS证书认证，再通过RBAC授权
     -   kube-proxy、kubectl通过在使用的证书里指定相关的User、Group来达到通过RBAC授权的目的
     -   如果使用了kubelet TLS Boostrap机制，则不能再指定--kubelet-certificate-authority、--kubelet-client-certificate和--kubelet-client-key选项，否则后续kube-apiserver校验kubelet证书时出现x509: certificate signed by unknown authority错误
     -   --admission-control值必须包含ServiceAccount
-    -   --bind-address不能为127.0.0.1
     -   --service-cluster-ip-range指定Service Cluster IP地址段，该地址段不能路由可达
     -   --service-node-port-range=${NODE_PORT_RANGE}指定 NodePort 的端口范围
     -   缺省情况下kubernetes对象保存在etcd /registry路径下，可以通过--etcd-prefix参数进行调整
-
-    - #### For 1.10+, 参数 --service_account_key_file 变为 --service-account-key-file
+    -  For 1.10+, 参数 --service_account_key_file 变为 --service-account-key-file
 
 ### 9. 修改文件 /etc/kubernetes/controller-manager
 - #### File: /etc/kubernetes/controller-manager
@@ -599,17 +622,18 @@
 
       # Add your own!
       KUBE_CONTROLLER_MANAGER_ARGS="\
-          --master=https://192.168.50.55:6443 \
-          --service_account_private_key_file=/etc/kubernetes/ssl/ca.key \
-          --root-ca-file=/etc/kubernetes/ssl/ca.pem \
-          --allocate-node-cidrs=true \
-          --cluster-name=kubernetes \
-          --cluster-signing-cert-file=/etc/kubernetes/ssl/ca.pem \
-          --cluster-signing-key-file=/etc/kubernetes/ssl/ca.key \
-          --leader-elect=true \
-          --service-cluster-ip-range=10.0.0.0/12 \
-          --cluster-cidr=10.64.0.0/10 \
-          --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
+      --master=https://192.168.50.51:6443 \
+      --service-account-private-key-file=/etc/kubernetes/ssl/apiserver.key \
+      --root-ca-file=/etc/kubernetes/ssl/ca.pem \
+      --allocate-node-cidrs=true \
+      --cluster-name=kubernetes \
+      --cluster-signing-cert-file=/etc/kubernetes/ssl/apiserver.pem \
+      --cluster-signing-key-file=/etc/kubernetes/ssl/apiserver.key \
+      --leader-elect=true \
+      --service-cluster-ip-range=10.0.0.0/12 \
+      --cluster-cidr=10.64.0.0/10 \
+      --secure-port=10253 \
+      --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
 
     - --master=http://{MASTER_IP}:8080：使用非安全8080端口与kube-apiserver 通信
     - --cluster-cidr指定Cluster中Pod的CIDR范围，该网段在各Node间必须路由可达(flanneld保证)
@@ -631,9 +655,9 @@
 
       # Add your own!
       KUBE_SCHEDULER_ARGS="\
-          --address=127.0.0.1 \
-          --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
-          --leader-elect=true"
+      --address=127.0.0.1 \
+      --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+      --leader-elect=true"
 
 ### 11. 修改文件 /etc/kubernetes/config
 - #### File: /etc/kubernetes/config
@@ -659,7 +683,7 @@
       KUBE_ALLOW_PRIV="--allow-privileged=true"
 
       # How the controller-manager, scheduler, and proxy find the apiserver
-      KUBE_MASTER="--master=https://192.168.50.55:6443"
+      #KUBE_MASTER="--master=https://192.168.50.50:6443
 
 ### 12. 修改文件 /etc/kubernetes/kubelet
 - #### File: /etc/kubernetes/kubelet
@@ -668,30 +692,27 @@
       # kubernetes kubelet (minion) config
 
       # The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
-      KUBELET_ADDRESS="--address=192.168.50.55"
 
       # The port for the info server to serve on
       # KUBELET_PORT="--port=10250"
 
       # You may leave this blank to use the actual hostname
-      KUBELET_HOSTNAME=""
+      KUBELET_HOSTNAME="--hostname-override=k8s-node-1"
 
       # location of the api-server
-      #KUBELET_API_SERVER="--api-server=https://192.168.50.55:6443"
 
       # pod infrastructure container
-      KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=img.rulin.me/library/pod-infrastructure:latest"
+      KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=img.linge.io/library/pause-amd64:3.1"
 
-      KUBELET_ARGS="--cgroup-driver=systemd \
-                    --tls-cert-file=/etc/kubernetes/ssl/kubelet-50-55.pem \
-                    --tls-private-key-file=/etc/kubernetes/ssl/kubelet-50-55.key \
-                    --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
-                    --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
-                    --cert-dir=/etc/kubernetes/ssl"
+      # Add your own!
+      KUBELET_ARGS="--kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+                  --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
+                  --cert-dir=/etc/kubernetes/ssl \
+                  --root-dir=/data/kubelet"
 
-  - #### --api-server 参数 kubelet 已不再使用
-  - #### --experimental-bootstrap-kubeconfig 已弃用，使用新参数 --bootstrap-kubeconfig
-  - #### 在其它节点上，注意修改为正确的证书文件名
+  - ##### --root-dir=/data/kubelet 指定使用 /data/kubelet 作为 kubelet 工作目录
+  - ##### --api-server 参数 kubelet 已不再使用
+  - ##### 在其它节点上，注意修改为正确的证书文件名
 
   - #### For 1.10+:
     - 弃用参数:
@@ -712,38 +733,45 @@
 
       # Add your own!
       KUBE_PROXY_ARGS="--bind-address=192.168.50.55 \
-                       --cluster-cidr=10.0.0.0/12 \
-                       --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
+                  --cluster-cidr=10.0.0.0/12 \
+                  --masquerade-all \
+                  --proxy-mode=ipvs \
+                  --ipvs-min-sync-period=2s \
+                  --ipvs-sync-period=3s \
+                  --ipvs-scheduler=rr \
+                  --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
 
+
+  - --ipvs 选项启用 IPVS 支持
 
 ### 14. Group & User
 - #### Add Group & User
 
-      [root@50-55 kubernetes]# groupadd -g 200 kube
-      [root@50-55 kubernetes]# useradd -g kube kube -u 200 -d / -s /sbin/nologin -M
+      [root@50-51 kubernetes]# groupadd -g 200 kube
+      [root@50-51 kubernetes]# useradd -g kube kube -u 200 -d / -s /sbin/nologin -M
 
 ### 15. Work directory: /var/lib/kubelet
 - #### Create directory
 
-      [root@50-55 kubernetes]# mkdir /var/lib/kubelet
-      [root@50-55 kubernetes]# chown kube 
+      [root@50-51 kubernetes]# mkdir /var/lib/kubelet
+      [root@50-51 kubernetes]# chown kube 
 
 - #### Set SELinux rules
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   chcon -u system_u -t svirt_sandbox_file_t /var/lib/kubelet
 
 ### 16. Permission
 - #### Files Permission, ensure that kubeconfig files we created are readable for user kube
 
-      [root@50-55 kubernetes]# setfacl -m u:kube:r /etc/kubernetes/*.kubeconfig
+      [root@50-51 kubernetes]# setfacl -m u:kube:r /etc/kubernetes/*.kubeconfig
 
     *-*
 
 ### 17. For 1.8.7
 - #### 在 1.8.7 上，需要在每个节点安装以下包
 
-      [root@50-55 kubernetes]# yum install -y  conntrack-tools libnetfilter_conntrack libnetfilter_conntrack-devel
+      [root@50-51 kubernetes]# yum install -y  conntrack-tools libnetfilter_conntrack libnetfilter_conntrack-devel
 
   - **此操作为解决问题**: Jan 31 14:16:43 localhost kube-proxy: E0131 14:16:43.924024   30629 proxier.go:1716] Failed to delete stale service IP 10.0.0.10 connections, error: error deleting connection tracking state for UDP service IP: 10.0.0.10, error: error looking for path of conntrack: exec: "**conntrack**": executable file not found in $PATH            
 
@@ -752,32 +780,32 @@
 
 - #### Start & Enable kube-apiserver
 
-      [root@50-55 kubernetes]# systemctl start  kube-apiserver
-      [root@50-55 kubernetes]# systemctl enable kube-apiserver
+      [root@50-51 kubernetes]# systemctl start  kube-apiserver
+      [root@50-51 kubernetes]# systemctl enable kube-apiserver
 
 - #### Start & Enable controller-manager
 
-      [root@50-55 kubernetes]# systemctl start  kube-controller-manager
-      [root@50-55 kubernetes]# systemctl enable kube-controller-manager
+      [root@50-51 kubernetes]# systemctl start  kube-controller-manager
+      [root@50-51 kubernetes]# systemctl enable kube-controller-manager
 
 - #### Start & Enable scheduler
 
-      [root@50-55 kubernetes]# systemctl start  kube-scheduler
-      [root@50-55 kubernetes]# systemctl enable kube-scheduler
+      [root@50-51 kubernetes]# systemctl start  kube-scheduler
+      [root@50-51 kubernetes]# systemctl enable kube-scheduler
 
 - #### Start & Enable kubelet
 
-      [root@50-55 kubernetes]# systemctl start  kubelet
-      [root@50-55 kubernetes]# systemctl enable kubelet
+      [root@50-51 kubernetes]# systemctl start  kubelet
+      [root@50-51 kubernetes]# systemctl enable kubelet
 
 - #### Start & Enable kube-proxy
 
-      [root@50-55 kubernetes]# systemctl start  kube-proxy
-      [root@50-55 kubernetes]# systemctl enable kube-proxy
+      [root@50-51 kubernetes]# systemctl start  kube-proxy
+      [root@50-51 kubernetes]# systemctl enable kube-proxy
 
 - #### Quick commands
 
-      [root@50-55 kubernetes]# \
+      [root@50-51 kubernetes]# \
                   for k in kube-apiserver \
                            kube-controller-manager \
                            kube-scheduler \
@@ -791,18 +819,31 @@
 ### 2. On Kubelet Nodes
   - #### Start & Enable kubelet
 
-        [root@50-56 ~]# systemctl start  kubelet
-        [root@50-56 ~]# systemctl enable kubelet
+        [root@50-52 ~]# systemctl start  kubelet
+        [root@50-52 ~]# systemctl enable kubelet
 
   - #### Start & Enable kube-proxy
 
-        [root@50-56 ~]# systemctl start  kube-proxy
-        [root@50-56 ~]# systemctl enable kube-proxy
+        [root@50-52 ~]# systemctl start  kube-proxy
+        [root@50-52 ~]# systemctl enable kube-proxy
 
+  - 查看 IPVS 状态
+      
+        ipvsadm -Ln
+
+        IP Virtual Server version 1.2.1 (size=4096)
+        Prot LocalAddress:Port Scheduler Flags
+           -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
+        TCP  10.0.0.1:443 rr persistent 10800
+           -> 192.168.50.51:6443           Masq    1      0          0
+           -> 192.168.50.52:6443           Masq    1      0          0
+           -> 192.168.50.53:6443           Masq    1      0          0
+
+    - 因集群暂未创建其它Service, 因此这里仅显示默认的 Service: **kubernetes**
 
 ### 4. 检查集群状态
 
-    [root@50-55 kubernetes]# kubectl get cs
+    [root@50-51 kubernetes]# kubectl get cs
     NAME                 STATUS    MESSAGE              ERROR
     scheduler            Healthy   ok                   
     controller-manager   Healthy   ok                   
