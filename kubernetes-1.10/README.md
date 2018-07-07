@@ -734,7 +734,6 @@
       # Add your own!
       KUBE_PROXY_ARGS="--bind-address=192.168.50.55 \
                   --cluster-cidr=10.0.0.0/12 \
-                  --masquerade-all \
                   --proxy-mode=ipvs \
                   --ipvs-min-sync-period=2s \
                   --ipvs-sync-period=3s \
