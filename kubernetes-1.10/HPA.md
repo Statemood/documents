@@ -43,7 +43,7 @@
     - image: gcr.io/google_containers/metrics-server-amd64:v0.2.1
       - image: statemood/metrics-server-amd64:v0.2.1
 
-- ##### Check Status
+- ##### Check Status
 
       kubectl -n kube-system get pods -l k8s-app=metrics-server
 
@@ -109,7 +109,7 @@
   - **resources.request** 必须设置
 
 ##### By Command
-- kubectl create hpa deploy demo-service --cpu-percent=50 --min=3 --max=10
+- `kubectl create hpa deploy demo-service --cpu-percent=50 --min=3 --max=10`
 
 #### 5. Test
 - CPU 压力测试
@@ -118,7 +118,7 @@
 
 #### 6. Command Lines
 - 查看HPA状态
-  - kubectl get hpa
+  - `kubectl get hpa`
 
 ## 参考文档
 
