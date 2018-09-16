@@ -49,6 +49,7 @@
 
 
 #### 4. Create HPA
+##### By yaml
 - hpa.yaml
 
       apiVersion: autoscaling/v1
@@ -105,30 +106,19 @@
                   cpu: 300m
                   memory: 1Gi
 
-  - **resources.request** 必须设置
+  - **resources.request** 必须设置
 
-- service.yaml
-
-      apiVersion: v1
-      kind: Service
-      metadata:
-        name: demo-service
-        labels:
-          app: demo-service
-          label: hpa
-
-      spec:
-        ports:
-        - port: 8080
-        selector:
-          app: demo-service
-          label: hpa
+##### By Command
+- kubectl create hpa deploy demo-service --cpu-percent=50 --min=3 --max=10
 
 #### 5. Test
 - CPU 压力测试
 
       time echo "scale=5000;4*a(1)" | bc -l -q
 
+#### 6. Command Lines
+- 查看HPA状态
+  - kubectl get hpa
 
 ## 参考文档
 
