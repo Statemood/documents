@@ -49,7 +49,7 @@
 
 
 #### 4. Create HPA
-##### By yaml
+##### Create HPA By Yaml
 - hpa.yaml
 
       apiVersion: autoscaling/v1
@@ -106,10 +106,11 @@
                   cpu: 300m
                   memory: 1Gi
 
-  - **resources.request** 必须设置
+  - **resources.limits.cpu** 必须设置
 
-##### By Command
+##### Create HPA By Command
 - `kubectl create hpa deploy demo-service --cpu-percent=50 --min=3 --max=10`
+  - Deployment demo-service 需要配置 resources.limits.cpu
 
 #### 5. Test
 - CPU 压力测试
