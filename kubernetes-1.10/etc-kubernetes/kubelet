@@ -17,5 +17,4 @@ KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=img.linge.io/library/pa
 # Add your own!
 KUBELET_ARGS="--kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
               --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
-              --cert-dir=/etc/kubernetes/ssl \
               --root-dir=/data/kubelet"

@@ -707,7 +707,6 @@
       # Add your own!
       KUBELET_ARGS="--kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
                   --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
-                  --cert-dir=/etc/kubernetes/ssl \
                   --root-dir=/data/kubelet"
 
   - ##### --root-dir=/data/kubelet 指定使用 /data/kubelet 作为 kubelet 工作目录
