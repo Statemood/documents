@@ -279,7 +279,7 @@
 
   - ##### 设置 Kubernetes 集群网络为 10.64.0.0/10, 模式为 vxlan, 可用IP数量 4,194,304
 
-### 3. 查看已分配网络
+### 3. 查看已分配网
 - #### 确认配置
 
       [root@50-56 ~]# etcdctl --endpoints=https://192.168.50.55:2379 \
@@ -290,4 +290,4 @@
 
 ## 六、参考资料
 
-1.  [Kubernetes 1.8 with SSL](https://github.com/Statemood/documents/blob/master/kubernetes/Kubernetes_1.8_with_SSL.md)
+1. [Kubernetes with TLS](https://github.com/Statemood/documents/blob/master/kubernetes/)

@@ -13,7 +13,7 @@
   - 目前仍然是一些生产或者测试环境所用版本
 
 
-### 2. [Kubernetes 简介](https://github.com/Statemood/documents/blob/master/kubernetes-1.5/Kubernetes-1.5.md)
+### 2. Kubernetes 简介
 
 ## 二、环境
 ### 1. 系统
@@ -60,10 +60,10 @@
   - ##### img.rulin.me
 
 ## 三、Etcd
-### 1. [Etcd 集群快速安装指南](https://github.com/Statemood/documents/blob/master/kubernetes-1.5/etcd-cluster-without-ssl.md)
+### 1. [Etcd 集群快速安装指南](https://github.com/Statemood/documents/tree/master/kubernetes/install-k8s-1.5/etcd-cluster-without-ssl.md)
 
 ## 四、Flannel
-### 1. [Flannel 快速安装指南](https://github.com/Statemood/documents/blob/master/kubernetes-1.5/flannel-without-ssl.md)
+### 1. [Flannel 快速安装指南](https://github.com/Statemood/documents/tree/master/kubernetes/install-k8s-1.5/flannel-without-ssl.md)
 
 ## 五、Kubernetes
 ### 1. 安装

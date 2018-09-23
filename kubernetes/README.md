@@ -4,10 +4,11 @@
 
 - 本文档基于二进制文件全新安装 Kubernetes 1.8 及以上版本，包括但不限于 1.10.5+
 
-- **SELinux**
-- **IPVS**
-
 ## Environment
+- **IPVS**
+- **[HPA](https://github.com/Statemood/documents/blob/master/kubernetes/HPA.md)**
+- **[Use Ceph rbd for StorageClass](https://github.com/Statemood/documents/blob/master/kubernetes/storage-class.md)**
+- **CoreDNS**
 
 ### 1. OS
 - CentOS 7.4 minimal x86_64 
@@ -208,10 +209,10 @@
 
 ## Install
 ### 1. Etcd
-- #### [>> Etcd with SSL](https://github.com/Statemood/documents/blob/master/kubernetes-1.8/etcd_cluster_with_ssl.md)
+- #### [>> Etcd Cluster](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster.md)
 
 ### 2. Flannel
-- #### [>> Flannel with SSL](https://github.com/Statemood/documents/blob/master/kubernetes-1.8/flanneld_with_ssl.md)
+- #### [>> Flannel](https://github.com/Statemood/documents/blob/master/kubernetes/flanneld.md)
 
 ### 3. Docker
 - #### [>> How install Docker-CE](https://github.com/Statemood/documents/blob/master/docker/how-install-docker-ce.md)
@@ -223,7 +224,7 @@
 - #### 针对 k8s 1.8.1 以上版本
 - #### 在所有节点执行
 
-### 5. 加载内核模块
+### 5. 为 kube-proxy 使用 IPVS 模式加载内核模块
 - ##### 在所有节点执行 
 
       modprobe -- ip_vs
@@ -571,7 +572,7 @@
       KUBE_API_ADDRESS="--bind-address=192.168.50.51"
 
       # The port on the local server to listen on.
-      KUBE_API_PORT="--secure-port=6443"
+      KUBE_API_PORT="--secure-port=6443 --insecure-port=0"
 
       # Port minions listen on
       # KUBELET_PORT="--kubelet-port=10250"
@@ -598,11 +599,17 @@
                   --authorization-mode=RBAC \
                   --kubelet-https=true \
                   --apiserver-count=3 \
+                  --audit-log-maxage=30 \
+                  --audit-log-maxbackup=3 \
+                  --audit-log-maxsize=100 \
+                  --event-ttl=1h \
+                  --max-requests-inflight=3000 \
                   --default-not-ready-toleration-seconds=10 \
                   --default-unreachable-toleration-seconds=10 \
                   --delete-collection-workers=3 \
                   --enable-bootstrap-token-auth"
 
+    -   --insecure-port=0 关闭非安全的8080端口
     -   --authorization-mode=RBAC指定在安全端口使用RBAC授权模式，拒绝未通过授权的请求
     -   kube-proxy、kubectl通过在使用的证书里指定相关的User、Group来达到通过RBAC授权的目的
     -   如果使用了kubelet TLS Boostrap机制，则不能再指定--kubelet-certificate-authority、--kubelet-client-certificate和--kubelet-client-key选项，否则后续kube-apiserver校验kubelet证书时出现x509: certificate signed by unknown authority错误
@@ -633,6 +640,9 @@
       --service-cluster-ip-range=10.0.0.0/12 \
       --cluster-cidr=10.64.0.0/10 \
       --secure-port=10253 \
+      --node-monitor-period=2s \
+      --node-monitor-grace-period=16s \
+      --pod-eviction-timeout=30s \
       --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
 
     - --master=http://{MASTER_IP}:8080：使用非安全8080端口与kube-apiserver 通信
@@ -681,9 +691,6 @@
 
       # Should this cluster be allowed to run privileged docker containers
       KUBE_ALLOW_PRIV="--allow-privileged=true"
-
-      # How the controller-manager, scheduler, and proxy find the apiserver
-      #KUBE_MASTER="--master=https://192.168.50.50:6443
 
 ### 12. 修改文件 /etc/kubernetes/kubelet
 - #### File: /etc/kubernetes/kubelet
