@@ -1,0 +1,1 @@
+# See [README](https://github.com/Statemood/documents/tree/master/ceph)
