@@ -6,7 +6,7 @@
 
         ceph osd pool set-quota rbd max_bytes 562949953421312
 
-    - 1024*1024*1024*1024*512 = 562949953421312
+    - 1024 \* 1024 \* 1024 \* 1024 \* 512 = 562949953421312
 
 ### max_objects
   - ##### Set max_objects = 100TB for pool rbd
