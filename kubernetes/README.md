@@ -454,32 +454,28 @@
 ### 3. 生成kubelet的bootstrapping kubeconfig文件
 - #### 生成kubelet的bootstrapping kubeconfig文件
 
-      \
-                  kubectl config set-cluster kubernetes \
-                  --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --server=https://192.168.50.51:6443 \
-                  --kubeconfig=bootstrap.kubeconfig
+      kubectl config set-cluster kubernetes \
+              --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+              --server=https://192.168.50.51:6443 \
+              --kubeconfig=bootstrap.kubeconfig
 
 - #### 设置客户端认证参数
 
-      \
-                  kubectl config set-credentials kubelet-bootstrap \
-                  --token=`awk -F ',' '{print $1}' token.csv` \
-                  --kubeconfig=bootstrap.kubeconfig
+      kubectl config set-credentials kubelet-bootstrap \
+              --token=`awk -F ',' '{print $1}' token.csv` \
+              --kubeconfig=bootstrap.kubeconfig
 
 - #### 生成默认上下文参数
 
-      \
-                  kubectl config set-context default \
-                  --cluster=kubernetes \
-                  --user=kubelet-bootstrap \
-                  --kubeconfig=bootstrap.kubeconfig
+      kubectl config set-context default \
+              --cluster=kubernetes \
+              --user=kubelet-bootstrap \
+              --kubeconfig=bootstrap.kubeconfig
 
 - #### 切换默认上下文
 
-      \
-                  kubectl config use-context default \
-                  --kubeconfig=bootstrap.kubeconfig
+      kubectl config use-context default \
+              --kubeconfig=bootstrap.kubeconfig
 
     - --embed-certs为true时表示将certificate-authority证书写入到生成的bootstrap.kubeconfig文件中
     - 设置kubelet客户端认证参数时没有指定秘钥和证书，后续由kube-apiserver自动生成
@@ -490,65 +486,57 @@
 
 - #### 设置集群参数
 
-      \
-                  kubectl config set-cluster kubernetes \
-                  --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --server=https://192.168.50.51:6443 \
-                  --kubeconfig=kubelet.kubeconfig    
+      kubectl config set-cluster kubernetes \
+              --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+              --server=https://192.168.50.51:6443 \
+              --kubeconfig=kubelet.kubeconfig    
 
 - #### 设置客户端认证参数
 
-      [root@50-51 kubernetes]#
-                  kubectl config set-credentials kubelet \
-                  --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
-                  --client-key=/etc/kubernetes/ssl/kubelet.key \
-                  --kubeconfig=kubelet.kubeconfig
+      kubectl config set-credentials kubelet \
+              --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
+              --client-key=/etc/kubernetes/ssl/kubelet.key \
+              --kubeconfig=kubelet.kubeconfig
 
 - #### 生成上下文参数
 
-      \
-                  kubectl config set-context default \
-                  --cluster=kubernetes \
-                  --user=kubelet \
-                  --kubeconfig=kubelet.kubeconfig
+      kubectl config set-context default \
+              --cluster=kubernetes \
+              --user=kubelet \
+              --kubeconfig=kubelet.kubeconfig
 
 - #### 切换默认上下文
 
-      \
-                  kubectl config use-context default \
-                  --kubeconfig=kubelet.kubeconfig
+      kubectl config use-context default \
+              --kubeconfig=kubelet.kubeconfig
 
 
 ### 6. 生成kube-proxy的kubeconfig文件
 - #### 设置集群参数
 
-      \
-                  kubectl config set-cluster kubernetes \
-                  --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --server=https://192.168.50.51:6443 \
-                  --kubeconfig=kube-proxy.kubeconfig    
+      kubectl config set-cluster kubernetes \
+              --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+              --server=https://192.168.50.51:6443 \
+              --kubeconfig=kube-proxy.kubeconfig    
 
 - #### 设置客户端认证参数
 
-      [root@50-51 kubernetes]#
-                  kubectl config set-credentials kube-proxy \
-                  --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
-                  --client-key=/etc/kubernetes/ssl/kube-proxy.key \
-                  --kubeconfig=kube-proxy.kubeconfig
+      kubectl config set-credentials kube-proxy \
+              --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
+              --client-key=/etc/kubernetes/ssl/kube-proxy.key \
+              --kubeconfig=kube-proxy.kubeconfig
 
 - #### 生成上下文参数
 
-      \
-                  kubectl config set-context default \
-                  --cluster=kubernetes \
-                  --user=kube-proxy \
-                  --kubeconfig=kube-proxy.kubeconfig
+      kubectl config set-context default \
+              --cluster=kubernetes \
+              --user=kube-proxy \
+              --kubeconfig=kube-proxy.kubeconfig
 
 - #### 切换默认上下文
 
-      \
-                  kubectl config use-context default \
-                  --kubeconfig=kube-proxy.kubeconfig
+      kubectl config use-context default \
+              --kubeconfig=kube-proxy.kubeconfig
 
     - --embed-cert 都为 true，这会将certificate-authority、client-certificate和client-key指向的证书文件内容写入到生成的kube-proxy.kubeconfig文件中
     - kube-proxy.pem证书中CN为system:kube-proxy，kube-apiserver预定义的 RoleBinding cluster-admin将User system:kube-proxy与Role system:node-proxier绑定，该Role授予了调用kube-apiserver Proxy相关API的权限
@@ -810,16 +798,15 @@
 
 - #### Quick commands
 
-      \
-                  for k in kube-apiserver \
-                           kube-controller-manager \
-                           kube-scheduler \
-                           kubelet \
-                           kube-proxy \
-                  do  systemctl start  $k; \
-                      systemctl enable $k; \
-                      systemctl status $k; \
-                  done
+      for k in kube-apiserver \
+               kube-controller-manager \
+               kube-scheduler \
+               kubelet \
+               kube-proxy \
+      do  systemctl start  $k; \
+          systemctl enable $k; \
+          systemctl status $k; \
+      done
 
 ### 2. On Kubelet Nodes
   - #### Start & Enable kubelet
