@@ -12,11 +12,12 @@
 
 ### 2. 版本
 
-+   etcd 3.2.5
+- etcd 3.2.5+
 
 ### 3. Firewalld
 - ##### Stop & Disable
 - ##### 由 k8s 自行管理
+- #### 如单独部署 Etcd 集群，则不必关闭 firewalld
 
 ## 二、安装
 ##### 在各节点依次执行 yum install -y etcd 进行安装
@@ -59,10 +60,6 @@
 
         [root@50-55 ssl]# openssl x509 -req -in etcd.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out etcd.pem -days 1095 -extfile etcd.cnf -extensions v3_req
 
-    - **注意**:
-        - 需要先去掉 etcd.cnf 注释掉的两行
-        - 注意: CN=**etcd**
-
   - 把 etcd.key 和 etcd.pem 放到各 etcd /etc/etcd/ssl 目录下
 
         [root@50-55 ssl]# cp etcd.key etcd.pem /etc/etcd/ssl
@@ -97,6 +94,7 @@
       ETCD_PEER_AUTO_TLS="true"
 
   - ##### ETCD_INITIAL_CLUSTER_STATE 设置为 new
+  - ##### ETCD_DATA_DIR 指定数据存放路径，如生产环境集群可以使用高性能SSD
 
 ### 3. 修改文件 /usr/lib/systemd/system/etcd.service
 - ##### File: /usr/lib/systemd/system/etcd.service

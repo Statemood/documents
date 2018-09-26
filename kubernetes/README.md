@@ -416,32 +416,29 @@
 ### 1. 生成Token文件
 - kubelet在首次启动时，会向kube-apiserver发送TLS Bootstrapping请求。如果kube-apiserver验证其与自己的token.csv一致，则为kubelet生成CA与key
 
-        cd /etc/kubernetes
-        echo "`head -c 16 /dev/urandom | od -An -t x | tr -d ' '`,kubelet-bootstrap,10001,\"system:kubelet-bootstrap\"" > token.csv
+      cd /etc/kubernetes
+      echo "`head -c 16 /dev/urandom | od -An -t x | tr -d ' '`,kubelet-bootstrap,10001,\"system:kubelet-bootstrap\"" > token.csv
 
   - 在使用Dashboard时，可以使用 token 进行认证
 
 ### 2. 生成kubectl的kubeconfig文件
 - #### 设置集群参数
 
-      \
-                  kubectl config set-cluster kubernetes \
-                  --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-                  --server=https://192.168.50.51:6443
+      kubectl config set-cluster kubernetes \
+              --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+              --server=https://192.168.50.51:6443
 
 - #### 设置客户端认证参数
 
-      \
-                  kubectl config set-credentials admin \
-                  --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
-                  --client-key=/etc/kubernetes/ssl/kubelet.key
+      kubectl config set-credentials admin \
+              --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
+              --client-key=/etc/kubernetes/ssl/kubelet.key
 
 - #### 设置上下文参数
 
-      \
-                  kubectl config set-context kubernetes \
-                  --cluster=kubernetes \
-                  --user=admin
+      kubectl config set-context kubernetes \
+              --cluster=kubernetes \
+              --user=admin
 
 - #### 设置默认上下文
 
@@ -576,26 +573,26 @@
 
       # Add your own!
       KUBE_API_ARGS="--allow-privileged=true \
-                  --service-account-key-file=/etc/kubernetes/ssl/apiserver.key \
-                  --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem \
-                  --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key \
-                  --client-ca-file=/etc/kubernetes/ssl/ca.pem \
-                  --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
-                  --etcd-certfile=/etc/kubernetes/ssl/etcd-50-51.pem \
-                  --etcd-keyfile=/etc/kubernetes/ssl/etcd-50-51.key \
-                  --token-auth-file=/etc/kubernetes/token.csv \
-                  --authorization-mode=RBAC \
-                  --kubelet-https=true \
-                  --apiserver-count=3 \
-                  --audit-log-maxage=30 \
-                  --audit-log-maxbackup=3 \
-                  --audit-log-maxsize=100 \
-                  --event-ttl=1h \
-                  --max-requests-inflight=3000 \
-                  --default-not-ready-toleration-seconds=10 \
-                  --default-unreachable-toleration-seconds=10 \
-                  --delete-collection-workers=3 \
-                  --enable-bootstrap-token-auth"
+                     --service-account-key-file=/etc/kubernetes/ssl/apiserver.key \
+                     --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem \
+                     --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key \
+                     --client-ca-file=/etc/kubernetes/ssl/ca.pem \
+                     --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
+                     --etcd-certfile=/etc/kubernetes/ssl/etcd-50-51.pem \
+                     --etcd-keyfile=/etc/kubernetes/ssl/etcd-50-51.key \
+                     --token-auth-file=/etc/kubernetes/token.csv \
+                     --authorization-mode=RBAC \
+                     --kubelet-https=true \
+                     --apiserver-count=3 \
+                     --audit-log-maxage=30 \
+                     --audit-log-maxbackup=3 \
+                     --audit-log-maxsize=100 \
+                     --event-ttl=1h \
+                     --max-requests-inflight=3000 \
+                     --default-not-ready-toleration-seconds=10 \
+                     --default-unreachable-toleration-seconds=10 \
+                     --delete-collection-workers=3 \
+                     --enable-bootstrap-token-auth"
 
     -   --insecure-port=0 关闭非安全的8080端口
     -   --authorization-mode=RBAC指定在安全端口使用RBAC授权模式，拒绝未通过授权的请求
@@ -617,30 +614,29 @@
 
       # Add your own!
       KUBE_CONTROLLER_MANAGER_ARGS="\
-      --master=https://192.168.50.51:6443 \
-      --service-account-private-key-file=/etc/kubernetes/ssl/apiserver.key \
-      --root-ca-file=/etc/kubernetes/ssl/ca.pem \
-      --allocate-node-cidrs=true \
-      --cluster-name=kubernetes \
-      --cluster-signing-cert-file=/etc/kubernetes/ssl/apiserver.pem \
-      --cluster-signing-key-file=/etc/kubernetes/ssl/apiserver.key \
-      --leader-elect=true \
-      --service-cluster-ip-range=10.0.0.0/12 \
-      --cluster-cidr=10.64.0.0/10 \
-      --secure-port=10253 \
-      --node-monitor-period=2s \
-      --node-monitor-grace-period=16s \
-      --pod-eviction-timeout=30s \
-      --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
+            --master=https://192.168.50.51:6443 \
+            --service-account-private-key-file=/etc/kubernetes/ssl/apiserver.key \
+            --root-ca-file=/etc/kubernetes/ssl/ca.pem \
+            --allocate-node-cidrs=true \
+            --cluster-name=kubernetes \
+            --cluster-signing-cert-file=/etc/kubernetes/ssl/apiserver.pem \
+            --cluster-signing-key-file=/etc/kubernetes/ssl/apiserver.key \
+            --leader-elect=true \
+            --service-cluster-ip-range=10.0.0.0/12 \
+            --cluster-cidr=10.64.0.0/10 \
+            --secure-port=10253 \
+            --node-monitor-period=2s \
+            --node-monitor-grace-period=16s \
+            --pod-eviction-timeout=30s \
+            --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
 
-    - --master=http://{MASTER_IP}:8080：使用非安全8080端口与kube-apiserver 通信
-    - --cluster-cidr指定Cluster中Pod的CIDR范围，该网段在各Node间必须路由可达(flanneld保证)
+    - --cluster-cidr指定Cluster中Pod的CIDR范围，该网段在各Node间必须路由可达(flannel保证)
     - --service-cluster-ip-range参数指定Cluster中Service的CIDR范围，该网络在各 Node间必须路由不可达，必须和kube-apiserver中的参数一致
     - --cluster-signing-* 指定的证书和私钥文件用来签名为TLS BootStrap创建的证书和私钥
     - --root-ca-file用来对kube-apiserver证书进行校验，指定该参数后，才会在Pod容器的ServiceAccount中放置该CA证书文件
     - --leader-elect=true部署多台机器组成的master集群时选举产生一处于工作状态的 kube-controller-manager进程
 
-    - #### For 1.10+:
+    - #### For 1.10+,
       - 参数 --service_account_key_file 变为 --service-account-key-file
 
 ### 10. 修改文件 /etc/kubernetes/scheduler
@@ -653,9 +649,9 @@
 
       # Add your own!
       KUBE_SCHEDULER_ARGS="\
-      --address=127.0.0.1 \
-      --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
-      --leader-elect=true"
+            --address=127.0.0.1 \
+            --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+            --leader-elect=true"
 
 ### 11. 修改文件 /etc/kubernetes/config
 - #### File: /etc/kubernetes/config
@@ -701,9 +697,10 @@
 
       # Add your own!
       KUBELET_ARGS="--kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
-                  --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
-                  --root-dir=/data/kubelet"
+                    --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
+                    --root-dir=/data/kubelet"
 
+  - ##### KUBELET_HOSTNAME="" 如留空则使用当前主机名
   - ##### --root-dir=/data/kubelet 指定使用 /data/kubelet 作为 kubelet 工作目录
   - ##### --api-server 参数 kubelet 已不再使用
   - ##### 在其它节点上，注意修改为正确的证书文件名
@@ -727,18 +724,19 @@
 
       # Add your own!
       KUBE_PROXY_ARGS="--bind-address=192.168.50.55 \
-                  --cluster-cidr=10.0.0.0/12 \
-                  --proxy-mode=ipvs \
-                  --ipvs-min-sync-period=2s \
-                  --ipvs-sync-period=3s \
-                  --ipvs-scheduler=rr \
-                  --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
+                       --cluster-cidr=10.0.0.0/12 \
+                       --proxy-mode=ipvs \
+                       --ipvs-min-sync-period=2s \
+                       --ipvs-sync-period=3s \
+                       --ipvs-scheduler=rr \
+                       --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
 
 
-  - --ipvs 选项启用 IPVS 支持
+  - --ipvs IPVS 参数
+  - --proxy-mode=ipvs 启用 IPVS 模式
 
 ### 14. Group & User
-- #### Add Group & User
+- #### Add Group & User `kube`
 
       groupadd -g 200 kube
       useradd -g kube kube -u 200 -d / -s /sbin/nologin -M
@@ -748,7 +746,7 @@
 - #### Create directory
 
       mkdir /var/lib/kubelet
-      chown kube /var/lib/kubelet
+      chown kube:kube /var/lib/kubelet
 
 - #### Set SELinux rules
 
