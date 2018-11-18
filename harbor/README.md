@@ -187,3 +187,9 @@
     - 默认账号
       - 用户名:   admin
       - 密码:     Harbor12345
+
+
+
+## 参考文档
+
+1. [Installation and Configuration Guide](https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md), Harbor
