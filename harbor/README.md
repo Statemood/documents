@@ -8,22 +8,27 @@
 
 | NAME    | INFO          |
 | --      | --            |
-| OS      | CentOS 7.4    |
+| OS      | CentOS 7.5    |
 | SELinux | **enforcing** |
 | IP      | 192.168.50.57 |
 | Domain  | img.linge.io  |
 | Schema  | **HTTPS**     |
-| Docker  | 1.12.6        |
-| Harbor  | 1.2.2         |
+| Docker  | 18.09.0 (CE)  |
+| Harbor  | 1.5.4         |
+
+
+- Harbor 目录
+  - /data/harbor
+
 
 
 ## 证书
 #### 如已有证书，可跳过本段
-### 1. CA
+### 1. 创建 CA
 - ##### 创建并进入证书目录
     
-      mkdir -p /data/cert
-      cd /data/cert
+      mkdir -p /data/harbor/ssl
+      cd /data/harbor/ssl
 
 - ##### 生成 CA Key
 
@@ -88,24 +93,17 @@
 
       cp ca.pem /etc/pki/ca-trust/source/anchors/
       update-ca-trust enable
-      update-ca-trust extract
 
   - ##### 复制 ca.pem 到 /etc/pki/ca-trust/source/anchors/
   - ##### 执行 update-ca-trust enable
-  - ##### 执行 update-ca-trust extract
   - ##### 如 Docker 已启动，则重启
   - ####  在其它节点上重复上述命令，以便导入并信任此CA证书
 
 ## Docker
 
-### 1. 安装 Docker & docker-compose
-- #### 使用 yum 安装
+### 1. 安装 Docker (CE) & docker-compose
 
-      yum install -y docker docker-compose
-
-  - ##### 需先安装 EPEL 源
-
-        rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/centos/7/extras/x86_64/Packages/epel-release-7-9.noarch.rpm
+- [Install Docker-CE](https://github.com/Statemood/documents/blob/master/docker/how-install-docker-ce.md)
 
 ### 2. 启动 Docker
 - #### Start & Enable Docker
@@ -117,34 +115,31 @@
 ### 1. 下载离线安装包
 - #### 从官网下载
 
-      curl -O https://github.com/vmware/harbor/releases/download/v1.2.2/harbor-offline-installer-v1.2.2.tgz
-
-- #### 从镜像站点下载
-      curl -O http://harbor.orientsoft.cn/harbor-1.2.2/harbor-offline-installer-v1.2.2.tgz
+      curl -O https://storage.googleapis.com/harbor-releases/harbor-offline-installer-v1.5.4.tgz
 
 ### 2. 安装
 - #### 解压后进入 harbor 目录
 
-      tar zxf harbor-offline-installer-v1.2.2.tgz
+      tar zxf harbor-offline-installer-v1.5.4.tgz
       cd harbor
 
 - #### 修改 harbor.cfg 文件
 
       hostname = img.linge.io
       ui_url_protocol = https
-      db_password = root123
-      max_job_workers = 3
       customize_crt = on
-      ssl_cert = /data/cert/img.linge.io.pem
-      ssl_cert_key = /data/cert/img.linge.io.key
-      secretkey_path = /data
-      harbor_admin_password = Harbor12345
-      self_registration = off
-      token_expiration = 30
-      project_creation_restriction = everyone
-      verify_remote_cert = on
+      ssl_cert = /data/harbor/ssl/img.linge.io.pem
+      ssl_cert_key = /data/harbor/ssl/img.linge.io.key
+      secretkey_path = /data/harbor
 
-  - ##### E-Mail & 认证设置可以后期在Harbor中直接修改
+  - ##### 以上仅列出了修改过的字段
+  - ##### E-Mail & 认证等设置可以后期在Harbor管理界面中直接修改
+
+- #### 修改 Harbor 目录路径
+
+      sed -i 's#/data/#/data/harbor/#g' docker-compose.yml
+      sed -i 's#/data/#/data/harbor/#g' docker-compose.clair.yml
+      sed -i 's#/data/#/data/harbor/#g' docker-compose.notary.yml
 
 - #### 安装 Harbor
 
@@ -156,20 +151,22 @@
 
       docker ps -a
 
-      CONTAINER ID        IMAGE                                     COMMAND                  CREATED                  STATUS              PORTS                                                              NAMES
-      11868c87c34f        vmware/nginx-photon:1.11.13               "nginx -g 'daemon off"   Less than a second ago   Up About an hour    0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, 0.0.0.0:4443->4443/tcp   nginx
-      82ecba19817c        vmware/harbor-jobservice:v1.2.2           "/harbor/harbor_jobse"   Less than a second ago   Up About an hour                                                                       harbor-jobservice
-      a2cabd3d28b7        vmware/notary-photon:server-0.5.0         "/usr/bin/env sh -c '"   Less than a second ago   Up About an hour                                                                       notary-server
-      4ffe7ad02d45        vmware/harbor-ui:v1.2.2                   "/harbor/harbor_ui"      Less than a second ago   Up About an hour                                                                       harbor-ui
-      c48bd39245f5        vmware/notary-photon:signer-0.5.0         "/usr/bin/env sh -c '"   Less than a second ago   Up About an hour                                                                       notary-signer
-      c3a723de6409        vmware/clair:v2.0.1-photon                "/clair2.0.1/clair -c"   Less than a second ago   Up About an hour    6060-6061/tcp                                                      clair
-      9c9723311cd3        vmware/registry:2.6.2-photon              "/entrypoint.sh serve"   Less than a second ago   Up About an hour    5000/tcp                                                           registry
-      f74e514d5605        vmware/harbor-adminserver:v1.2.2          "/harbor/harbor_admin"   Less than a second ago   Up About an hour                                                                       harbor-adminserver
-      62a555b75cd1        vmware/harbor-notary-db:mariadb-10.1.10   "/docker-entrypoint.s"   Less than a second ago   Up About an hour    3306/tcp                                                           notary-db
-      244ec337c31e        vmware/postgresql:9.6.4-photon            "/entrypoint.sh postg"   Less than a second ago   Up About an hour    5432/tcp                                                           clair-db
-      81996d03fce1        vmware/harbor-db:v1.2.2                   "docker-entrypoint.sh"   Less than a second ago   Up About an hour    3306/tcp                                                           harbor-db
-      b46b8386fab4        vmware/harbor-log:v1.2.2                  "/bin/sh -c 'crond &&"   Less than a second ago   Up About an hour    127.0.0.1:1514->514/tcp                                            harbor-log
+      CONTAINER ID        IMAGE                                       COMMAND                  CREATED             STATUS                             PORTS                                                              NAMES
+      f3035a636a5c        vmware/harbor-jobservice:v1.5.4             "/harbor/start.sh"       7 seconds ago       Up 5 seconds                                                                                          harbor-jobservice
+      7da0be7f3cbf        vmware/nginx-photon:v1.5.4                  "nginx -g 'daemon of…"   7 seconds ago       Up 4 seconds (health: starting)    0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, 0.0.0.0:4443->4443/tcp   nginx
+      58242b555053        vmware/notary-server-photon:v0.5.1-v1.5.4   "/bin/server-start.sh"   7 seconds ago       Up 5 seconds                                                                                          notary-server
+      2c0a54cbb9aa        vmware/harbor-ui:v1.5.4                     "/harbor/start.sh"       8 seconds ago       Up 7 seconds (health: starting)                                                                       harbor-ui
+      9377f94a132d        vmware/notary-signer-photon:v0.5.1-v1.5.4   "/bin/signer-start.sh"   9 seconds ago       Up 7 seconds                                                                                          notary-signer
+      8d5640c873d1        vmware/clair-photon:v2.0.6-v1.5.4           "/docker-entrypoint.…"   9 seconds ago       Up 1 second (health: starting)     6060-6061/tcp                                                      clair
+      76e41cafdce5        vmware/postgresql-photon:v1.5.4             "/entrypoint.sh post…"   10 seconds ago      Up 9 seconds (health: starting)    5432/tcp                                                           clair-db
+      4a1b865222d9        vmware/harbor-adminserver:v1.5.4            "/harbor/start.sh"       10 seconds ago      Up 8 seconds (health: starting)                                                                       harbor-adminserver
+      759425a243de        vmware/registry-photon:v2.6.2-v1.5.4        "/entrypoint.sh serv…"   10 seconds ago      Up 8 seconds (health: starting)    5000/tcp                                                           registry
+      5a750e7ece7a        vmware/mariadb-photon:v1.5.4                "/usr/local/bin/dock…"   10 seconds ago      Up 9 seconds                       3306/tcp                                                           notary-db
+      4a86327a17be        vmware/redis-photon:v1.5.4                  "docker-entrypoint.s…"   10 seconds ago      Up 9 seconds                       6379/tcp                                                           redis
+      0525ba943acb        vmware/harbor-db:v1.5.4                     "/usr/local/bin/dock…"   10 seconds ago      Up 9 seconds (health: starting)    3306/tcp                                                           harbor-db
+      fbcf8e1ed9fb        vmware/harbor-log:v1.5.4                    "/bin/sh -c /usr/loc…"   11 seconds ago      Up 10 seconds (health: starting)   127.0.0.1:1514->10514/tcp                                          harbor-log
 
+    - ##### 单行内容较长，请注意滚动显示
     - ##### 如有 Exited 状态容器，使用 `docker start CONTAINER ID` 来启动即可
 
 ### 3. 使用
@@ -183,3 +180,6 @@
 - #### 使用浏览器访问
   - ##### https://img.linge.io
   - ##### 输入用户名／密码即可
+    - 默认账号
+      - 用户名:   admin
+      - 密码:     Harbor12345
