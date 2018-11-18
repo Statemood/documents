@@ -105,6 +105,10 @@
 
 - [Install Docker-CE](https://github.com/Statemood/documents/blob/master/docker/how-install-docker-ce.md)
 
+- Install docker-compose
+
+      yum install -y docker-compose
+
 ### 2. 启动 Docker
 - #### Start & Enable Docker
 
