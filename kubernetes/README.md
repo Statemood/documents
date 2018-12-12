@@ -142,7 +142,7 @@
 
   - ##### 签发证书
 
-        openssl x509 -req -in apiserver.csr 
+        openssl x509 -req -in apiserver.csr \
                 -CA ca.pem -CAkey ca.key -CAcreateserial \
                 -out apiserver.pem -days 1095 \
                 -extfile apiserver.cnf -extensions v3_req
