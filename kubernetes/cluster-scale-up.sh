@@ -1,23 +1,14 @@
 #! /bin/bash
 
 # Created by Lin.Ru@msn.com
-
+	    ip="$1"
         ex_day=1825	# 365 * 5 = 1825
-docker_version="17.03.3.ce"
-for arg in "$@"
-do
-    case $arg in 
-        --ip)   ip="$2"
-                shift 2
-                ;;
-    esac
-done
 
 cd /etc/ssl/k8s
 
 # Generate Cert
 GenCert(){
-    n=$1-$i
+    n=$1-$ip
     c=$n.cnf
     cp e.cnf $c
     sed -i "s/IPADDR/$ip/" $c
@@ -27,17 +18,14 @@ GenCert(){
 }
 
 InstallNode(){
-    base_url="https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/7/x86_64/stable/Packages"
     packages="policycoreutils-python libtool-ltdl-devel libseccomp-devel libnetfilter_conntrack-devel conntrack-tools ipvsadm flannel"
+    f=/etc/yum.repos.d/docker-ce.repo
+
+    scp $f $ip:$f
 
     echo "Install $packages"
-    ssh "$ip" "yum install -y $packages"
+    ssh "$ip" "yum install -y $packages docker-ce"
 
-    echo "Install docker-ce-selinux"
-    ssh "$ip" "rpm -ivh $base_url/docker-ce-selinux-$docekr_version-1.el7.noarch.rpm"
-
-    echo "Install docker-ce-$docker_version"
-    ssh "$ip" "rpm -ivh $base_url/docker-ce-$docker_version-1.el7.x86_64.rpm"
 
     echo "Install kubelet & kube-proxy"
     scp -r /usr/bin/kubelet /usr/bin/kube-proxy $ip:/usr/bin/
@@ -72,7 +60,7 @@ ConfigNode(){
 
     # Create dir
 
-    ssh $ip             "mkdir -p $dk $dd; chown kube:kube $vk $dk"
+    ssh $ip             "mkdir -p $dk $dd $vk; chown kube:kube $vk $dk"
 
     echo "Start & Enable Services"
     svcs="flanneld docker kubelet kube-proxy"
