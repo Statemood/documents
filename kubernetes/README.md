@@ -11,8 +11,7 @@
 - **CoreDNS**
 
 ### 1. OS
-- CentOS 7.4 minimal x86_64 
-- CentOS 7.5 minimal x86_64 
+- CentOS 7.2 minimal x86_64 或以上版本
 
 ### 2. Firewalld
 - 由于 iptables 会被 kube-proxy 接管，因此需 **禁用** Firewalld
@@ -21,6 +20,7 @@
 
 ### 3. SELinux
 - ##### enforcing
+  - SELinux 策略会在安装过程中进行调整，所以无需禁用
 
 ### 4. Server
 
@@ -34,6 +34,9 @@
 - ##### Disabled
 
 ### 6. Network
+- #### Calico
+  - 如使用 Calico网络，请忽略任何与 Flannel 相关操作
+
 - #### Flannel
   - ##### vxlan
 
@@ -54,6 +57,8 @@
   - 1.8.7
   - 1.10.6
   - 1.11.4
+  - 1.12.x
+  - 1.14.x
 
 - #### kube-proxy
   - ##### 启用 IPVS 模式
@@ -595,7 +600,7 @@
                      --delete-collection-workers=3 \
                      --enable-bootstrap-token-auth"
 
-    -   --insecure-port=0 关闭非安全的8080端口
+    -   --insecure-port=0 关闭非安全的8080端口
     -   --authorization-mode=RBAC指定在安全端口使用RBAC授权模式，拒绝未通过授权的请求
     -   kube-proxy、kubectl通过在使用的证书里指定相关的User、Group来达到通过RBAC授权的目的
     -   如果使用了kubelet TLS Boostrap机制，则不能再指定--kubelet-certificate-authority、--kubelet-client-certificate和--kubelet-client-key选项，否则后续kube-apiserver校验kubelet证书时出现x509: certificate signed by unknown authority错误

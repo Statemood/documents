@@ -44,8 +44,8 @@
     - **172.20.0.0/24**
 
 #### 软件
-  - Ceph 12.2.4 luminous
-  - Ceph-deploy 2.0.0
+  - Ceph 14.2.2 Nautilus
+  - Ceph-deploy 2.0.1
 
 
 #### 主机配置及角色
@@ -89,7 +89,7 @@
 - ##### 将RSA Key分发到三个节点(**包括 ceph-0 自身**)
       [root@ceph-0 ~]# for i in ceph-0 ceph-1 ceph-2; do ssh-copy-id $i; done
     - 可以使用 ssh-copy-id **-i** ~/.ssh/id_rsa_ceph.pub 分发指定的Key
-    - 分发时会提示 "Are you sure you want to continue connecting (yes/no)? ", **务必输入 yes 回车**
+    - 分发时会提示 "Are you sure you want to continue connecting (yes/no)? ", **输入 yes 然后回车**
 
 #### 3. 防火墙
 - ##### 本步骤要在每一个节点上执行
@@ -134,7 +134,7 @@
 
         [Ceph]
         name=Ceph packages for $basearch
-        baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-luminous/el7/$basearch
+        baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-nautilus/el7/$basearch
         enabled=1
         gpgcheck=1
         type=rpm-md
@@ -142,7 +142,7 @@
 
         [Ceph-noarch]
         name=Ceph noarch packages
-        baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-luminous/el7/noarch
+        baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-nautilus/el7/noarch
         enabled=1
         gpgcheck=1
         type=rpm-md
@@ -150,7 +150,7 @@
 
         [ceph-source]
         name=Ceph source packages
-        baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-luminous/el7/SRPMS
+        baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-nautilus/el7/SRPMS
         enabled=1
         gpgcheck=1
         type=rpm-md
@@ -163,7 +163,6 @@
 
   - 执行 ceph-deploy --version, 确认版本
       [root@ceph-0 ~]# ceph-deploy --version
-      ceph version 12.2.5 (cad919881333ac92274171586c827e01f554a70a) luminous (stable)
 
 - ##### 创建 ceph-install 目录并进入，安装时产生的文件都将在这个目录
       [root@ceph-0 ~]# mkdir ceph-install && cd ceph-install
@@ -174,13 +173,19 @@
 #### 1. Journal 磁盘
 ###### 本步骤要在每一个节点上执行
 - ##### 在每个节点上为Journal磁盘分区, 分别为 sdb1, sdb2, 各自对应本机的2个OSD
+  - 具体分为几个分区，需要考虑本机OSD数量，SSD容量与速度等因素
 - ##### 使用 parted 命令进行创建分区操作
-      [root@ceph-0 ~]# parted /dev/vdb
+      [root@ceph-0 ~]# parted /dev/sdb
           mklabel gpt
           mkpart primary xfs  0% 50%
           mkpart primary xfs 50% 100%
           q
 
+
+- ###### 也可以通过命令行直接操作完成
+      parted /dev/sdb --script mklabel gpt
+      parted /dev/sdb --script mkpart primary xfs 0% 50%
+      parted /dev/sdb --script mkpart primary xfs 50% 100%
 
 #### 2. OSD 磁盘
 - ##### 对于OSD磁盘我们不做处理，交由ceph-deploy进行操作
@@ -214,14 +219,16 @@
 
 
 - ##### 创建OSD存储节点
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-0 --data /dev/vdc --journal /dev/vdb1
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-0 --data /dev/vdd --journal /dev/vdb2
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-0 --data /dev/sdc --journal /dev/sdb1
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-0 --data /dev/sdd --journal /dev/sdb2
 
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-1 --data /dev/vdc --journal /dev/vdb1
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-1 --data /dev/vdd --journal /dev/vdb2
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-1 --data /dev/sdc --journal /dev/sdb1
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-1 --data /dev/sdd --journal /dev/sdb2
 
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-2 --data /dev/vdc --journal /dev/vdb1
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-2 --data /dev/vdd --journal /dev/vdb2
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-2 --data /dev/sdc --journal /dev/sdb1
+      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-2 --data /dev/sdd --journal /dev/sdb2
+
+  - 如果没有Journal 所需SSD，可以不使用 --journal 参数
 
   - ###### 错误排查
     - 在 Running command: vgcreate --force --yes xxxx, 返回:
