@@ -59,9 +59,9 @@
 #### 主机配置及角色(最小化配置，供测试及学习)
 |  主机          |  IP            |  角色        | 配置        |
 | :----------:  | :------------: | :----------: | ---------- |
-| ceph-0         | em0: 192.168.50.20(**Public**)<br />em1: 172.20.0.20(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
-| ceph-1         | em0: 192.168.50.21(**Public**)<br />em1: 172.20.0.21(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
-| ceph-2         | em0: 192.168.50.22(**Public**)<br />em1: 172.20.0.22(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 10G(**Journal**)<br />DISK 2 20G(**OSD**)<br />DISK 3 20G(**OSD**)|
+| ceph-0         | em0: 192.168.50.20(**Public**)<br />em1: 172.20.0.20(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 20G(**OSD**)<br />DISK 2 20G(**OSD**)|
+| ceph-1         | em0: 192.168.50.21(**Public**)<br />em1: 172.20.0.21(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 20G(**OSD**)<br />DISK 2 20G(**OSD**)|
+| ceph-2         | em0: 192.168.50.22(**Public**)<br />em1: 172.20.0.22(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 20G(**OSD**)<br />DISK 2 20G(**OSD**)|
 
 - OSD 磁盘单块10G也可以
 
@@ -171,25 +171,8 @@
 
 
 ### 二. 准备硬盘
-#### 1. Journal 磁盘
-###### 本步骤要在每一个节点上执行
-- ##### 在每个节点上为Journal磁盘分区, 分别为 sdb1, sdb2, 各自对应本机的2个OSD
-  - 具体分为几个分区，需要考虑本机OSD数量，SSD容量与速度等因素
-- ##### 使用 parted 命令进行创建分区操作
-      [root@ceph-0 ~]# parted /dev/sdb
-          mklabel gpt
-          mkpart primary xfs  0% 50%
-          mkpart primary xfs 50% 100%
-          q
-
-
-- ###### 也可以通过命令行直接操作完成
-      parted /dev/sdb --script mklabel gpt
-      parted /dev/sdb --script mkpart primary xfs 0% 50%
-      parted /dev/sdb --script mkpart primary xfs 50% 100%
-
-#### 2. OSD 磁盘
-- ##### 对于OSD磁盘我们不做处理，交由ceph-deploy进行操作
+#### 1. OSD 磁盘
+- ##### 对于OSD磁盘我们不进行分区，Bluestore 直接管理裸盘
 - ##### 如果OSD磁盘上已存在分区，则通过以下步骤进行删除分区操作
       [root@ceph-0 ~]# parted /dev/vdc
           p     # 显示已有分区，第一列数字为分区编号
@@ -202,34 +185,24 @@
 ### 三. 安装 Ceph
 #### 1. 使用 ceph-deploy 安装 Ceph
 - ##### 创建一个新的Ceph 集群
-      [root@ceph-0 ceph-install]# ceph-deploy new ceph-0 ceph-1 ceph-2
+      ceph-deploy new ceph-0 ceph-1 ceph-2
 
 - ##### 在全部节点上安装Ceph
-      [root@ceph-0 ceph-install]# ceph-deploy install ceph-0 ceph-1 ceph-2
+      ceph-deploy install ceph-0 ceph-1 ceph-2
     - ###### 或在每个节点上手动执行 `yum install -y ceph`
 
 - ##### 创建和初始化监控节点
-      [root@ceph-0 ceph-install]# ceph-deploy mon create-initial
-
-- ##### 清空OSD磁盘(sdc, sdd)
-      [root@ceph-0 ceph-install]# ceph-deploy disk zap ceph-0 sdc sdd
-      [root@ceph-0 ceph-install]# ceph-deploy disk zap ceph-1 sdc sdd
-      [root@ceph-0 ceph-install]# ceph-deploy disk zap ceph-2 sdc sdd
-
-  - 也可以通过 parted 将 sdc sdd 删除之前存在的分区，无分区可忽略此步骤
-
+      ceph-deploy mon create-initial
 
 - ##### 创建OSD存储节点
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-0 --data /dev/sdc --journal /dev/sdb1
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-0 --data /dev/sdd --journal /dev/sdb2
+      ceph-deploy osd create ceph-0 --data /dev/sdc
+      ceph-deploy osd create ceph-0 --data /dev/sdd 
 
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-1 --data /dev/sdc --journal /dev/sdb1
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-1 --data /dev/sdd --journal /dev/sdb2
+      ceph-deploy osd create ceph-1 --data /dev/sdc
+      ceph-deploy osd create ceph-1 --data /dev/sdd
 
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-2 --data /dev/sdc --journal /dev/sdb1
-      [root@ceph-0 ceph-install]# ceph-deploy osd create ceph-2 --data /dev/sdd --journal /dev/sdb2
-
-  - 如果没有Journal 所需SSD，可以不使用 --journal 参数
+      ceph-deploy osd create ceph-2 --data /dev/sdc 
+      ceph-deploy osd create ceph-2 --data /dev/sdd 
 
   - ###### 错误排查
     - 在 Running command: vgcreate --force --yes xxxx, 返回:
@@ -243,10 +216,10 @@
 
 
 - ##### 将配置文件同步到其它节点
-      [root@ceph-0 ceph-install]# ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
+      ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
 
 - ##### 使用 ceph -s 命令查看集群状态
-      [root@ceph-0 ceph-install]# ceph -s
+      ceph -s
 
     - ###### 如集群正常则显示 health HEALTH_OK
 
@@ -255,7 +228,7 @@
 
 #### 2. 部署 MDS 元数据服务
 - ##### 如果需要以POSIX标准形式挂载 ceph-fs，则需要启动 MDS 服务
-      [root@ceph-0 ceph-install]# ceph-deploy mds create ceph-0 ceph-1 ceph-2
+      ceph-deploy mds create ceph-0 ceph-1 ceph-2
 
     - 上方命令会在 ceph-0 和 ceph-1 上启动MDS
 
@@ -263,13 +236,13 @@
 - ##### luminous 版本需要启动 mgr, 否则 ceph -s 会有 no active mgr 提示
 - ##### 官方文档建议在每个 monitor 上都启动一个 mgr
 
-      [root@ceph-0 ceph-install]# ceph-deploy mgr create ceph-0:ceph-0 ceph-1:ceph-1 ceph-2:ceph-2
+      ceph-deploy mgr create ceph-0:ceph-0 ceph-1:ceph-1 ceph-2:ceph-2
 
 #### 4. 清除操作
 - ##### 安装过程中如遇到奇怪的错误，可以通过以下步骤清除操作从头再来
-      [root@ceph-0 ceph-install]# ceph-deploy purge ceph-0 ceph-1 ceph-2
-      [root@ceph-0 ceph-install]# ceph-deploy purgedata ceph-0 ceph-1 ceph-2
-      [root@ceph-0 ceph-install]# ceph-deploy forgetkeys
+      ceph-deploy purge ceph-0 ceph-1 ceph-2
+      ceph-deploy purgedata ceph-0 ceph-1 ceph-2
+      ceph-deploy forgetkeys
 
 
 ## 配置
@@ -296,21 +269,8 @@
       public network  = 192.168.50.0/24
       cluster network = 172.20.0.0/24
 
-      [mon.a]
-      host = ceph-0
-      mon addr = 192.168.50.20:6789
-
-      [mon.b]
-      host = ceph-1
-      mon addr = 192.168.50.21:6789
-
-      [mon.c]
-      host = ceph-2
-      mon addr = 192.168.50.22:6789
-
       [osd]
       osd data = /var/lib/ceph/osd/ceph-$id
-      osd journal size = 20000
       osd mkfs type = xfs
       osd mkfs options xfs = -f
 
@@ -346,7 +306,7 @@
       rbd cache max dirty age = 5
 
 - ##### 将配置文件同步到其它节点
-      [root@ceph-0 ceph-install]# ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
+      ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
 
 - ##### 逐一重启各个节点
       systemctl restart ceph\*.service ceph\*.target
