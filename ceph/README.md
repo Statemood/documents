@@ -93,7 +93,7 @@
 
 #### 3. 防火墙
 - ##### 本步骤要在每一个节点上执行
-- ##### 打开 tcp 6789、6800-7100 端口
+- ##### 打开 tcp 3300, 6789, 6800-7100 端口
       [root@ceph-0 ~]# firewall-cmd --zone=public --add-port=3300/tcp --permanent
       [root@ceph-0 ~]# firewall-cmd --zone=public --add-port=6789/tcp --permanent
       [root@ceph-0 ~]# firewall-cmd --zone=public --add-port=6800-7100/tcp --permanent
