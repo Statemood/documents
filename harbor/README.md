@@ -36,17 +36,9 @@
 
 - ##### 生成 CA Pem
 
-      openssl req -new -x509 -days 1095 -key ca.key -out ca.pem
+      openssl req -new -nodes -x509 -days 1095 -key ca.key -out ca.pem \
+              -subj "/CN=CN/ST=Shanghai/L=Shanghai/OU=IT/O=My Company"
 
-  - ##### 根据提示输入相关内容
-
-        Country Name (2 letter code) [XX]:CN
-        State or Province Name (full name) []:Shanghai
-        Locality Name (eg, city) [Default City]:Shanghai
-        Organization Name (eg, company) [Default Company Ltd]:
-        Organizational Unit Name (eg, section) []:
-        Common Name (eg, your name or your server's hostname) []:
-        Email Address []:
 
 ### 2. 域名证书
 - #### 生成 Key
