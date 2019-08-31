@@ -20,7 +20,7 @@
 
     ceph auth add client.files mds 'allow rw' osd 'allow rw data=files' mon 'allow r'
 
-- 添加一个授权 client.files
+- 添加一个用户 client.files
   - mds 
     - allow rw
   - mon 
@@ -32,7 +32,7 @@
 
     ceph auth caps client.files mds 'allow rw network 192.168.20.18/29' mon 'allow r network 192.168.20.18/29' osd 'allow rw tag cephfs data=files network 192.168.20.18/29'
 
-- 更新一个授权 client.files
+- 更新一个用户 client.files
   - mds 
     - 对于来自 192.168.20.18/29 网络的客户端 allow rw
   - mon
