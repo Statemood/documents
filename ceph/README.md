@@ -9,7 +9,7 @@
     - ##### [使用 iSCSI 将 Ceph 存储连接到 Windows Server](https://github.com/Statemood/documents/blob/master/ceph/use-iscsi-to-windows.md)
 
     - ##### [Ceph 存储池与文件系统](#ceph-存储池与文件系统-1)
-      - ##### cephfs & ceph-fuse
+      - ##### [cephfs & ceph-fuse](https://github.com/Statemood/documents/blob/master/ceph/cephfs.md)
     - ##### Ceph RBD for kubernetes
     - ##### RGW
 
@@ -329,30 +329,9 @@
     - 创建一个名为 pool_name的存储池，pg = 64
 
 #### 2. ceph-fs 文件系统
-- ##### 查看已有文件系统
-      [root@ceph-0 ~]# ceph fs ls
 
-- ##### 创建一个名称为 files 的文件系统
-      [root@ceph-0 ~]# ceph osd pool create files_data 32
-      [root@ceph-0 ~]# ceph osd pool create files_metadata 32
-      [root@ceph-0 ~]# ceph fs new files files_metadata files_data
+关于cephfs详见 [cephfs](https://github.com/Statemood/documents/blob/master/ceph/cephfs.md)
 
-- ##### 使用 ceph-fuse 在 50-50 上挂载文件系统
-    - ###### 使用 `yum install -y ceph-fuse` 安装
-            [root@50-50 ~]# yum install -y ceph-fuse
-
-    - 从Ceph集群复制 ceph.conf 与 ceph.client.admin.keyring 文件到主机 50-50 /etc/ceph 目录下
-    - ###### 使用 `ceph fs dump` 查看文件系统编号
-            [root@ceph-0 ~]# ceph fs dump
-
-    - ###### 创建挂载点目录 /data
-            [root@50-50 ~]# test -d /data || mkdir /data
-
-    - ###### 使用 `ceph-fuse` 挂载
-
-            [root@50-50 ~]# ceph-fuse -m ceph-0,ceph-1,ceph-2:6789 /data/files
-
-    - ###### 至此，即可直接使用ceph文件系统了
 
 #### 3. rbd
 - ##### 关于 rbd 的更多信息，请参阅文档 [RBD – MANAGE RADOS BLOCK DEVICE (RBD) IMAGES]](http://docs.ceph.com/docs/master/man/8/rbd/)

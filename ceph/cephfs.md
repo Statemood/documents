@@ -1,5 +1,10 @@
-## 查看fs
+## 查看cephfs
+### 列出 fs
     ceph fs ls
+
+### 查看指定 fs 状态
+    ceph fs status files
+
 
 ## 新建cephfs
 ### 创建一个名称为 files 的文件系统
@@ -17,7 +22,7 @@
 
 ## 权限
 ### cephfs 简单权限控制
-
+#### 使用 ceph auth
     ceph auth add client.files mds 'allow rw' osd 'allow rw data=files' mon 'allow r'
 
 - 添加一个用户 client.files
@@ -28,9 +33,12 @@
   - osd 
     - allow rw, 仅限 files
 
+#### 使用 ceph fs authorize
+    ceph fs authorize files client.files / rw
+
 ### cephfs 限制客户端网络
 
-    ceph auth caps client.files mds 'allow rw network 192.168.20.18/29' mon 'allow r network 192.168.20.18/29' osd 'allow rw tag cephfs data=files network 192.168.20.18/29'
+    ceph auth caps client.files mds 'allow rw network 192.168.20.18/29' mon 'allow r network 192.168.20.18/29' osd 'allow rw tag files data=files network 192.168.20.18/29'
 
 - 更新一个用户 client.files
   - mds 
@@ -38,4 +46,38 @@
   - mon
     - 对于来自 192.168.20.18/29 网络的客户端 allow r
   - osd
-    - 对于来自 192.168.20.18/29 网络的客户端 allow rw, 并且 tag cephfs, data=files
+    - 对于来自 192.168.20.18/29 网络的客户端 allow rw, 并且 tag = files, data = files
+
+## 挂载 cephfs
+### 使用 ceph-fuse 挂载文件系统
+##### 示例挂载 cephfs files 到 客户端机器 /data/files 目录
+###### 以下命令除非特别说明, 否则都是在客户端机器(要挂载 cephfs 的机器)上执行
+- 安装 ceph-fuse
+    
+      yum install -y ceph-fuse
+
+- 创建目录 /etc/ceph
+    
+      mkdir -p /etc/ceph
+
+- 获取认证文件 keyring
+
+      ceph auth get client.file
+  - 在 ceph 集群上执行
+  - 复制输出内容到客户端机器, 保存为 /etc/ceph/keyring
+
+- 创建挂载点目录 /data/files
+      mkdir -p /data/files
+
+- 使用 `ceph-fuse` 挂载
+
+      ceph-fuse -m ceph-0,ceph-1,ceph-2:6789 /data/files --id files
+  - -m 指定 monitor 地址, 逗号分隔多个monitor
+  - monitor 后面就是挂载点目录
+  - --id 指定 cephfs fs 名称, 在多fs 集群中必须指定
+
+- **至此，即可直接使用ceph文件系统了**
+
+
+## 参考文档
+1. [Client authentication](https://docs.ceph.com/docs/master/cephfs/client-auth/#), https://docs.ceph.com/docs/master/cephfs/client-auth/#
