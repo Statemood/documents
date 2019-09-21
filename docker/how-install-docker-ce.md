@@ -35,27 +35,25 @@
             [Unit]
             Description=Docker Application Container Engine
             Documentation=https://docs.docker.com
-            After=network.target firewalld.service
+            BindsTo=containerd.service
+            After=network-online.target firewalld.service containerd.service
+            Wants=network-online.target
+            Requires=docker.socket
             [Service]
             Type=notify
-            EnvironmentFile=-/run/flannel/docker
-            EnvironmentFile=-/run/docker_opts.env
-            EnvironmentFile=-/run/flannel/subnet.env
-            EnvironmentFile=-/etc/sysconfig/docker
-            EnvironmentFile=-/etc/sysconfig/docker-storage
-            EnvironmentFile=-/etc/sysconfig/docker-network
-            EnvironmentFile=-/run/docker_opts.env
-            ExecStart=/usr/bin/dockerd \
-                  --data-root /data/docker \
-                  $DOCKER_OPT_BIP \
-                  $DOCKER_OPT_IPMASQ \
-                  $DOCKER_OPT_MTU
+            ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --data-root /data/docker
             ExecReload=/bin/kill -s HUP $MAINPID
+            TimeoutSec=0
+            RestartSec=2
+            Restart=always
+            StartLimitBurst=3
+            StartLimitInterval=60s
             LimitNOFILE=infinity
             LimitNPROC=infinity
             LimitCORE=infinity
-            TimeoutStartSec=0
+            TasksMax=infinity
             Delegate=yes
+            KillMode=process
             [Install]
             WantedBy=multi-user.target
 

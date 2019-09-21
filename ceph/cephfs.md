@@ -62,7 +62,7 @@
 
 - 获取认证文件 keyring
 
-      ceph auth get client.file
+      ceph auth get client.files
   - 在 ceph 集群上执行
   - 复制输出内容到客户端机器, 保存为 /etc/ceph/keyring
 
@@ -71,13 +71,22 @@
 
 - 使用 `ceph-fuse` 挂载
 
-      ceph-fuse -m ceph-0,ceph-1,ceph-2:6789 /data/files --id files
+      ceph-fuse -m ceph-0,ceph-1,ceph-2:6789 /data/files --id files --client_mds_namespace files
   - -m 指定 monitor 地址, 逗号分隔多个monitor
   - monitor 后面就是挂载点目录
-  - --id 指定 cephfs fs 名称, 在多fs 集群中必须指定
+  - --id 指定 cephfs 认证用户名称 
+  - --client_mds_namespace 指定fs 名称, 在多fs 集群中必须指定才能正确挂载相应 cephfs
+
+- 使用 mount.fuse.ceph 在 `/etc/fstab` 中挂载
+
+      #DEVICE    PATH        TYPE        OPTIONS
+      none       /data/files fuse.ceph   ceph.id=files,_netdev,defaults 0 0
+  - client keyring 保存在 /etc/ceph/keyring 文件中
+  - 如果需要指定挂载特定 fs, 在 ceph conf 中配置 
+
+        client mds namespace = files
 
 - **至此，即可直接使用ceph文件系统了**
-
 
 ## 参考文档
 1. [Client authentication](https://docs.ceph.com/docs/master/cephfs/client-auth/#), https://docs.ceph.com/docs/master/cephfs/client-auth/#

@@ -46,27 +46,31 @@
 - #### 为 etcd 签发证书
   - ##### 使用下述方式依次为 etcd1、etcd2、etcd3 签发证书
   - 把 etcd.cnf 文件中 IP.1 改为 etcd 的IP
+  - 设置名称变量
+
+        name=etcd
+        conf=etcd.cnf
 
   - 生成 etcd.key
 
-        [root@50-55 ssl]# openssl genrsa -out etcd.key 3072
+        openssl genrsa -out $name.key 3072
 
   - 生成证书请求
 
-        [root@50-55 ssl]# openssl req -new -key etcd.key -out etcd.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config etcd.cnf
+        openssl req -new -key $name.key -out $name.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config $name.cnf
 
 
   - 签发证书
 
-        [root@50-55 ssl]# openssl x509 -req -in etcd.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out etcd.pem -days 1095 -extfile etcd.cnf -extensions v3_req
+        openssl x509 -req -in $name.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out $name.pem -days 1095 -extfile $name.cnf -extensions v3_req
 
   - 把 etcd.key 和 etcd.pem 放到各 etcd /etc/etcd/ssl 目录下
 
-        [root@50-55 ssl]# cp etcd.key etcd.pem /etc/etcd/ssl
+        cp etcd.key etcd.pem /etc/etcd/ssl
 
   - 把 ca.pem 复制到 /etc/kubernetes/ssl 目录下
 
-        [root@50-55 ssl]# cp ca.pem /etc/kubernetes/ssl
+        cp ca.pem /etc/kubernetes/ssl
 
 ### 2.  将 etcd.key 和 etcd.pem 放到 /etc/etcd/ssl 目录下
 - #### File: /etc/etcd/etcd.conf

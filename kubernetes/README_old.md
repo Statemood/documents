@@ -1,41 +1,10 @@
-# Kubernetes 
-
-## 目录
-- 简介
-  - 环境
-- 证书
-  - 签发 CA 证书
-  - 签发 kube-apiserver 证书
-  - 签发 kube-controller-manager 证书
-  - 签发 kube-scheduler 证书
-  - 签发 kubelet 证书
-  - 签发 kube-proxy 证书
-  - 签发 metrics-server 证书
-  - 分发证书
-- 安装
-  - 安装 Docker CE
-  - 安装 Etcd 集群
-  - 安装 Flannel
-  - 安装 Master
-  - 安装 Worker
-
-- 附加
-  - CoreDNS
-  - Ingress
-  - Heapster
-  - Dashboard
-  - Prometheus
-  - HPA
-  - Grafana
-  - EFK
-  - Image Pull Secret
-  - CSI
+# Kubernetes 1.10
 
 ## 简介
 
-- 本文档基于二进制文件全新安装 Kubernetes 1.14 及以上版本
+- 本文档基于二进制文件全新安装 Kubernetes 1.8 及以上版本，包括但不限于 1.10.x、1.11.x
 
-## 环境
+## Environment
 - **IPVS**
 - **[HPA](https://github.com/Statemood/documents/blob/master/kubernetes/HPA.md)**
 - **[Use Ceph rbd for StorageClass](https://github.com/Statemood/documents/blob/master/kubernetes/storage-class.md)**
@@ -67,8 +36,6 @@
 ### 6. Network
 - #### Calico
   - 如使用 Calico网络，请忽略任何与 Flannel 相关操作
-  - BGP (default)
-  - IPIP
 
 - #### Flannel
   - ##### vxlan
@@ -82,41 +49,47 @@
       - ###### 4,194,304
 
 ### 7. Docker
-- #### Docker-CE 18.03 或更新版本
+- #### Docker-CE 17.12 或更新版本
  
 ### 8. kubernetes
 - #### 以下版本均已经过测试
-  - 1.14 +
+  - 1.8.1
+  - 1.8.7
+  - 1.10.6
+  - 1.11.4
+  - 1.12.x
+  - 1.14.x
 
 - #### kube-proxy
   - ##### 启用 IPVS 模式
 
-## 证书
+## Certificate
 ### 1. 签发CA，在 50-51 上进行(可以是任一安装 openssl 的主机)
-- 创建 /etc/ssl/k8s 目录并进入(也可以是其它目录)
+- #### 创建 /etc/ssl/k8s 目录并进入(也可以是其它目录)
 
-      mkdir -p /etc/ssl/k8s
+      mkdir /etc/ssl/k8s
       cd /etc/ssl/k8s
 
-- 准备额外的选项, 配置文件 ca.cnf
+- #### 准备额外的选项, 配置文件 ca.cnf
+  - ##### File: ca.cnf
 
-      [ req ]
-      req_extensions = v3_req
-      distinguished_name = req_distinguished_name
-      [req_distinguished_name]
+        [ req ]
+        req_extensions = v3_req
+        distinguished_name = req_distinguished_name
+        [req_distinguished_name]
 
-      [ v3_req ]
-      keyUsage = critical, cRLSign, keyCertSign, digitalSignature, keyEncipherment
-      extendedKeyUsage = serverAuth, clientAuth
-      subjectKeyIdentifier = hash
-      authorityKeyIdentifier = keyid:always,issuer
-      basicConstraints = critical, CA:true, pathlen:2
+        [ v3_req ]
+        keyUsage = critical, cRLSign, keyCertSign, digitalSignature, keyEncipherment
+        extendedKeyUsage = serverAuth, clientAuth
+        subjectKeyIdentifier = hash
+        authorityKeyIdentifier = keyid:always,issuer
+        basicConstraints = critical, CA:true, pathlen:2
 
-- 生成 CA Key
+- #### 创建 CA Key
 
-      openssl genrsa -out ca.key 4096
+      openssl genrsa -out ca.key 3072
 
-- 签发CA
+- #### 签发CA
 
       openssl req -x509 -new -nodes -key ca.key -days 1095 -out ca.pem -subj \
               "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" \
@@ -125,247 +98,118 @@
     - 有效期 **1095** (d) = 3 years
     - 注意 -subj 参数中仅 'C=CN' 与 'Shanghai' 可以修改，**其它保持原样**，否则集群会遇到权限异常问题
 
-### 2. 为 kube-apiserver 签发证书
-- apiserver.cnf
+### 2. 签发客户端证书
 
-      [ req ]
-      req_extensions = v3_req
-      distinguished_name = req_distinguished_name
-      [req_distinguished_name]
-      [ v3_req ]
-      basicConstraints = critical, CA:FALSE
-      keyUsage = critical, digitalSignature, keyEncipherment
-      extendedKeyUsage = serverAuth, clientAuth
-      subjectAltName = @alt_names
-      [alt_names]
-      IP.1 = 10.0.0.1
-      IP.2 = 192.168.50.50
-      IP.3 = 192.168.50.51
-      IP.4 = 192.168.50.52
-      IP.5 = 192.168.50.53
-      DNS.1 = kubernetes
-      DNS.2 = kubernetes.default
-      DNS.3 = kubernetes.default.svc
-      DNS.4 = kubernetes.default.svc.cluster
-      DNS.5 = kubernetes.default.svc.cluster.local
+- #### 为 API Server 签发证书
+  - ##### apiserver.cnf
 
-- IP.2 为 HA VIP
-- IP.3 为 API Server 1
-- IP.4 为 API Server 2
-- IP.5 为 API Server 3
-- 如果需要, 可以加上其它IP, 如额外的API Server
+        [ req ]
+        req_extensions = v3_req
+        distinguished_name = req_distinguished_name
+        [req_distinguished_name]
+        [ v3_req ]
+        basicConstraints = critical, CA:FALSE
+        keyUsage = critical, digitalSignature, keyEncipherment
+        extendedKeyUsage = serverAuth, clientAuth
+        subjectAltName = @alt_names
+        [alt_names]
+        IP.1 = 10.0.0.1
+        IP.2 = 192.168.50.50
+        IP.3 = 192.168.50.51
+        IP.4 = 192.168.50.52
+        IP.5 = 192.168.50.53
+        DNS.1 = kubernetes
+        DNS.2 = kubernetes.default
+        DNS.3 = kubernetes.default.svc
+        DNS.4 = kubernetes.default.svc.cluster
+        DNS.5 = kubernetes.default.svc.cluster.local
 
-- 生成 key
+      - IP.2 为 HA VIP
+      - IP.3 为 API Server 1
+      - IP.4 为 API Server 2
+      - IP.5 为 API Server 3
+    - 如果需要, 可以加上其它IP, 如额外的API Server
 
-      openssl genrsa -out apiserver.key 4096
+  - ##### 生成 key
 
-- 生成证书请求
+        openssl genrsa -out apiserver.key 3072
 
-      openssl req -new -key apiserver.key -out apiserver.csr -subj \
-              "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" \
-              -config apiserver.cnf
+  - ##### 生成证书请求
 
-- CN、OU、O 字段为认证时使用, 请勿修改
-- 注意 -subj 参数中仅 'C'、'ST' 与 'L' 可以修改，**其它保持原样**，否则集群会遇到权限异常问题
+        openssl req -new -key apiserver.key -out apiserver.csr -subj \
+                "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" \
+                -config apiserver.cnf
 
-- 签发证书
+      - CN、OU、O 字段为认证时使用, 请勿修改
+      - 注意 -subj 参数中仅 'C'、'ST' 与 'L' 可以修改，**其它保持原样**，否则集群会遇到权限异常问题
 
-      openssl x509 -req -in apiserver.csr \
-              -CA ca.pem -CAkey ca.key -CAcreateserial \
-              -out apiserver.pem -days 1095 \
-              -extfile apiserver.cnf -extensions v3_req
+  - ##### 签发证书
 
-### 3. 为 kube-controller-manager 签发证书
-- kube-controller-manager.cnf
-  
-      [ req ]
-      req_extensions = v3_req
-      distinguished_name = req_distinguished_name
-      [req_distinguished_name]
-      [ v3_req ]
-      basicConstraints = CA:FALSE
-      keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-      subjectAltName = @alt_names
-      [alt_names]
-      IP.1 = 127.0.0.1
-      IP.2 = 192.168.50.51
-      IP.3 = 192.168.50.52
-      IP.4 = 192.168.50.53
+        openssl x509 -req -in apiserver.csr \
+                -CA ca.pem -CAkey ca.key -CAcreateserial \
+                -out apiserver.pem -days 1095 \
+                -extfile apiserver.cnf -extensions v3_req
 
-- 生成Key
+- #### 为 Kubelet 签发证书
+  - ##### kubelet.cnf
 
-      openssl genrsa -out kube-controller-manager.key 4096
+        [ req ]
+        req_extensions = v3_req
+        distinguished_name = req_distinguished_name
+        [req_distinguished_name]
+        [ v3_req ]
+        basicConstraints = critical, CA:FALSE
+        keyUsage = critical, digitalSignature, keyEncipherment
 
-- 生成证书请求
+  - ##### 设置名称变量
 
-      openssl req -new -key kube-controller-manager.key \
-              -out kube-controller-manager.csr \
-              -subj "/CN=system:kube-controller-manager/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:kube-controller-manager" \
-              -config kube-controller-manager.cnf
+        name=kubelet
+        conf=kubelet.cnf
 
-- 签发证书
+  - ##### 生成 key
 
-      openssl x509 -req -in kube-controller-manager.csr \
-              -CA ca.pem -CAkey ca.key -CAcreateserial \
-              -out kube-controller-manager.pem -days 1825 \
-              -extfile kube-controller-manager.cnf -extensions v3_req
+        openssl genrsa -out $name.key 3072
 
-### 4. 为 kube-scheduler 签发证书
-- kube-scheduler.cnf
+  - ##### 生成证书请求
 
-      cp kube-controller-manager.cnf kube-scheduler.cnf
+        openssl req -new -key $name.key -out $name.csr -subj \
+                "/CN=admin/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:masters" \
+                -config $conf
 
-  - 复用 kube-controller-manager.cnf 文件即可
+  - ##### 签发证书
 
-- 生成Key
+        openssl x509 -req -in $name.csr -CA ca.pem \
+                -CAkey ca.key -CAcreateserial -out $name.pem \
+                -days 1095 -extfile $conf -extensions v3_req
 
-      openssl genrsa -out kube-scheduler.key 4096
+- #### 为 kube-proxy 签发证书
+  - ##### 复制 kubelet.cnf 文件
 
-- 生成证书请求
+        cp kubelet.cnf kube-proxy.cnf
 
-      openssl req -new -key kube-scheduler.key \
-              -out kube-scheduler.csr \
-              -subj "/CN=system:kube-scheduler/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:kube-scheduler" \
-              -config kube-scheduler.cnf
+  - ##### 设置名称变量
 
-- 签发证书
+        name=kube-proxy
+        conf=kube-proxy.cnf
 
-      openssl x509 -req -in kube-scheduler.csr \
-              -CA ca.pem -CAkey ca.key -CAcreateserial \
-              -out kube-scheduler.pem -days 1825 \
-              -extfile kube-scheduler.cnf -extensions v3_req
+  - ##### 生成 key
 
-  - **CN**和**O**均为 `system:kube-scheduler`，Kubernetes 内置的
-ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
+        openssl genrsa -out $name.key 3072
 
-### 5. 为 kubelet 签发证书
-- kubelet.cnf
+  - ##### 生成证书请求
 
-      [ req ]
-      req_extensions = v3_req
-      distinguished_name = req_distinguished_name
-      [req_distinguished_name]
-      [ v3_req ]
-      basicConstraints = critical, CA:FALSE
-      keyUsage = critical, digitalSignature, keyEncipherment
-      subjectAltName = @alt_names
-      [alt_names]
-      IP.1 = 192.168.50.51
+        openssl req -new -key $name.key -out $name.csr -subj \
+                "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" \
+                -config $conf
 
-- 设置名称变量
+  - ##### 签发证书
 
-      name=kubelet
-      conf=kubelet.cnf
+        openssl x509 -req -in $name.csr \
+                -CA ca.pem -CAkey ca.key -CAcreateserial \
+                -out $name.pem -days 1095 \
+                -extfile $conf -extensions v3_req
 
-- 生成 key
-
-      openssl genrsa -out $name.key 4096
-
-- 生成证书请求
-
-      openssl req -new -key $name.key -out $name.csr -subj \
-              "/CN=admin/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:masters" \
-              -config $conf
-
-- 签发证书
-
-      openssl x509 -req -in $name.csr -CA ca.pem \
-              -CAkey ca.key -CAcreateserial -out $name.pem \
-              -days 1095 -extfile $conf -extensions v3_req
-
-### 6. 为 kube-proxy 签发证书
-- kube-proxy.cnf
-  - 复用 kubelet.cnf 配置文件, 在下方设置变量
-
-- 设置名称变量
-
-      name=kube-proxy
-      conf=kubelet.cnf
-
-- 生成 key
-
-      openssl genrsa -out $name.key 4096
-
-- 生成证书请求
-
-      openssl req -new -key $name.key -out $name.csr -subj \
-            "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" \
-            -config $conf
-
-- 签发证书
-
-      openssl x509 -req -in $name.csr \
-              -CA ca.pem -CAkey ca.key -CAcreateserial \
-              -out $name.pem -days 1095 \
-              -extfile $conf -extensions v3_req
-
-### 7. 为 metrics-server 签发证书
-- 此为可选项
-- proxy-client.cnf
-  
-      cp kube-controller-manager.cnf proxy-client.cnf
-
-  - 复用 kube-controller-manager.cnf 文件即可
-
-- 生成 Key
-  
-      openssl genrsa -out proxy-client.key 4096
-
-- 生成证书请求
-      openssl req -new -key proxy-client.key -out proxy-client.csr \
-              -subj "/CN=aggregator/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" \
-              -config proxy-client.cnf
-
-  - CN名称需要配置在 **apiserver** 的 `--requestheader-allowed-names` 参数中，否则后续访问 metrics 时会提示权限不足
-  
-- 签发证书
-
-      openssl x509 -req -in proxy-client.csr \
-              -CA ca.pem -CAkey ca.key -CAcreateserial \
-              -out proxy-client.pem -days 1825 \
-              -extfile proxy-client.cnf -extensions v3_req
-
-### 8. 分发证书
-- Master 节点需持有以下证书/Key
-  - CA
-    - ca.key
-    - ca.pem
-  - etcd
-    - etcd.key
-    - etcd.pem
-  - kube-apiserver
-    - kube-apiserver.key
-    - kube-apiserver.pem
-  - kube-controller-manager
-    - kube-controller-manager.key
-    - kube-controller-manager.pem
-  - kube-scheduler
-    - kube-scheduler.key
-    - kube-scheduler.pem
-  - kubelet (如安装 kubelet 则需要)
-    - kubelet.key
-    - kubelet.pem
-  - kube-proxy (如安装 kube-proxy 则需要)
-    - kube-proxy.key
-    - kube-proxy.pem
-  - proxy-client (如启用 metrics-server 则需要)
-    - proxy-client.key
-    - proxy-client.pem
-  
-- Worker 节点需持有以下证书/Key
-  - kubelet
-    - kubelet.key
-    - kubelet.pem
-  - kube-proxy
-    - kube-proxy.key
-    - kube-proxy.pem
-
-- 如使用Flannel网络, 则运行 **kubelet** 节点还需有以下证书
-  - flannel
-    - flanneld.key
-    - flanneld.pem
-
-## 安装
+## Install
 ### 1. Etcd
 - #### [>> Etcd Cluster](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster.md)
 
@@ -539,12 +383,6 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
 - #### 复制配置文件
   - ##### 将 etc-kubernetes 目录复制保存为 /etc/kubernetes
 
-- #### Group & User
-- Add Group & User `kube`
-
-      groupadd -g 200 kube
-      useradd -g kube kube -u 200 -d / -s /sbin/nologin -M
-
 - #### 修改 kubelet 数据目录(/var/lib/kubelet)
   - **可选步骤**
   - 操作如下
@@ -567,36 +405,44 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
       - 增加参数 **--root-dir=/data/kubelet**
 
 
-- #### 复制 systemd unit 文件
-  - 将 systemd-unit 目录内文件复制到 /etc/systemd/system/
-  - 在普通节点上，仅需安装 kubelet 和 kube-proxy 两个服务
+- #### 复制 systemctl 配置文件
+  - ##### 将 systemctl 目录内文件复制到 /usr/lib/systemd/system/
+  - ##### 在普通节点上，仅需安装 kubelet 和 kube-proxy 两个服务
 
 - #### 执行 systemctl daemon-reload
 
       systemctl daemon-reload
 
 
-## 配置
-### 1. 生成kubectl的kubeconfig文件
-- 设置集群参数
+## Configurations
+### 1. 生成Token文件
+- kubelet在首次启动时，会向kube-apiserver发送TLS Bootstrapping请求。如果kube-apiserver验证其与自己的token.csv一致，则为kubelet生成CA与key
+
+      cd /etc/kubernetes
+      echo "`head -c 16 /dev/urandom | od -An -t x | tr -d ' '`,kubelet-bootstrap,10001,\"system:kubelet-bootstrap\"" > token.csv
+
+  - 在使用Dashboard时，可以使用 token 进行认证
+
+### 2. 生成kubectl的kubeconfig文件
+- #### 设置集群参数
 
       kubectl config set-cluster kubernetes \
               --certificate-authority=/etc/kubernetes/ssl/ca.pem \
               --server=https://192.168.50.51:6443
 
-- 设置客户端认证参数
+- #### 设置客户端认证参数
 
       kubectl config set-credentials admin \
               --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
               --client-key=/etc/kubernetes/ssl/kubelet.key
 
-- 设置上下文参数
+- #### 设置上下文参数
 
       kubectl config set-context kubernetes \
               --cluster=kubernetes \
               --user=admin
 
-- 设置默认上下文
+- #### 设置默认上下文
 
       kubectl config use-context kubernetes
 
@@ -604,7 +450,7 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
 
     - 生成的kubeconfig被保存到~/.kube/config文件
 
-### 2. 生成kubelet的bootstrapping kubeconfig文件
+### 3. 生成kubelet的bootstrapping kubeconfig文件
 - #### 生成kubelet的bootstrapping kubeconfig文件
 
       kubectl config set-cluster kubernetes \
@@ -634,7 +480,7 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
     - 设置kubelet客户端认证参数时没有指定秘钥和证书，后续由kube-apiserver自动生成
     - 生成的bootstrap.kubeconfig文件会在当前文件路径下
 
-### 3. 生成kubelet的 kubeconfig 文件
+### 5. 生成kubelet的 kubeconfig 文件
 - #### 生成kubelet的 kubeconfig 文件
 
 - #### 设置集群参数
@@ -642,27 +488,29 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
       kubectl config set-cluster kubernetes \
               --certificate-authority=/etc/kubernetes/ssl/ca.pem \
               --server=https://192.168.50.51:6443 \
-              --kubeconfig=bootstrap.kubeconfig    
+              --kubeconfig=kubelet.kubeconfig    
 
 - #### 设置客户端认证参数
 
-      kubectl config set-credentials kubelet-bootstrap \
-              --token=${BOOTSTRAP_TOKEN} \
-              --kubeconfig=bootstrap.kubeconfig
+      kubectl config set-credentials kubelet \
+              --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
+              --client-key=/etc/kubernetes/ssl/kubelet.key \
+              --kubeconfig=kubelet.kubeconfig
 
 - #### 生成上下文参数
 
       kubectl config set-context default \
               --cluster=kubernetes \
-              --user=kubelet-bootstrap \
-              --kubeconfig=bootstrap.kubeconfig
+              --user=kubelet \
+              --kubeconfig=kubelet.kubeconfig
 
 - #### 切换默认上下文
 
       kubectl config use-context default \
-              --kubeconfig=bootstrap.kubeconfig
+              --kubeconfig=kubelet.kubeconfig
 
-### 4. 生成kube-proxy的kubeconfig文件
+
+### 6. 生成kube-proxy的kubeconfig文件
 - #### 设置集群参数
 
       kubectl config set-cluster kubernetes \
@@ -692,19 +540,21 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
     - --embed-cert 都为 true，这会将certificate-authority、client-certificate和client-key指向的证书文件内容写入到生成的kube-proxy.kubeconfig文件中
     - kube-proxy.pem证书中CN为system:kube-proxy，kube-apiserver预定义的 RoleBinding cluster-admin将User system:kube-proxy与Role system:node-proxier绑定，该Role授予了调用kube-apiserver Proxy相关API的权限
 
-### 5. 生成kube-controller-manager的kubeconfig文件
+### 7. 生成kube-controller-manager的kubeconfig文件
 - 设置集群参数
 
       kubectl config set-cluster kubernetes \
-              --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+              --certificate-authority=ca.pem \
+              --embed-certs=true \
               --server=https://192.168.50.51:6443 \
               --kubeconfig=kube-controller-manager.kubeconfig
 
 - 设置客户端认证参数
 
       kubectl config set-credentials system:kube-controller-manager \
-              --client-certificate=/etc/kubernetes/ssl/kube-controller-manager.pem \
-              --client-key=/etc/kubernetes/ssl/kube-controller-manager.key \
+              --client-certificate=kube-controller-manager.pem \
+              --client-key=kube-controller-manager.key \
+              --embed-certs=true \
               --kubeconfig=kube-controller-manager.kubeconfig
 
 - 设置上下文参数
@@ -719,34 +569,6 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
       kubectl config use-context system:kube-controller-manager \
               --kubeconfig=kube-controller-manager.kubeconfig
 
-
-### 6. 生成 kube-scheduler 的 kubeconfig 文件
-- 设置集群参数
-      
-      kubectl config set-cluster kubernetes \
-              --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-              --server=https://192.168.50.51:6443 \
-              --kubeconfig=kube-scheduler.kubeconfig
-
-- 设置客户端认证参数
-
-      kubectl config set-credentials system:kube-scheduler \
-              --client-certificate=/etc/kubernetes/ssl/kube-scheduler.pem \
-              --client-key=/etc/kubernetes/ssl/kube-scheduler.key \
-              --kubeconfig=kube-scheduler.kubeconfig
-
-- 设置上下文参数
-
-      kubectl config set-context system:kube-scheduler \
-              --cluster=kubernetes \
-              --user=system:kube-scheduler \
-              --kubeconfig=kube-scheduler.kubeconfig
-
-- 设置默认上下文
-
-      kubectl config use-context system:kube-scheduler \
-              --kubeconfig=kube-scheduler.kubeconfig
-
 ### 7. 将kubeconfig文件复制至所有节点上
 - #### 将生成的两个 kubeconfig 文件复制到所有节点的 /etc/kubernetes 目录内
 
@@ -754,7 +576,7 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
 
 
 ### 8. 修改文件 /etc/kubernetes/apiserver
-- /etc/kubernetes/apiserver
+- #### File: /etc/kubernetes/apiserver
 
       ###
       # kubernetes system config
@@ -762,39 +584,46 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
       # The following values are used to configure the kube-apiserver
       #
 
-      KUBE_API_ARGS="\
-            --allow-privileged=true      \
-            --secure-port=6443           \
-            --insecure-port=0            \
-            --bind-address=192.168.20.31 \
-            --etcd-cafile=/etc/kubernetes/ssl/ca.pem                       \
-            --etcd-certfile=/etc/kubernetes/ssl/etcd.pem                   \
-            --etcd-keyfile=/etc/kubernetes/ssl/etcd.key                    \
-            --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem              \
-            --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key       \
-            --client-ca-file=/etc/kubernetes/ssl/ca.pem                    \
-            --service-account-key-file=/etc/kubernetes/ssl/apiserver.key   \
-            --kubelet-certificate-authority=/etc/kubernetes/ssl/ca.pem     \
-            --kubelet-client-certificate=/etc/kubernetes/ssl/apiserver.pem \
-            --kubelet-client-key=/etc/kubernetes/ssl/apiserver.key         \
-            --authorization-mode=RBAC,Node   \
-            --kubelet-https=true             \
-            --anonymous-auth=false           \
-            --apiserver-count=3              \
-            --audit-log-maxage=30            \
-            --audit-log-maxbackup=7          \
-            --audit-log-maxsize=100          \
-            --event-ttl=1h                   \
-            --logtostderr=true               \
-            --enable-bootstrap-token-auth    \
-            --max-requests-inflight=3000     \
-            --delete-collection-workers=3    \
-            --service-cluster-ip-range=10.0.0.0/12       \
-            --service-node-port-range=30000-35000        \
-            --default-not-ready-toleration-seconds=10    \
-            --default-unreachable-toleration-seconds=10  \
-            --etcd-servers=https://192.168.50.51:2379,https://192.168.50.52:2379,https://192.168.50.53:2379 \
-            --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction"
+      # The address on the local server to listen to.
+      KUBE_API_ADDRESS="--bind-address=192.168.50.51"
+
+      # The port on the local server to listen on.
+      KUBE_API_PORT="--secure-port=6443 --insecure-port=0"
+
+      # Port minions listen on
+      # KUBELET_PORT="--kubelet-port=10250"
+
+      # Comma separated list of nodes in the etcd cluster
+      KUBE_ETCD_SERVERS="--etcd-servers=https://192.168.50.51:2379,https://192.168.50.52:2379,https://192.168.50.53:2379"
+
+      # Address range to use for services
+      KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.0.0.0/12"
+
+      # default admission control policies
+      KUBE_ADMISSION_CONTROL="--enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
+
+      # Add your own!
+      KUBE_API_ARGS="--allow-privileged=true \
+                     --service-account-key-file=/etc/kubernetes/ssl/apiserver.key \
+                     --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem \
+                     --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key \
+                     --client-ca-file=/etc/kubernetes/ssl/ca.pem \
+                     --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
+                     --etcd-certfile=/etc/kubernetes/ssl/etcd-50-51.pem \
+                     --etcd-keyfile=/etc/kubernetes/ssl/etcd-50-51.key \
+                     --token-auth-file=/etc/kubernetes/token.csv \
+                     --authorization-mode=RBAC \
+                     --kubelet-https=true \
+                     --apiserver-count=3 \
+                     --audit-log-maxage=30 \
+                     --audit-log-maxbackup=3 \
+                     --audit-log-maxsize=100 \
+                     --event-ttl=1h \
+                     --max-requests-inflight=3000 \
+                     --default-not-ready-toleration-seconds=10 \
+                     --default-unreachable-toleration-seconds=10 \
+                     --delete-collection-workers=3 \
+                     --enable-bootstrap-token-auth"
 
     -   --insecure-port=0 关闭非安全的8080端口
     -   --authorization-mode=RBAC指定在安全端口使用RBAC授权模式，拒绝未通过授权的请求
@@ -804,9 +633,10 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
     -   --service-cluster-ip-range指定Service Cluster IP地址段，该地址段不能路由可达
     -   --service-node-port-range=${NODE_PORT_RANGE}指定 NodePort 的端口范围
     -   缺省情况下kubernetes对象保存在etcd /registry路径下，可以通过--etcd-prefix参数进行调整
+    -  For 1.10+, 参数 --service_account_key_file 变为 --service-account-key-file
 
 ### 9. 修改文件 /etc/kubernetes/controller-manager
-- /etc/kubernetes/controller-manager
+- #### File: /etc/kubernetes/controller-manager
 
       ###
       # The following values are used to configure the kubernetes controller-manager
@@ -815,9 +645,9 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
 
       # Add your own!
       KUBE_CONTROLLER_MANAGER_ARGS="\
+            --master=https://192.168.50.51:6443 \
             --service-account-private-key-file=/etc/kubernetes/ssl/apiserver.key \
             --root-ca-file=/etc/kubernetes/ssl/ca.pem \
-            --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem \
             --allocate-node-cidrs=true \
             --cluster-name=kubernetes \
             --cluster-signing-cert-file=/etc/kubernetes/ssl/apiserver.pem \
@@ -825,19 +655,11 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
             --leader-elect=true \
             --service-cluster-ip-range=10.0.0.0/12 \
             --cluster-cidr=10.64.0.0/10 \
-            --secure-port=10257 \
+            --secure-port=10253 \
             --node-monitor-period=2s \
             --node-monitor-grace-period=16s \
             --pod-eviction-timeout=30s \
-            --use-service-account-credentials=true \
-            --controllers=*,bootstrapsigner,tokencleaner \
-            --horizontal-pod-autoscaler-sync-period=10s \
-            --kubeconfig=/etc/kubernetes/kube-controller-manager.kubeconfig \
-            --authentication-kubeconfig=/etc/kubernetes/kube-controller-manager.kubeconfig \
-            --authorization-kubeconfig=/etc/kubernetes/kube-controller-manager.kubeconfig \
-            --feature-gates=RotateKubeletServerCertificate=true \
-            --logtostderr=true \
-            --v=4"
+            --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
 
     - --cluster-cidr指定Cluster中Pod的CIDR范围，该网段在各Node间必须路由可达(flannel保证)
     - --service-cluster-ip-range参数指定Cluster中Service的CIDR范围，该网络在各 Node间必须路由不可达，必须和kube-apiserver中的参数一致
@@ -845,8 +667,11 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
     - --root-ca-file用来对kube-apiserver证书进行校验，指定该参数后，才会在Pod容器的ServiceAccount中放置该CA证书文件
     - --leader-elect=true部署多台机器组成的master集群时选举产生一处于工作状态的 kube-controller-manager进程
 
+    - #### For 1.10+,
+      - 参数 --service_account_key_file 变为 --service-account-key-file
+
 ### 10. 修改文件 /etc/kubernetes/scheduler
-- /etc/kubernetes/scheduler
+- #### File: /etc/kubernetes/scheduler
 
       ###
       # kubernetes scheduler config
@@ -856,37 +681,55 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
       # Add your own!
       KUBE_SCHEDULER_ARGS="\
             --address=127.0.0.1 \
-            --leader-elect=true \
-            --logtostderr=true \
-            --v=4 \
-            --kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig \
-            --authorization-kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig \
-            --authentication-kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig"
+            --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+            --leader-elect=true"
+
+### 11. 修改文件 /etc/kubernetes/config
+- #### File: /etc/kubernetes/config
+
+      ###
+      # kubernetes system config
+      #
+      # The following values are used to configure various aspects of all
+      # kubernetes services, including
+      #
+      #   kube-apiserver.service
+      #   kube-controller-manager.service
+      #   kube-scheduler.service
+      #   kubelet.service
+      #   kube-proxy.service
+      # logging to stderr means we get it in the systemd journal
+      KUBE_LOGTOSTDERR="--logtostderr=true"
+
+      # journal message level, 0 is debug
+      KUBE_LOG_LEVEL="--v=2"
+
+      # Should this cluster be allowed to run privileged docker containers
+      KUBE_ALLOW_PRIV="--allow-privileged=true"
 
 ### 12. 修改文件 /etc/kubernetes/kubelet
-- /etc/kubernetes/kubelet
+- #### File: /etc/kubernetes/kubelet
 
-      KUBELET_ARGS="\
-            --config=/etc/kubernetes/kubelet.yaml \
-            --cgroup-driver=systemd \
-            --authentication-token-webhook=true \
-            --authorization-mode=Webhook \
-            --anonymous-auth=false \
-            --pod-infra-container-image=rancher/pause-amd64:3.1 \
-            --cluster-dns=10.0.0.2 \
-            --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
-            --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \
-            --feature-gates=RotateKubeletClientCertificate=true,RotateKubeletServerCertificate=true \
-            --client-ca-file=/etc/kubernetes/ssl/ca.pem \
-            --cert-dir=/etc/kubernetes/ssl \
-            --cluster-domain=cluster.local \
-            --hairpin-mode promiscuous-bridge \
-            --root-dir=/data/kubelet \
-            --network-plugin=cni \
-            --serialize-image-pulls=false \
-            --rotate-certificates \
-            --logtostderr=true \
-            --v=4"
+      ###
+      # kubernetes kubelet (minion) config
+
+      # The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
+
+      # The port for the info server to serve on
+      # KUBELET_PORT="--port=10250"
+
+      # You may leave this blank to use the actual hostname
+      KUBELET_HOSTNAME="--hostname-override=k8s-node-1"
+
+      # location of the api-server
+
+      # pod infrastructure container
+      KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=img.linge.io/library/pause-amd64:3.1"
+
+      # Add your own!
+      KUBELET_ARGS="--kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+                    --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
+                    --root-dir=/data/kubelet"
 
   - ##### KUBELET_HOSTNAME="" 如留空则使用当前主机名
   - ##### --root-dir=/data/kubelet 指定使用 /data/kubelet 作为 kubelet 工作目录
@@ -923,8 +766,13 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
   - --ipvs IPVS 参数
   - --proxy-mode=ipvs 启用 IPVS 模式
 
+### 14. Group & User
+- #### Add Group & User `kube`
 
-### 14. Work directory: /var/lib/kubelet
+      groupadd -g 200 kube
+      useradd -g kube kube -u 200 -d / -s /sbin/nologin -M
+
+### 15. Work directory: /var/lib/kubelet
 - #### 如更改此目录，请参考 [>>> 修改 kubelet 数据目录(/var/lib/kubelet)](#%E4%BF%AE%E6%94%B9-kubelet-%E6%95%B0%E6%8D%AE%E7%9B%AE%E5%BD%95varlibkubelet)
 - #### Create directory
 
