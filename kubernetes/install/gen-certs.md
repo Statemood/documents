@@ -9,10 +9,12 @@
 5. kube-proxy
 6. kubelet
 7. metrics-server
-8. Calico
-9. 分发证书
+8. etcd
+9. calico
+10. flannel
+11. 分发证书
 
-通常情况下，请根据实际场景需求选择 Calico 或 Flannel
+通常情况下，请根据实际场景需求选择 Calico 或 Flannel 其中的一种
 
 ## 签发证书
 ### 1. 签发CA，在 20-31 上进行(可以是任一安装 openssl 的主机)
@@ -223,7 +225,7 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
               -extfile $conf -extensions v3_req
 
 ### 7. 为 metrics-server 签发证书
-- 此为可选项
+此为可选项
 - proxy-client.cnf
   
       cp kube-controller-manager.cnf proxy-client.cnf
@@ -248,7 +250,66 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
               -out proxy-client.pem -days 1825 \
               -extfile proxy-client.cnf -extensions v3_req
 
-### 8. 分发证书
+### 8. 为 etcd 签发证书
+- etcd.cnf
+
+      [ req ]
+      req_extensions = v3_req
+      distinguished_name = req_distinguished_name
+      [req_distinguished_name]
+      [ v3_req ]
+      basicConstraints = CA:FALSE
+      keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+      subjectAltName = @alt_names
+      [alt_names]
+      IP.1 = 192.168.20.31
+      IP.2 = 192.168.20.32
+      IP.3 = 192.168.20.33
+
+    - IP.1 为客户端IP, 可以为多个, 如 IP.2 = xxx
+  
+- 生成 key
+
+      openssl genrsa -out etcd.key 3072
+
+- 生成证书请求
+
+      openssl req -new -key etcd.key -out etcd.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config etcd.cnf
+
+- 签发证书
+
+      openssl x509 -req -in etcd.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out etcd.pem -days 1825 -extfile etcd.cnf -extensions v3_req
+ 
+
+### 10. 为 flannel 签发证书
+- flannel.cnf
+
+      [ req ]
+      req_extensions = v3_req
+      distinguished_name = req_distinguished_name
+      [req_distinguished_name]
+      [ v3_req ]
+      basicConstraints = critical, CA:FALSE
+      keyUsage = critical, digitalSignature, keyEncipherment
+      extendedKeyUsage = serverAuth, clientAuth
+      subjectAltName = @alt_names
+      [ alt_names ]
+      IP.1 = 192.168.20.31
+
+- 生成 key
+
+      openssl genrsa -out flannel.key 3072
+
+  生成证书请求
+
+      openssl req -new -key flannel.key -out flannel.csr -subj "/CN=flanneld/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config flannel.cnf
+
+- 签发证书
+
+      openssl x509 -req -CA ca.pem -CAkey ca.key -CAcreateserial -in flannel.csr -out flannel.pem -days 1825 -extfile flannel.cnf -extensions v3_req
+
+
+### 9. 分发证书
 - Master 节点需持有以下证书/Key
   - CA
     - ca.key

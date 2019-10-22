@@ -7,40 +7,6 @@
       [root@50-55 ~]# yum install -y flannel
 
 ## 二、证书
-### 1. 为 flannel (50-55) 签发证书
-- #### File: flannel.cnf
-
-      [ req ]
-      req_extensions = v3_req
-      distinguished_name = req_distinguished_name
-      [req_distinguished_name]
-      [ v3_req ]
-      basicConstraints = critical, CA:FALSE
-      keyUsage = critical, digitalSignature, keyEncipherment
-      extendedKeyUsage = serverAuth, clientAuth
-      subjectAltName = @alt_names
-      [ alt_names ]
-      IP.1 = 192.168.50.55
-
-- #### 生成 key
-
-      [root@50-55 ssl]# fn=flanneld-50-55
-
-      [root@50-55 ssl]# openssl genrsa -out $fn.key 3072
-
-- #### 生成证书请求
-
-      [root@50-55 ssl]# openssl req -new -key $fn.key -out $fn.csr -subj "/CN=flanneld/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config flannel.cnf
-
-- #### 签发证书
-
-          [root@50-55 ssl]# openssl x509 -req -CA ca.pem -CAkey ca.key -CAcreateserial -in $fn.csr -out $fn.pem -days 1095 -extfile flannel.cnf -extensions v3_req
-
-- #### 把证书和 Key 复制到 /etc/kubernetes/ssl
-
-        [root@50-55 ssl]# cp $fn.key $fn.pem /etc/kubernetes/ssl
-
-- #### 按以上方式为各节点生成证书
 
 ## 三、配置
 ### 1. 修改 flanneld 配置文件 /etc/sysconfig/flanneld
@@ -48,7 +14,7 @@
     # Flanneld configuration options  
 
     # etcd url location.  Point this to the server where etcd runs
-    FLANNEL_ETCD_ENDPOINTS="https://192.168.50.55:2379,https://192.168.50.56:2379,https://192.168.50.57:2379"
+    FLANNEL_ETCD_ENDPOINTS="https://192.168.20.31:2379,https://192.168.20.32:2379,https://192.168.20.33:2379"
 
     # etcd config key.  This is the configuration key that flannel queries
     # For address range assignment
@@ -57,7 +23,41 @@
     # Any additional options that you want to pass
     FLANNEL_OPTIONS="-etcd-cafile=/etc/kubernetes/ssl/ca.pem -etcd-certfile=/etc/kubernetes/ssl/flanneld-50-55.pem -etcd-keyfile=/etc/kubernetes/ssl/flanneld-50-55.key"
 
-## 四、启动
-### 1. 启动 flanneld
 
-    [root@50-55 ssl]# systemctl start flanneld
+## 四、网络
+### 1. 目录
+- #### 创建目录 /k8s/network
+
+      etcdctl --endpoints=https://192.168.20.31:2379 \
+              --ca-file=/etc/kubernetes/ssl/ca.pem \
+              --cert-file=/etc/etcd/ssl/etcd.pem \
+              --key-file=/etc/etcd/ssl/etcd.key \
+              mkdir /k8s/network
+
+### 2. 网络
+- #### 设置网络
+
+      etcdctl --endpoints=https://192.168.20.31:2379 \
+              --ca-file=/etc/kubernetes/ssl/ca.pem \
+              --cert-file=/etc/etcd/ssl/etcd.pem \
+              --key-file=/etc/etcd/ssl/etcd.key \
+              set /k8s/network/config '{"Network": "10.64.0.0/10","Backend": {"Type": "vxlan"}}'
+
+  - ##### 设置 Kubernetes 集群网络为 10.64.0.0/10, 模式为 vxlan, 可用IP数量 4,194,304
+
+### 3. 查看已分配网
+- #### 确认配置
+
+      etcdctl --endpoints=https://192.168.20.31:2379 \
+              --ca-file=/etc/kubernetes/ssl/ca.pem \
+              --cert-file=/etc/etcd/ssl/etcd.pem \
+              --key-file=/etc/etcd/ssl/etcd.key \
+              get /k8s/network/config
+
+## 五、启动
+### 1. 启动 flanneld
+    systemctl start flanneld
+
+### 2. 设置开启启动
+
+    systemctl enable flanneld
