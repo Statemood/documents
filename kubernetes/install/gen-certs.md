@@ -237,6 +237,7 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
       openssl genrsa -out proxy-client.key 4096
 
 - 生成证书请求
+  
       openssl req -new -key proxy-client.key -out proxy-client.csr \
               -subj "/CN=aggregator/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" \
               -config proxy-client.cnf

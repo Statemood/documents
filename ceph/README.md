@@ -48,15 +48,18 @@
   - Ceph-deploy 2.0.1
 
 
-#### 主机配置及角色
+#### 典型配置
+
+适用于生产环境
 |  主机          |  IP            |  角色        | 配置        |
 | :----------:  | :------------: | :----------: | ---------- |
-| ceph-0         | em0: 192.168.50.20(**Public**)<br />em1: 172.20.0.20(**Cluster**)   | MON<br />OSD | Intel Xeon X5650 2.67GHz \* 2<br />32G MEM<br />73G SAS x 2 RAID 1(**OS**)<br />SAMSUNG 850PRO 512G SSD \* 1(**Journal**)<br />DELL 600G SAS 10KRPM \* 3(**OSD**)|
-| ceph-1         | em0: 192.168.50.21(**Public**)<br />em1: 172.20.0.21(**Cluster**)   | MON<br />OSD | Intel Xeon X5650 2.67GHz \* 2<br />32G MEM<br />73G SAS x 2 RAID 1(**OS**)<br />SAMSUNG 850PRO 512G SSD \* 1(**Journal**)<br />DELL 600G SAS 10KRPM \* 3(**OSD**)|
-| ceph-2         | em0: 192.168.50.22(**Public**)<br />em1: 172.20.0.22(**Cluster**)   | MON<br />OSD | Intel Xeon X5650 2.67GHz \* 2<br />32G MEM<br />73G SAS x 2 RAID 1(**OS**)<br />SAMSUNG 850PRO 512G SSD \* 1(**Journal**)<br />DELL 600G SAS 10KRPM \* 3(**OSD**)|
+| ceph-0         | em0: 192.168.50.20(**Public**)<br />em1: 172.20.0.20(**Cluster**)   | MON<br />OSD | 8C 32G MEM<br />256G x 2 RAID 1(**OS**)<br />1TB PCIe SSD \* 2(**OSD:SSD**)<br />4TB SAS \* 4(**OSD:SAS**)|
+| ceph-1         | em0: 192.168.50.21(**Public**)<br />em1: 172.20.0.21(**Cluster**)   | MON<br />OSD | 8C 32G MEM<br />256G x 2 RAID 1(**OS**)<br />1TB PCIe SSD \* 2(**OSD:SSD**)<br />4TB SAS \* 4(**OSD:SAS**)|
+| ceph-2         | em0: 192.168.50.22(**Public**)<br />em1: 172.20.0.22(**Cluster**)   | MON<br />OSD | 8C 32G MEM<br />256G x 2 RAID 1(**OS**)<br />1TB PCIe SSD \* 2(**OSD:SSD**)<br />4TB SAS \* 4(**OSD:SAS**)|
 
+- 推荐使用更高带宽的网络, 在生产环境, 建议最低10Gbps * 2
 
-#### 主机配置及角色(最小化配置，供测试及学习)
+最小化配置, 供测试及学习
 |  主机          |  IP            |  角色        | 配置        |
 | :----------:  | :------------: | :----------: | ---------- |
 | ceph-0         | em0: 192.168.50.20(**Public**)<br />em1: 172.20.0.20(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 20G(**OSD**)<br />DISK 2 20G(**OSD**)|
@@ -64,6 +67,7 @@
 | ceph-2         | em0: 192.168.50.22(**Public**)<br />em1: 172.20.0.22(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 20G(**OSD**)<br />DISK 2 20G(**OSD**)|
 
 - OSD 磁盘单块10G也可以
+- Cluster 网络可选
 
 ## 准备
 
@@ -73,31 +77,31 @@
 ###### 本步骤要在每一个节点上执行
 - ##### 由于后续安装及配置都涉及到主机名，故此需先绑定
 - ##### 依次在三个节点上执行以下命令完成hosts绑定
-      [root@ceph-0 ~]#  echo -e "\n# Ceph Cluster\n192.168.50.20\tceph-0\n192.168.50.21\tceph-1\n192.168.50.22\tceph-2" >> /etc/hosts
+      echo -e "\n# Ceph Cluster\n192.168.50.20\tceph-0\n192.168.50.21\tceph-1\n192.168.50.22\tceph-2" >> /etc/hosts
 
 #### 2. SSH RSA Key
 ###### 在ceph-0上操作
 - ##### 进入 ~/.ssh 目录，如果不存在则创建(.ssh目录权限700)
-      [root@ceph-0 ~]# test -d .ssh || mkdir -m 700 .ssh
-      [root@ceph-0 ~]# cd .ssh
+      test -d .ssh || mkdir -m 700 .ssh
+      cd .ssh
 
 - ##### 生成RSA Key
-      [root@ceph-0 ~]# ssh-keygen -t rsa -b 3072
+      ssh-keygen -t rsa -b 3072
     - 使用 ssh-keygen 命令生成一个3072位的RSA Key
     - 默认生成为 id_rsa，如当前目录已存在可以直接使用，或生成时选择其它名称
 
 - ##### 将RSA Key分发到三个节点(**包括 ceph-0 自身**)
-      [root@ceph-0 ~]# for i in ceph-0 ceph-1 ceph-2; do ssh-copy-id $i; done
+      for i in ceph-0 ceph-1 ceph-2; do ssh-copy-id $i; done
     - 可以使用 ssh-copy-id **-i** ~/.ssh/id_rsa_ceph.pub 分发指定的Key
     - 分发时会提示 "Are you sure you want to continue connecting (yes/no)? ", **输入 yes 然后回车**
 
 #### 3. 防火墙
 - ##### 本步骤要在每一个节点上执行
 - ##### 打开 tcp 3300, 6789, 6800-7100 端口
-      [root@ceph-0 ~]# firewall-cmd --zone=public --add-port=3300/tcp --permanent
-      [root@ceph-0 ~]# firewall-cmd --zone=public --add-port=6789/tcp --permanent
-      [root@ceph-0 ~]# firewall-cmd --zone=public --add-port=6800-7100/tcp --permanent
-      [root@ceph-0 ~]# firewall-cmd --reload
+      firewall-cmd --zone=public --add-port=3300/tcp --permanent
+      firewall-cmd --zone=public --add-port=6789/tcp --permanent
+      firewall-cmd --zone=public --add-port=6800-7100/tcp --permanent
+      firewall-cmd --reload
 
 #### 4. 时间同步
 ###### 本步骤要在每一个节点上执行
@@ -105,29 +109,29 @@
 - ##### 全部节点应使用同一个时间服务器
 - ##### 时间服务器使用 cn.pool.ntp.org
 - ##### 安装 ntpdate
-      [root@ceph-0 ~]# yum install -y ntpdate
+      yum install -y ntpdate
 
 - ##### 先同步一下时间
-      [root@ceph-0 ~]# ntpdate cn.pool.ntp.org
+      ntpdate cn.pool.ntp.org
 
 - ##### 将 ntpdate 设置到计划任务中
-      [root@ceph-0 ~]# echo -e "\n00  00  *  *  * \troot\tntpdate cn.pool.ntp.org" >> /etc/crontab
+      echo -e "\n00  00  *  *  * \troot\tntpdate cn.pool.ntp.org" >> /etc/crontab
   - 设置每天 00:00 执行同步
   - 如果机器比较老旧，可以更频繁的进行同步，如每隔6小时一次
 
 #### 5. 安装 yum 源 与 ceph-deploy
 ###### 本步骤要在每一个节点上执行
 - ##### 安装 EPEL 源
-      [root@ceph-0 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/centos/7/extras/x86_64/Packages/epel-release-7-11.noarch.rpm
+      rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/centos/7/extras/x86_64/Packages/epel-release-7-11.noarch.rpm
 
 - ##### 安装 Ceph 源
-      [root@ceph-0 ~]# rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-luminous/el7/noarch/ceph-release-1-1.el7.noarch.rpm
+      rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-luminous/el7/noarch/ceph-release-1-1.el7.noarch.rpm
       
 - ##### 替换 ceph.repo 服务器
   - 由于官网服务器下载速度较慢，需要替换 ceph.repo 文件中服务器地址为 **[清华镜像站进行](https://mirrors.tuna.tsinghua.edu.cn)**
   - 使用下方命令进行替换
 
-        [root@ceph-0 ~]#  sed -i 's#htt.*://download.ceph.com#https://mirrors.tuna.tsinghua.edu.cn/ceph#g' /etc/yum.repos.d/ceph.repo
+        sed -i 's#htt.*://download.ceph.com#https://mirrors.tuna.tsinghua.edu.cn/ceph#g' /etc/yum.repos.d/ceph.repo
 
       <!--* For close star-->
 
@@ -149,32 +153,21 @@
         type=rpm-md
         gpgkey=https://mirrors.tuna.tsinghua.edu.cn/ceph/keys/release.asc
 
-        [ceph-source]
-        name=Ceph source packages
-        baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-nautilus/el7/SRPMS
-        enabled=1
-        gpgcheck=1
-        type=rpm-md
-        gpgkey=https://mirrors.tuna.tsinghua.edu.cn/ceph/keys/release.asc
-
-
 #### 6. 安装 ceph-deploy
 - ##### 使用 yum 安装 ceph-deploy
-      [root@ceph-0 ~]# yum install -y ceph-deploy
+      yum install -y ceph-deploy
 
   - 执行 ceph-deploy --version, 确认版本
-      [root@ceph-0 ~]# ceph-deploy --version
+      ceph-deploy --version
 
 - ##### 创建 ceph-install 目录并进入，安装时产生的文件都将在这个目录
-      [root@ceph-0 ~]# mkdir ceph-install && cd ceph-install
-      [root@ceph-0 ceph-install]#
-
+      mkdir ceph-install && cd ceph-install
 
 ### 二. 准备硬盘
 #### 1. OSD 磁盘
 - ##### 对于OSD磁盘我们不进行分区，Bluestore 直接管理裸盘
 - ##### 如果OSD磁盘上已存在分区，则通过以下步骤进行删除分区操作
-      [root@ceph-0 ~]# parted /dev/vdc
+      parted /dev/vdc
           p     # 显示已有分区，第一列数字为分区编号
           rm 1  # 删除第一个分区，依次删除全部分区
           q     # 退出
@@ -322,10 +315,10 @@
 ###### 本操作可以在任一节点上执行
 #### 1. pool 存储池
 - ##### 查看存储池
-      [root@ceph-0 ~]# ceph osd pool ls
+      ceph osd pool ls
 
 - ##### 创建存储池
-      [root@ceph-0 ~]# ceph osd pool create pool_name 64
+      ceph osd pool create pool_name 64
     - 创建一个名为 pool_name的存储池，pg = 64
 
 #### 2. ceph-fs 文件系统
@@ -343,23 +336,23 @@
 ### 测试Ceph性能
 #### 1. 使用 rados bench 测试 rbd
 - ##### 使用 `rados -p rbd bench 60 write` 进行 顺序写入
-      [root@ceph-0 ~]# rados -p rbd bench 60 write
+      rados -p rbd bench 60 write
 
 - ##### 使用 `rados -p rbd -b 4096 bench 60 write -t 256 --run-name test1` 进行 4k 写入
-      [root@ceph-0 ~]# rados -p rbd -b 4096 bench 60 write -t 128 --run-name test1
+      rados -p rbd -b 4096 bench 60 write -t 128 --run-name test1
 
 - ##### rados bench 更多信息请参阅 [官方文档](http://docs.ceph.com/docs/master/)
 
 #### 2. 使用 fio 测试 ceph-fs
 - ##### 在节点 50-50 上进行
 - ##### 使用 `yum install -y fio` 安装 fio
-      [root@50-50 ~]# yum install -y fio
+      yum install -y fio
 
 - ##### 进入 ceph-fs 挂载目录内
-      [root@50-50 ~]# cd /data/files
+      cd /data/files
 
 - ##### 执行测试
-      [root@50-50 files]# fio -direct=1 -iodepth=128 -rw=randwrite -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=iotest -name=Rand_Write_Testing
+      fio -direct=1 -iodepth=128 -rw=randwrite -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=iotest -name=Rand_Write_Testing
 
 - ###### 更多 fio 信息请查阅相关文档
 
