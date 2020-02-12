@@ -238,6 +238,11 @@
       ceph-deploy forgetkeys
 
 
+- VG Remove
+  
+      vgremove -y `vgdisplay | grep ' VG Name' | grep 'ceph-' | awk '{print $3}'`
+
+
 ## 配置
 #### 1. 为何要分离网络
 - ##### 性能

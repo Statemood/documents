@@ -239,6 +239,14 @@
       curl -O https://dl.k8s.io/v1.15.3/kubernetes-server-linux-amd64.tar.gz
 
   - #### 更多下载信息 >> [Kubernetes Releases](https://github.com/kubernetes/kubernetes/releases)
+
+  - #### 下载地址转换
+    由于部分网络下无法访问 https://dl.k8s.io， 故可以通过以下形式进行简单替换下载。
+
+    https://dl.k8s.io/v1.17.2/kubernetes-server-linux-amd64.tar.gz
+
+    https://storage.googleapis.com/kubernetes-release/release/v1.17.2/kubernetes-server-linux-amd64.tar.gz
+
 - 解压
 
       tar zxf kubernetes-server-linux-amd64.tar.gz
@@ -384,7 +392,7 @@
 ### 授予 kube-apiserver 访问 kubelet API 权限
 在执行 kubectl exec、run、logs 等命令时，apiserver 会将请求转发到 kubelet 的 https 端口。这里定义 RBAC 规则，授权 apiserver 使用的证书（apiserver.pem）用户名（CN：kuberntes）访问 kubelet API 的权限
 
-    kubectl create clusterrolebinding kube-apiserver:kubelet-apis --clusterrole=system:kubelet-api-admin --user k
+    kubectl create clusterrolebinding kube-apiserver:kubelet-apis --clusterrole=system:kubelet-api-admin --user kubernetes
 
 - --user指定的为apiserver.pem证书中CN指定的值
 
@@ -714,14 +722,12 @@
       KUBELET_ARGS="\
             --hostname-override=k8s-node-1 \
             --config=/etc/kubernetes/kubelet.yaml \
-            --cgroup-driver=systemd \
             --pod-infra-container-image=gcr.azk8s.cn/google-containers/pause-amd64:3.1 \
             --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
             --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \
             --cert-dir=/etc/kubernetes/pki \
             --root-dir=/data/kubelet \
             --network-plugin=cni \
-            --rotate-certificates \
             --logtostderr=true \
             --v=4"
 
@@ -993,7 +999,7 @@ Calico组件：
 下载calico yaml
 
 ```
-curl -O https://docs.projectcalico.org/v3.9/manifests/calico-etcd.yaml
+curl -O https://docs.projectcalico.org/v3.12/manifests/calico-etcd.yaml
 ```
 
 修改yaml,以下配置项修改为对应pod地址段
