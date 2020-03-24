@@ -442,7 +442,7 @@ systemctl status kube-apiserver
 
 ```shell
 kubectl create clusterrolebinding kube-apiserver:kubelet-apis \
-				--clusterrole=system:kubelet-api-admin --user kubernetes
+               --clusterrole=system:kubelet-api-admin --user kubernetes
 ```
 
 - --user指定的为apiserver.pem证书中CN指定的值
@@ -1012,10 +1012,10 @@ kubectl create clusterrole approve-node-server-renewal-csr --verb=create \
 自动批准 system:nodes 组用户更新 kubelet 10250 api 端口证书的 CSR 请求
 
 ```shell
-kubectl create clusterrolebinding node-server-cert-renewal --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeserver --group=system:nodes
+kubectl create clusterrolebinding node-server-cert-renewal \
+        --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeserver \
+        --group=system:nodes
 ```
-
-
 
 
 
@@ -1026,13 +1026,16 @@ kubectl get clusterrolebindings
 ```
 
 - auto-approve-csrs-for-group
-  - 自动 approve nodeclient 的第一次 CSR
-  - 注意第一次 CSR 时，请求的 Group 为 system:bootstrappers
+
+- 自动 approve nodeclient 的第一次 CSR
+- 注意第一次 CSR 时，请求的 Group 为 system:bootstrappers
 
 - node-client-cert-renewal
-  - 自动 approve selfnodeclient 后续过期的证书，自动生成的证书 Group 为 system:nodes
+
+  自动 approve selfnodeclient 后续过期的证书，自动生成的证书 Group 为 system:nodes
 - node-server-cert-renewal
-  - 自动 approve selfnodeserver 后续过期的证书，自动生成的证书 Group 为 system:nodes
+
+  自动 approve selfnodeserver 后续过期的证书，自动生成的证书 Group 为 system:nodes
 
 
 
