@@ -230,7 +230,7 @@ openssl x509 -req -in kube-controller-manager.csr \
 
 ### kube-scheduler
 
-#### kube-scheduler.cnf
+kube-scheduler.cnf
 
 ```shell
 cp kube-controller-manager.cnf kube-scheduler.cnf
@@ -269,6 +269,8 @@ openssl x509 -req -in kube-scheduler.csr \
 
 - **CN**和**O**均为 `system:kube-scheduler`，Kubernetes 内置的
 ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
+
+
 
 ### kubectl
 
