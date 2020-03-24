@@ -68,14 +68,14 @@ etcd-server.cnf
 
 ```
 [ req ]
-req_extensions 			= v3_req
+req_extensions			= v3_req
 distinguished_name 	= req_distinguished_name
 [req_distinguished_name]
 [ v3_req ]
-basicConstraints 		= CA:FALSE
-extendedKeyUsage  	= clientAuth, serverAuth
-keyUsage 						= nonRepudiation, digitalSignature, keyEncipherment
-subjectAltName 			= @alt_names
+basicConstraints		= CA:FALSE
+extendedKeyUsage		= clientAuth, serverAuth
+keyUsage						= nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName			= @alt_names
 [alt_names]
 IP.1 = 192.168.20.31
 IP.2 = 192.168.20.32
@@ -102,7 +102,7 @@ openssl req -new -key etcd-server.key -out etcd-server.csr \
 
 ```shell
 openssl x509 -req -in etcd-server.csr -CA etcd-ca.pem \
-				-CAkey etcd-ca.key -CAcreateserial \
+        -CAkey etcd-ca.key -CAcreateserial \
         -out etcd-server.pem -days 1825 \
         -extfile etcd-server.cnf -extensions v3_req
 ```
