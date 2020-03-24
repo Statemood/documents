@@ -265,7 +265,7 @@ cd kubernetes/server/bin
   安装程序
   
   ```shell
-  cp -rf kube-apiserver kube-controller-manager kube-scheduler kube-proxy kubelet /usr/bin
+  cp -rf apiextensions-apiserver kube-apiserver kube-controller-manager kube-scheduler kube-proxy kubelet /usr/bin
   ```
   
     - 复制到 /usr/bin 目录下
@@ -274,7 +274,7 @@ cd kubernetes/server/bin
 - 配置 SELinux
 
   ```shell
-  chcon -u system_u -t bin_t /usr/bin/kube*
+  chcon -u system_u -t bin_t /usr/bin/kube* /usr/bin/apiextensions-apiserver
   ```
 
 ## 添加用户
@@ -283,7 +283,7 @@ cd kubernetes/server/bin
 
   ```shell
   groupadd -g 200 kube
-  useradd -g kube kube -u 200 -d / -s /sbin/nologin -M
+  useradd  -g 200 kube -u 200 -d / -s /sbin/nologin -M
   ```
 
 ## 生成 kubectl 的 kubeconfig 文件
@@ -323,80 +323,65 @@ kubectl config use-context kubernetes
     - 生成的kubeconfig被保存到~/.kube/config文件
 
 ## kube-apiserver
-- 安装运行程序
 
-  ```shell
-  cp -fv kubernetes/server/bin/kube-apiserver /usr/bin
-  ```
+修改配置文件 /etc/kubernetes/apiserver
 
-- 更改程序用户
+```
+###
+# kubernetes system config
+#
+# The following values are used to configure the kube-apiserver
+#
 
-  ```shell
-  chown root:root /usr/bin/kube-apiserver
-  ```
+KUBE_API_ARGS="\
+      --allow-privileged=true      \
+      --secure-port=6443           \
+      --bind-address=10.10.20.31   \
+      --etcd-cafile=/etc/etcd/ssl/etcd-ca.pem                        \
+      --etcd-certfile=/etc/etcd/ssl/etcd-client.pem                  \
+      --etcd-keyfile=/etc/etcd/ssl/etcd-client.key                   \
+      --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem              \
+      --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key       \
+      --client-ca-file=/etc/kubernetes/ssl/ca.pem                    \
+      --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem      \
+      --proxy-client-cert-file=/etc/kubernetes/ssl/proxy-client.pem  \
+      --proxy-client-key-file=/etc/kubernetes/ssl/proxy-client.key   \
+      --service-account-key-file=/etc/kubernetes/ssl/apiserver.key   \
+      --kubelet-certificate-authority=/etc/kubernetes/ssl/ca.pem     \
+      --kubelet-client-certificate=/etc/kubernetes/ssl/kube-apiserver-kubelet-client.pem \
+      --kubelet-client-key=/etc/kubernetes/ssl/kube-apiserver-kubelet-client.key         \
+      --authorization-mode=RBAC,Node   \
+      --kubelet-https=true             \
+      --anonymous-auth=false           \
+      --apiserver-count=3              \
+      --audit-log-maxage=30            \
+      --audit-log-maxbackup=7          \
+      --audit-log-maxsize=100          \
+      --event-ttl=1h                   \
+      --logtostderr=true               \
+      --enable-bootstrap-token-auth    \
+      --max-requests-inflight=3000     \
+      --delete-collection-workers=3    \
+      --service-cluster-ip-range=10.0.0.0/12       \
+      --service-node-port-range=30000-35000        \
+      --default-not-ready-toleration-seconds=10    \
+      --default-unreachable-toleration-seconds=10  \
+      --requestheader-allowed-names=aggregator     \
+      --requestheader-extra-headers-prefix=X-Remote-Extra- \
+      --requestheader-group-headers=X-Remote-Group         \
+      --requestheader-username-headers=X-Remote-User       \
+      --enable-aggregator-routing=true \
+      --max-requests-inflight=3000     \
+      --etcd-servers=https://192.168.20.31:2379,https://192.168.20.32:2379,https://192.168.20.33:2379 \
+      --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction"
+```
 
-- 更改程序权限
-
-  ```shell
-  chmod 755 /usr/bin/kube-apiserver
-  ```
-
-- 修改配置文件 /etc/kubernetes/apiserver
-
-      ###
-      # kubernetes system config
-      #
-      # The following values are used to configure the kube-apiserver
-      #
-    
-      KUBE_API_ARGS="\
-            --allow-privileged=true      \
-            --secure-port=6443           \
-            --bind-address=10.10.20.31   \
-            --etcd-cafile=/etc/etcd/ssl/etcd-ca.pem                        \
-            --etcd-certfile=/etc/etcd/ssl/etcd-client.pem                  \
-            --etcd-keyfile=/etc/etcd/ssl/etcd-client.key                   \
-            --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem              \
-            --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key       \
-            --client-ca-file=/etc/kubernetes/ssl/ca.pem                    \
-            --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem      \
-            --proxy-client-cert-file=/etc/kubernetes/ssl/proxy-client.pem  \
-            --proxy-client-key-file=/etc/kubernetes/ssl/proxy-client.key   \
-            --service-account-key-file=/etc/kubernetes/ssl/apiserver.key   \
-            --kubelet-certificate-authority=/etc/kubernetes/ssl/ca.pem     \
-            --kubelet-client-certificate=/etc/kubernetes/ssl/kube-apiserver-kubelet-client.pem \
-            --kubelet-client-key=/etc/kubernetes/ssl/kube-apiserver-kubelet-client.key         \
-            --authorization-mode=RBAC,Node   \
-            --kubelet-https=true             \
-            --anonymous-auth=false           \
-            --apiserver-count=3              \
-            --audit-log-maxage=30            \
-            --audit-log-maxbackup=7          \
-            --audit-log-maxsize=100          \
-            --event-ttl=1h                   \
-            --logtostderr=true               \
-            --enable-bootstrap-token-auth    \
-            --max-requests-inflight=3000     \
-            --delete-collection-workers=3    \
-            --service-cluster-ip-range=10.0.0.0/12       \
-            --service-node-port-range=30000-35000        \
-            --default-not-ready-toleration-seconds=10    \
-            --default-unreachable-toleration-seconds=10  \
-          --requestheader-allowed-names=aggregator     \
-            --requestheader-extra-headers-prefix=X-Remote-Extra- \
-            --requestheader-group-headers=X-Remote-Group         \
-            --requestheader-username-headers=X-Remote-User       \
-            --enable-aggregator-routing=true \
-            --max-requests-inflight=3000     \
-            --etcd-servers=https://192.168.20.31:2379,https://192.168.20.32:2379,https://192.168.20.33:2379 \
-            --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction"
-  
-  - --insecure-port=0 关闭非安全的8080端口, 此参数即将弃用
-  - 如果使用了kubelet TLS Boostrap机制，则不能再指定--kubelet-certificate-authority、--kubelet-client-certificate和--kubelet-client-key选项，否则后续kube-apiserver校验kubelet证书时出现x509: certificate signed by unknown authority错误
-  - --admission-control值必须包含ServiceAccount
-  - --service-cluster-ip-range指定Service Cluster IP地址段，该地址段不能路由可达
-  - --service-node-port-range 指定 NodePort 的端口范围
-  - 缺省情况下kubernetes对象保存在etcd /registry路径下，可以通过--etcd-prefix参数进行调整
+- --insecure-port=0 关闭非安全的8080端口, 此参数即将弃用
+- 如果使用了kubelet TLS Boostrap机制，则不能再指定--kubelet-certificate-authority、--kubelet-client-certificate和--kubelet-client-key选项，否则后续kube-apiserver校验kubelet证书时出现x509: certificate signed by unknown authority错误
+- --admission-control值必须包含ServiceAccount
+- --service-cluster-ip-range指定Service Cluster IP地址段，该地址段不能路由可达
+- --service-node-port-range 指定 NodePort 的端口范围
+- 缺省情况下kubernetes对象保存在etcd /registry路径下，可以通过--etcd-prefix参数进行调整
 
 
 ### 配置systemd unit
@@ -532,7 +517,6 @@ LimitNOFILE=65536
 [Install]
 WantedBy=multi-user.target
 ```
-
 ### 配置 kubeconfig 文件的 ACL 权限
 
 ```shell
