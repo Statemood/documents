@@ -68,14 +68,14 @@ etcd-server.cnf
 
 ```
 [ req ]
-req_extensions			= v3_req
+req_extensions      = v3_req
 distinguished_name 	= req_distinguished_name
 [req_distinguished_name]
 [ v3_req ]
-basicConstraints		= CA:FALSE
-extendedKeyUsage		= clientAuth, serverAuth
-keyUsage						= nonRepudiation, digitalSignature, keyEncipherment
-subjectAltName			= @alt_names
+basicConstraints    = CA:FALSE
+extendedKeyUsage    = clientAuth, serverAuth
+keyUsage            = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName      = @alt_names
 [alt_names]
 IP.1 = 192.168.20.31
 IP.2 = 192.168.20.32
