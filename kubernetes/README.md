@@ -504,7 +504,7 @@ kubectl config use-context system:kube-controller-manager \
 # Add your own!
 KUBE_CONTROLLER_MANAGER_ARGS="\
       --service-account-private-key-file=/etc/kubernetes/ssl/apiserver.key  \
-      --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem      				\
+      --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem             \
       --cluster-signing-cert-file=/etc/kubernetes/ssl/apiserver.pem         \
       --cluster-signing-key-file=/etc/kubernetes/ssl/apiserver.key          \
       --root-ca-file=/etc/kubernetes/ssl/ca.pem     \
@@ -699,22 +699,21 @@ systemctl status kube-scheduler
 
 
 - 首先建立一个随机产生BOOTSTRAP_TOKEN，并建立 bootstrap 的 kubeconfig 文件
-  
+
   ```shell
   TOKEN_PUB=$(openssl rand -hex 3)
   TOKEN_SECRET=$(openssl rand -hex 8)
-BOOTSTRAP_TOKEN="${TOKEN_PUB}.${TOKEN_SECRET}"
-  
+  BOOTSTRAP_TOKEN="${TOKEN_PUB}.${TOKEN_SECRET}"
   kubectl -n kube-system create secret generic bootstrap-token-${TOKEN_PUB} \
         --type 'bootstrap.kubernetes.io/token' \
         --from-literal description="cluster bootstrap token" \
         --from-literal token-id=${TOKEN_PUB} \
         --from-literal token-secret=${TOKEN_SECRET} \
         --from-literal usage-bootstrap-authentication=true \
-      --from-literal usage-bootstrap-signing=true
+        --from-literal usage-bootstrap-signing=true
   ```
-  
-  - Token 必须满足 [a-z0-9]{6}\.[a-z0-9]{16} 格式；以 . 分割，前面的部分被称作 Token ID, Token ID 并不是 “机密信息”，它可以暴露出去；相对的后面的部分称为 Token Secret, 它应该是保密的
+
+  Token 必须满足 [a-z0-9]{6}\.[a-z0-9]{16} 格式；以 . 分割，前面的部分被称作 Token ID, Token ID 并不是 “机密信息”，它可以暴露出去；相对的后面的部分称为 Token Secret, 它应该是保密的
 
 
 
