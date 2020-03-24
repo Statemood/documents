@@ -1,4 +1,127 @@
-### Keepalived 配置文件 /etc/keepalived/keepalived.conf
+# Nginx
+
+## 安装
+
+```shell
+yum install -y nginx nginx-mod-stream
+```
+
+
+
+
+
+## 配置
+
+#### nginx.conf
+
+```shell
+include /usr/share/nginx/modules/*.conf;
+# Set L4 Proxy config
+include conf.d/L4-Proxy/*.conf;
+
+user nobody;
+worker_processes 4;
+worker_rlimit_nofile 65535;
+events {
+    use epoll;
+    worker_connections 65535;
+}
+http {
+    include mime.types;
+    default_type application/octet-stream;
+    log_format default '$remote_addr $remote_port $remote_user $time_iso8601 $status $body_bytes_sent '
+                       '"$request" "$request_body" "$http_referer" "$http_user_agent" "$http_x_forwarded_for"';
+
+    fastcgi_connect_timeout 300;
+    fastcgi_send_timeout 300;
+    fastcgi_read_timeout 300;
+    fastcgi_buffer_size 64k;
+    fastcgi_buffers 8 32k;
+    fastcgi_busy_buffers_size 128k;
+    fastcgi_temp_file_write_size 128k;
+    sendfile on;
+    keepalive_timeout 65;
+    gzip on;
+    gzip_min_length 1k;
+    gzip_buffers 4 16k;
+    gzip_http_version 1.0;
+    gzip_comp_level 2;
+    gzip_types text/plain application/x-javascript text/css application/xml text/vnd.wap.wml;
+    gzip_vary on;
+    open_file_cache max=32768 inactive=20s;
+    open_file_cache_min_uses 1;
+    open_file_cache_valid 30s;
+    proxy_ignore_client_abort on;
+    client_max_body_size 1G;
+    client_body_buffer_size 256k;
+    proxy_connect_timeout 30;
+    proxy_send_timeout 30;
+    proxy_read_timeout 60;
+    proxy_buffer_size 256k;
+    proxy_buffers 4 256k;
+    proxy_busy_buffers_size 256k;
+    proxy_temp_file_write_size 256k;
+    proxy_http_version 1.1;
+
+    include conf.d/*.conf;
+}
+```
+
+
+
+#### conf.d/nginx-status.conf
+
+```shell
+server {
+    listen 127.0.0.1:80;
+    server_name localhost;
+
+    location /nginx-status {
+        stub_status     on;
+        access_log      off;
+    }
+}
+```
+
+
+
+
+
+#### conf.d/L4-Proxy/k8s-apiservers.conf
+
+```shell
+stream {
+    upstream k8s_apiserver {
+        server 192.168.20.31:6443;
+        server 192.168.20.32:6443;
+        server 192.168.20.33:6443;
+    }
+
+    server {
+        listen 6443;
+
+        proxy_pass k8s_apiserver;
+    }
+}
+```
+
+
+
+## 启动
+
+```shell
+nginx
+```
+
+
+
+
+
+# Keepalived
+
+## 配置
+
+#### /etc/keepalived/keepalived.conf
 
     ! Configuration File for keepalived
     global_defs {
@@ -33,7 +156,45 @@
         }
     }
 
+
+
+#### /usr/local/bin/check.sh
+
+```shell
+#! /bin/bash
+http_url="localhost/nginx-status"
+http_code=$(curl -sq -m 5 -o /dev/null $http_url -w %{http_code})
+
+test $http_code = 200 && exit 0 || exit 1
+```
+
+
+
+#### Permission
+
+```she
+chmod 755 /usr/local/bin/check.sh
+
+chcon -u system_u -t bin_t /usr/local/bin/check.sh
+```
+
+
+
 ### 打开6443端口
 
-    firewall-cmd --zone=public --add-port=6443/tcp --permanent
-    firewall-cmd --reload
+```shell
+firewall-cmd --direct --permanent --add-rule ipv4 filter INPUT 0 --destination 224.0.0.18 --protocol vrrp -j ACCEPT
+firewall-cmd --zone public --add-port 6443/tcp --permanent
+firewall-cmd --reload
+```
+
+
+
+# 启动
+
+```shell
+systemctl start  keepalived
+systemctl enable keepalived
+systemctl status keepalived
+```
+

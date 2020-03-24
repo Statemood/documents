@@ -5,12 +5,14 @@
 
 #### 2. Create Bootable Install Drive
 
-    sudo /Applications/Install\ macOS\ High\ Sierra.app/Contents/Resources/createinstallmedia \
-         --volume             \
-         /Volumes/USB         \
-         --applicationpath    \
-         /Applications/Install\ macOS\ High\ Sierra.app
+```shell
+sudo /Applications/Install\ macOS\ High\ Sierra.app/Contents/Resources/createinstallmedia \
+     --volume             \
+     /Volumes/USB         \
+     --applicationpath    \
+     /Applications/Install\ macOS\ High\ Sierra.app
+```
 
   - /Volumes/USB
     - USB Flash
-  
+

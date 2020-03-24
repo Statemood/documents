@@ -3,11 +3,11 @@
 
 ## 简介
 
-本文档介绍 Docker-CE 的安装 
+本文档介绍 Docker-CE 的在线安装 
 
 ## 安装
 - #### 安装 Docker-CE Repo
-    
+  
       curl https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/docker-ce.repo \
       -o /etc/yum.repos.d/docker-ce.repo
 
@@ -17,7 +17,7 @@
       /etc/yum.repos.d/docker-ce.repo
 
 - #### 安装 Docker-CE
-   
+  
       yum install -y docker-ce
 
 ## 配置

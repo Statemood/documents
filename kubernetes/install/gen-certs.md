@@ -9,7 +9,6 @@
 5. kube-proxy
 6. kubelet
 7. metrics-server
-8. etcd
 9. calico
 10. flannel
 11. 分发证书
@@ -29,7 +28,7 @@
       req_extensions = v3_req
       distinguished_name = req_distinguished_name
       [req_distinguished_name]
-
+    
       [ v3_req ]
       keyUsage = critical, cRLSign, keyCertSign, digitalSignature, keyEncipherment
       extendedKeyUsage = serverAuth, clientAuth
@@ -100,7 +99,55 @@
               -out apiserver.pem -days 1095 \
               -extfile apiserver.cnf -extensions v3_req
 
+
+
+### 为 kube-apiserver-kubelet-client 签发证书
+
+kube-apiserver-kubelet-client.cnf
+
+```
+[ req ]
+req_extensions     = v3_req
+distinguished_name = req_distinguished_name
+
+[req_distinguished_name]
+
+[ v3_req ]
+keyUsage           = critical, digitalSignature, keyEncipherment
+extendedKeyUsage   = clientAuth
+```
+
+生成key
+
+```
+openssl genrsa -out kube-apiserver-kubelet-client.key 4096
+```
+
+生成证书请求
+
+```
+openssl req -new -key kube-apiserver-kubelet-client.key -out kube-apiserver-kubelet-client.csr \
+        -subj "/C=CN/ST=Shanghai/L=Shanghai/O=system:masters/CN=kube-apiserver-kubelet-client" \
+        -config kube-apiserver-kubelet-client.cnf
+```
+
+签发证书
+
+```
+openssl x509 -req -in kube-apiserver-kubelet-client.csr \
+        -CA ca.pem -CAkey ca.key -CAcreateserial \
+        -out kube-apiserver-kubelet-client.pem -days 1825 \
+        -extfile kube-apiserver-kubelet-client.cnf -extensions v3_req
+```
+
+校验证书
+
+```
+openssl x509 -noout -text -in kube-apiserver-kubelet-client.pem
+```
+
 ### 3. 为 kube-controller-manager 签发证书
+
 - kube-controller-manager.cnf
   
       [ req ]
@@ -163,8 +210,9 @@
   - **CN**和**O**均为 `system:kube-scheduler`，Kubernetes 内置的
 ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
 
-### 5. 为 kubelet 签发证书
-- kubelet.cnf
+### 5. 为 kubectl 签发证书
+
+- kubectl.cnf
 
       [ req ]
       req_extensions = v3_req
@@ -179,8 +227,8 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
 
 - 设置名称变量
 
-      name=kubelet
-      conf=kubelet.cnf
+      name=kubectl
+      conf=kubectl.cnf
 
 - 生成 key
 
@@ -199,9 +247,11 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
               -days 1095 -extfile $conf -extensions v3_req
 
 ### 6. 为 kube-proxy 签发证书
-- kube-proxy.cnf
-  - 复用 kubelet.cnf 配置文件, 在下方设置变量
 
+- kube-proxy.cnf
+  
+- 复用 kubectl.cnf 配置文件, 在下方设置变量
+  
 - 设置名称变量
 
       name=kube-proxy
@@ -251,38 +301,8 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
               -out proxy-client.pem -days 1825 \
               -extfile proxy-client.cnf -extensions v3_req
 
-### 8. 为 etcd 签发证书
-- etcd.cnf
+### 8. 为 flannel 签发证书
 
-      [ req ]
-      req_extensions = v3_req
-      distinguished_name = req_distinguished_name
-      [req_distinguished_name]
-      [ v3_req ]
-      basicConstraints = CA:FALSE
-      keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-      subjectAltName = @alt_names
-      [alt_names]
-      IP.1 = 192.168.20.31
-      IP.2 = 192.168.20.32
-      IP.3 = 192.168.20.33
-
-    - IP.1 为客户端IP, 可以为多个, 如 IP.2 = xxx
-  
-- 生成 key
-
-      openssl genrsa -out etcd.key 3072
-
-- 生成证书请求
-
-      openssl req -new -key etcd.key -out etcd.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config etcd.cnf
-
-- 签发证书
-
-      openssl x509 -req -in etcd.csr -CA ca.pem -CAkey ca.key -CAcreateserial -out etcd.pem -days 1825 -extfile etcd.cnf -extensions v3_req
- 
-
-### 10. 为 flannel 签发证书
 - flannel.cnf
 
       [ req ]
@@ -327,25 +347,23 @@ ClusterRoleBindings `system:kube-scheduler` 赋予kube-scheduler所需权限
   - kube-scheduler
     - kube-scheduler.key
     - kube-scheduler.pem
-  - kubelet (如安装 kubelet 则需要)
-    - kubelet.key
-    - kubelet.pem
+  - Kubectl 
+    - admin.key
+    - admin.pem
   - kube-proxy (如安装 kube-proxy 则需要)
     - kube-proxy.key
     - kube-proxy.pem
   - proxy-client (如启用 metrics-server 则需要)
     - proxy-client.key
     - proxy-client.pem
-  
+
 - Worker 节点需持有以下证书/Key
-  - kubelet
-    - kubelet.key
-    - kubelet.pem
   - kube-proxy
     - kube-proxy.key
     - kube-proxy.pem
-
+  
 - 如使用Flannel网络, 则运行 **kubelet** 节点还需有以下证书
   - flannel
     - flanneld.key
     - flanneld.pem
+
