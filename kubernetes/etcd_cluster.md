@@ -69,7 +69,7 @@ etcd-server.cnf
 ```
 [ req ]
 req_extensions      = v3_req
-distinguished_name 	= req_distinguished_name
+distinguished_name  = req_distinguished_name
 [req_distinguished_name]
 [ v3_req ]
 basicConstraints    = CA:FALSE
@@ -87,7 +87,7 @@ IP.3 = 192.168.20.33
 生成 key
 
 ```shell
-openssl genrsa -out etcd-server.key 3072
+openssl genrsa -out etcd-server.key 4096
 ```
 
 生成证书请求
@@ -304,9 +304,9 @@ WantedBy=multi-user.target
 
    ```shell
    ETCDCTL_API=3 etcdctl --endpoints=https://192.168.20.31:2379 \
-                         --ca-file=/etc/etcd/ssl/etcd-ca.pem \
-                         --cert-file=/etc/etcd/ssl/etcd-client.pem \
-                         --key-file=/etc/etcd/ssl/etcd-client.key \
+                         --cacert/etc/etcd/ssl/etcd-ca.pem \
+                         --cert=/etc/etcd/ssl/etcd-client.pem \
+                         --key=/etc/etcd/ssl/etcd-client.key \
                          member list
    ```
 
@@ -316,11 +316,10 @@ WantedBy=multi-user.target
 
    ```shell
    ETCDCTL_API=3 etcdctl --endpoints=https://192.168.20.31:2379 \
-   										  --write-out=table \
-                         --ca-file=/etc/etcd/ssl/etcd-ca.pem \
-                         --cert-file=/etc/etcd/ssl/etcd-client.pem \
-                         --key-file=/etc/etcd/ssl/etcd-client.key \
-                         member add etcd2 https://192.168.20.32:2380
+                         --cacert=/etc/etcd/ssl/etcd-ca.pem \
+                         --cert=/etc/etcd/ssl/etcd-client.pem \
+                         --key=/etc/etcd/ssl/etcd-client.key \
+                         member add etcd2 --peer-urls=https://192.168.20.32:2380
    ```
 
       Added member named etcd2 with ID 669b333wwf2ce34 to cluster
@@ -349,11 +348,10 @@ WantedBy=multi-user.target
 
 ```shell
 ETCDCTL_API=3 etcdctl --endpoints=https://192.168.20.31:2379 \
-											--write-out=table \
-                      --ca-file=/etc/etcd/ssl/etcd-ca.pem \
-                      --cert-file=/etc/etcd/ssl/etcd-client.pem \
-                      --key-file=/etc/etcd/ssl/etcd-client.key \
-                      member add etcd3 https://192.168.20.33:2380
+                      --cacert=/etc/etcd/ssl/etcd-ca.pem \
+                      --cert=/etc/etcd/ssl/etcd-client.pem \
+                      --key=/etc/etcd/ssl/etcd-client.key \
+                      member add etcd3 --peer-urls=https://192.168.20.33:2380
 ```
 
   Added member named etcd3 with ID c2334e2016572cb to cluster
@@ -397,10 +395,10 @@ systemctl start etcd
 
 ```shell
 ETCDCTL_API=3 etcdctl --endpoints=https://192.168.20.31:2379 \
-        --ca-file=/etc/etcd/ssl/etcd-ca.pem \
-        --cert-file=/etc/etcd/ssl/etcd-client.pem \
-        --key-file=/etc/etcd/ssl/etcd-client.key \
-        member list
+                      --cacert=/etc/etcd/ssl/etcd-ca.pem \
+                      --cert=/etc/etcd/ssl/etcd-client.pem \
+                      --key=/etc/etcd/ssl/etcd-client.key \
+        							member list
 ```
 
 
@@ -408,10 +406,10 @@ ETCDCTL_API=3 etcdctl --endpoints=https://192.168.20.31:2379 \
 
 ```shell
 ETCDCTL_API=3 etcdctl --endpoints=https://192.168.20.31:2379 \
-        --ca-file=/etc/etcd/ssl/etcd-ca.pem \
-        --cert-file=/etc/etcd/ssl/etcd-client.pem \
-        --key-file=/etc/etcd/ssl/etcd-client.key \
-        endpoint health 
+                      --cacert=/etc/etcd/ssl/etcd-ca.pem \
+                      --cert=/etc/etcd/ssl/etcd-client.pem \
+                      --key=/etc/etcd/ssl/etcd-client.key \
+       			          endpoint health 
 ```
 
 
@@ -420,10 +418,10 @@ ETCDCTL_API=3 etcdctl --endpoints=https://192.168.20.31:2379 \
 
 ```shell
 ETCDCTL_API=3 etcdctl --endpoints=https://192.168.20.31:2379 \
-        --ca-file=/etc/etcd/ssl/etcd-ca.pem \
-        --cert-file=/etc/etcd/ssl/etcd-client.pem \
-        --key-file=/etc/etcd/ssl/etcd-client.key \
-        --prefix --keys-only=true get /
+                      --cacert=/etc/etcd/ssl/etcd-ca.pem \
+                      --cert=/etc/etcd/ssl/etcd-client.pem \
+                      --key=/etc/etcd/ssl/etcd-client.key \
+        							--prefix --keys-only=true get /
 ```
 
 
