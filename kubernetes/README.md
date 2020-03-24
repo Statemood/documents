@@ -147,8 +147,10 @@
   - 1.15.x
 
 # 系统配置
+
 ### 1. SELinux
 - #### Enforcing
+  
   - **SELinux 无需禁用**， 策略会在安装过程中进行调整
 
 ## 2. Firewalld
@@ -237,94 +239,108 @@
 # 安装 Kubernetes
 
 ## 安装程序
-- 下载
 
-      curl -O https://dl.k8s.io/v1.15.3/kubernetes-server-linux-amd64.tar.gz
+### 下载
 
-  - #### 更多下载信息 >> [Kubernetes Releases](https://github.com/kubernetes/kubernetes/releases)
+```
+curl -O https://dl.k8s.io/v1.15.3/kubernetes-server-linux-amd64.tar.gz
+```
 
-  - #### 下载地址转换
-    由于部分网络下无法访问 https://dl.k8s.io， 故可以通过以下形式进行简单替换下载。
+- #### 更多下载信息 >> [Kubernetes Releases](https://github.com/kubernetes/kubernetes/releases)
 
-    https://dl.k8s.io/v1.17.2/kubernetes-server-linux-amd64.tar.gz
+- #### 下载地址转换
+  由于部分网络下无法访问 https://dl.k8s.io， 故可以通过以下形式进行简单替换下载。
 
-    https://storage.googleapis.com/kubernetes-release/release/v1.17.2/kubernetes-server-linux-amd64.tar.gz
+  https://dl.k8s.io/v1.17.2/kubernetes-server-linux-amd64.tar.gz
 
-- 解压
+  https://storage.googleapis.com/kubernetes-release/release/v1.17.2/kubernetes-server-linux-amd64.tar.gz
 
-  ```shell
-  tar zxf kubernetes-server-linux-amd64.tar.gz
-  ```
 
-- 进入程序目录
-  
-  ```shell
+
+### 解压
+
+```shell
+tar zxf kubernetes-server-linux-amd64.tar.gz
+```
+
+
+
+### 安装程序
+
+```shell
 cd kubernetes/server/bin
-  ```
-  
-  安装程序
-  
-  ```shell
-  cp -rf apiextensions-apiserver kube-apiserver kube-controller-manager kube-scheduler kube-proxy kubelet /usr/bin
-  ```
-  
-    - 复制到 /usr/bin 目录下
-    - **在 Worker 节点上，仅需安装 kubelet 和 kube-proxy 两个服务**
-  
-- 配置 SELinux
+cp -rf apiextensions-apiserver kube-apiserver kube-controller-manager kube-scheduler kube-proxy kubelet /usr/bin
+```
 
-  ```shell
-  chcon -u system_u -t bin_t /usr/bin/kube* /usr/bin/apiextensions-apiserver
-  ```
+  - 复制到 /usr/bin 目录下
+  - **在 Worker 节点上，仅需安装 kubelet 和 kube-proxy 两个服务**
+
+
+
+### 配置 SELinux
+
+```shell
+chcon -u system_u -t bin_t /usr/bin/kube* /usr/bin/apiextensions-apiserver
+```
+
+
 
 ## 添加用户
 
-- Add Group & User `kube`
+### Add Group & User `kube`
 
-  ```shell
-  groupadd -g 200 kube
-  useradd  -g 200 kube -u 200 -d / -s /sbin/nologin -M
-  ```
+```shell
+groupadd -g 200 kube
+useradd  -g 200 kube -u 200 -d / -s /sbin/nologin -M
+```
 
-## 生成 kubectl 的 kubeconfig 文件
 
-- 设置集群参数
+## kubectl
 
-  ```shell
-  kubectl config set-cluster kubernetes \
-          --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-          --server=https://192.168.20.31:6443
-  ```
+### 生成 kubectl 的 kubeconfig 文件
 
-- 设置客户端认证参数
+#### 设置集群参数
 
-  ```shell
-  kubectl config set-credentials admin \
-          --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
-          --client-key=/etc/kubernetes/ssl/kubelet.key
-  ```
+```shell
+kubectl config set-cluster kubernetes \
+        --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+        --server=https://192.168.20.31:6443
+```
 
-- 设置上下文参数
 
-  ```shell
-  kubectl config set-context kubernetes \
-          --cluster=kubernetes \
-          --user=admin
-  ```
+#### 设置客户端认证参数
 
-- 设置默认上下文
+```shell
+kubectl config set-credentials admin \
+        --client-certificate=/etc/kubernetes/ssl/kubelet.pem \
+        --client-key=/etc/kubernetes/ssl/kubelet.key
+```
 
-  ```shell
+
+#### 设置上下文参数
+
+```shell
+kubectl config set-context kubernetes \
+        --cluster=kubernetes \
+        --user=admin
+```
+
+
+#### 设置默认上下文
+
+```shell
 kubectl config use-context kubernetes
-  ```
+```
 
-    - kubelet.pem 证书的OU字段值为system:masters，kube-apiserver预定义的RoleBinding cluster-admin 将 Group system:masters 与 Role cluster-admin 绑定，该Role授予了调用kube-apiserver相关API的权限
-  
-    - 生成的kubeconfig被保存到~/.kube/config文件
+  - kubelet.pem 证书的OU字段值为system:masters，kube-apiserver预定义的RoleBinding cluster-admin 将 Group system:masters 与 Role cluster-admin 绑定，该Role授予了调用kube-apiserver相关API的权限
+
+  - 生成的kubeconfig被保存到~/.kube/config文件
+
+
 
 ## kube-apiserver
 
-修改配置文件 /etc/kubernetes/apiserver
+### 修改配置文件 /etc/kubernetes/apiserver
 
 ```
 ###
@@ -384,7 +400,9 @@ KUBE_API_ARGS="\
 - 缺省情况下kubernetes对象保存在etcd /registry路径下，可以通过--etcd-prefix参数进行调整
 
 
+
 ### 配置systemd unit
+
 /etc/systemd/system/kube-apiserver.service
 
 ```
@@ -405,6 +423,8 @@ LimitNOFILE=65536
 [Install]
 WantedBy=multi-user.target
 ```
+
+
 ### Start & Enable kube-apiserver
 
 ```shell
@@ -414,7 +434,10 @@ systemctl enable kube-apiserver
 systemctl status kube-apiserver
 ```
 
+
+
 ### 授予 kube-apiserver 访问 kubelet API 权限
+
 在执行 kubectl exec、run、logs 等命令时，apiserver 会将请求转发到 kubelet 的 https 端口。这里定义 RBAC 规则，授权 apiserver 使用的证书（apiserver.pem）用户名（CN：kuberntes）访问 kubelet API 的权限
 
 ```shell
@@ -424,34 +447,49 @@ kubectl create clusterrolebinding kube-apiserver:kubelet-apis \
 
 - --user指定的为apiserver.pem证书中CN指定的值
 
+
+
 ## kube-controller-manager
 
 ### 生成 kube-controller-manager 的 kubeconfig 文件
-- 设置集群参数
 
-      kubectl config set-cluster kubernetes \
-              --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-              --server=https://192.168.20.31:6443 \
-              --kubeconfig=kube-controller-manager.kubeconfig
+#### 设置集群参数
 
-- 设置客户端认证参数
+```shell
+kubectl config set-cluster kubernetes \
+        --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+        --server=https://192.168.20.31:6443 \
+        --kubeconfig=kube-controller-manager.kubeconfig
+```
 
-      kubectl config set-credentials system:kube-controller-manager \
-              --client-certificate=/etc/kubernetes/ssl/kube-controller-manager.pem \
-              --client-key=/etc/kubernetes/ssl/kube-controller-manager.key \
-              --kubeconfig=kube-controller-manager.kubeconfig
 
-- 设置上下文参数
+#### 设置客户端认证参数
 
-      kubectl config set-context system:kube-controller-manager \
-              --cluster=kubernetes \
-              --user=system:kube-controller-manager \
-              --kubeconfig=kube-controller-manager.kubeconfig
+```shell
+kubectl config set-credentials system:kube-controller-manager \
+        --client-certificate=/etc/kubernetes/ssl/kube-controller-manager.pem \
+        --client-key=/etc/kubernetes/ssl/kube-controller-manager.key \
+        --kubeconfig=kube-controller-manager.kubeconfig
+```
 
-- 设置默认上下文
-  
-      kubectl config use-context system:kube-controller-manager \
-              --kubeconfig=kube-controller-manager.kubeconfig
+
+#### 设置上下文参数
+
+```shell
+kubectl config set-context system:kube-controller-manager \
+        --cluster=kubernetes \
+        --user=system:kube-controller-manager \
+        --kubeconfig=kube-controller-manager.kubeconfig
+```
+
+
+#### 设置默认上下文
+
+```shell
+kubectl config use-context system:kube-controller-manager \
+        --kubeconfig=kube-controller-manager.kubeconfig
+```
+
 
 ### 修改配置文件 /etc/kubernetes/controller-manager
 
@@ -497,7 +535,9 @@ KUBE_CONTROLLER_MANAGER_ARGS="\
   - --leader-elect=true部署多台机器组成的master集群时选举产生一处于工作状态的 kube-controller-manager进程
 
 
+
 ### 配置systemd unit
+
 /etc/systemd/system/kube-controller-manager.service
 
 ```
@@ -517,11 +557,15 @@ LimitNOFILE=65536
 [Install]
 WantedBy=multi-user.target
 ```
+
+
 ### 配置 kubeconfig 文件的 ACL 权限
 
 ```shell
 setfacl -m u:kube:r /etc/kubernetes/kube-controller-manager.kubeconfig
 ```
+
+
 
 ### Start & Enable kube-controller-manager
 
@@ -532,41 +576,49 @@ systemctl enable kube-controller-manager
 systemctl status kube-controller-manager
 ```
 
+
+
 ## kube-scheduler
+
 ### 生成 kube-scheduler 的 kubeconfig 文件
 
-- 设置集群参数
-  ```shell
-  kubectl config set-cluster kubernetes \
-          --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-          --server=https://192.168.20.31:6443 \
-          --kubeconfig=kube-scheduler.kubeconfig
+#### 设置集群参数
+
+```shell
+kubectl config set-cluster kubernetes \
+        --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+        --server=https://192.168.20.31:6443 \
+        --kubeconfig=kube-scheduler.kubeconfig
 ```
-  
-- 设置客户端认证参数
 
-  ```shell
-  kubectl config set-credentials system:kube-scheduler \
-          --client-certificate=/etc/kubernetes/ssl/kube-scheduler.pem \
-          --client-key=/etc/kubernetes/ssl/kube-scheduler.key \
-          --kubeconfig=kube-scheduler.kubeconfig
-  ```
 
-- 设置上下文参数
+#### 设置客户端认证参数
 
-  ```shell
-  kubectl config set-context system:kube-scheduler \
-          --cluster=kubernetes \
-          --user=system:kube-scheduler \
-          --kubeconfig=kube-scheduler.kubeconfig
-  ```
+```shell
+kubectl config set-credentials system:kube-scheduler \
+        --client-certificate=/etc/kubernetes/ssl/kube-scheduler.pem \
+        --client-key=/etc/kubernetes/ssl/kube-scheduler.key \
+        --kubeconfig=kube-scheduler.kubeconfig
+```
 
-- 设置默认上下文
 
-  ```shell
-  kubectl config use-context system:kube-scheduler \
-          --kubeconfig=kube-scheduler.kubeconfig
-  ```
+#### 设置上下文参数
+
+```shell
+kubectl config set-context system:kube-scheduler \
+        --cluster=kubernetes \
+        --user=system:kube-scheduler \
+        --kubeconfig=kube-scheduler.kubeconfig
+```
+
+
+#### 设置默认上下文
+
+```shell
+kubectl config use-context system:kube-scheduler \
+        --kubeconfig=kube-scheduler.kubeconfig
+```
+
 
 ### 修改配置文件 /etc/kubernetes/scheduler
 
@@ -588,6 +640,8 @@ KUBE_SCHEDULER_ARGS="\
       --authorization-kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig \
       --authentication-kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig"
 ```
+
+
 ### 配置systemd unit
 
 /etc/systemd/system/kube-scheduler.service
@@ -609,11 +663,15 @@ LimitNOFILE=65536
 [Install]
 WantedBy=multi-user.target
 ```
+
+
 ### 配置 kubeconfig 文件的 ACL 权限
 
 ```shell
 setfacl -m u:kube:r /etc/kubernetes/kube-scheduler.kubeconfig
 ```
+
+
 
 ### Start & Enable kube-scheduler
 
@@ -623,6 +681,8 @@ systemctl start  kube-scheduler
 systemctl enable kube-scheduler
 systemctl status kube-scheduler
 ```
+
+
 
 ## kubelet
 
@@ -656,45 +716,53 @@ BOOTSTRAP_TOKEN="${TOKEN_PUB}.${TOKEN_SECRET}"
   
   - Token 必须满足 [a-z0-9]{6}\.[a-z0-9]{16} 格式；以 . 分割，前面的部分被称作 Token ID, Token ID 并不是 “机密信息”，它可以暴露出去；相对的后面的部分称为 Token Secret, 它应该是保密的
 
+
+
 ### 生成 kubelet 的 bootstrapping kubeconfig 文件
-- 设置集群参数
 
-  ```shell
-  kubectl config set-cluster kubernetes \
-          --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-          --server=https://192.168.20.31:6443 \
-          --kubeconfig=bootstrap.kubeconfig
-  ```
+#### 设置集群参数
 
-- 设置客户端认证参数
-
-  ```shell
-  kubectl config set-credentials kubelet-bootstrap \
-          --token=$BOOTSTRAP_TOKEN \
-          --kubeconfig=bootstrap.kubeconfig
-  ```
-
-- 生成默认上下文参数
-
-  ```shell
-  kubectl config set-context default \
-          --cluster=kubernetes \
-          --user=kubelet-bootstrap \
-          --kubeconfig=bootstrap.kubeconfig
-  ```
-
-- 切换默认上下文
-
-  ```shell
-  kubectl config use-context default \
+```shell
+kubectl config set-cluster kubernetes \
+        --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+        --server=https://192.168.20.31:6443 \
         --kubeconfig=bootstrap.kubeconfig
-  ```
-  
-    - --embed-certs为true时表示将certificate-authority证书写入到生成的bootstrap.kubeconfig文件中
-    - 设置kubelet客户端认证参数时没有指定秘钥和证书，后续由kube-apiserver自动生成
-    - 生成的bootstrap.kubeconfig文件会在当前文件路径下
-  
+```
+
+
+#### 设置客户端认证参数
+
+```shell
+kubectl config set-credentials kubelet-bootstrap \
+        --token=$BOOTSTRAP_TOKEN \
+        --kubeconfig=bootstrap.kubeconfig
+```
+
+
+#### 生成默认上下文参数
+
+```shell
+kubectl config set-context default \
+        --cluster=kubernetes \
+        --user=kubelet-bootstrap \
+        --kubeconfig=bootstrap.kubeconfig
+```
+
+
+#### 切换默认上下文
+
+```shell
+kubectl config use-context default \
+        --kubeconfig=bootstrap.kubeconfig
+```
+
+  - --embed-certs为true时表示将certificate-authority证书写入到生成的bootstrap.kubeconfig文件中
+  - 设置kubelet客户端认证参数时没有指定秘钥和证书，后续由kube-apiserver自动生成
+  - 生成的bootstrap.kubeconfig文件会在当前文件路径下
+
 - 向 kubeconfig 写入的是 Token, bootstrap 结束后 kube-controller-manager 将为 kubelet 自动创建 client 和 server 证书
+
+
 
 ### 修改 kubelet 配置文件
 
@@ -781,6 +849,8 @@ syncFrequency: 1m0s
 topologyManagerPolicy: none
 volumeStatsAggPeriod: 1m0s
 ```
+
+
 /etc/kubernetes/kubelet
 
 ```shell
@@ -799,6 +869,8 @@ KUBELET_ARGS="\
 
 - kubelet 启动后使用 --bootstrap-kubeconfig 向 kube-apiserver 发送 CSR 请求，当这个CSR 被 approve 后，kube-controller-manager 为 kubelet 创建 TLS 客户端证书、私钥和 --kubeletconfig 文件
 - kube-controller-manager 需要配置 --cluster-signing-cert-file 和 --cluster-signing-key-file 参数，才会为 TLS Bootstrap 创建证书和私钥
+
+
 
 ### 修改 kubelet 数据目录(/data/kubelet)
 
@@ -820,11 +892,15 @@ KUBELET_ARGS="\
   chcon -u system_u -t svirt_sandbox_file_t /data/kubelet
   ```
 
+
+
 ### 创建静态Pod目录
 
 ```shell
 mkdir -p /etc/kubernetes/manifests 
 ```
+
+
 
 ### Bootstrap Token Auth 和授予权限
 
@@ -835,6 +911,8 @@ kube-apiserver 收到 CSR 请求后，对其中的 Token 进行认证，认证�
 默认情况下，这个 user 和 group 没有创建 CSR 的权限，kubelet 启动失败
 
 解决办法是：创建一个 clusterrolebinding，将 group system:bootstrappers 和 clusterrole system:node-bootstrapper 绑定
+
+
 
 ```shell
 kubectl create clusterrolebinding kubelet-bootstrap \
@@ -847,11 +925,14 @@ kubelet 启动后使用 --bootstrap-kubeconfig 向 kube-apiserver 发送 CSR 请
 注意: kube-controller-manager 需要配置 --cluster-signing-cert-file 和 --cluster-signing-key-file 参数，才会为 TLS Bootstrap 创建证书和私钥
 
 
+
 ### 配置 kubeconfig 文件的 ACL 权限
 
 ```shell
 setfacl -m u:kube:r /etc/kubernetes/*.kubeconfig
 ```
+
+
 
 ### 配置systemd unit
 
@@ -873,6 +954,8 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 ```
+
+
 ### Start & Enable kubelet
 
 ```shell
@@ -882,6 +965,8 @@ systemctl enable kubelet
 systemctl status kubelet
 ```
 
+
+
 ### 批准kubelet的TLS请求
 
 #### 查看未授权的CSR请求
@@ -889,6 +974,8 @@ systemctl status kubelet
 ```shell
 kubectl get csr
 ```
+
+
 
 #### 自动 approve CSR 请求
 
@@ -982,37 +1069,50 @@ kubectl get csr
 ## kube-proxy
 
 ### 生成kube-proxy的kubeconfig文件
-- 设置集群参数
+#### 设置集群参数
 
-      kubectl config set-cluster kubernetes \
-              --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-              --server=https://192.168.20.31:6443 \
-              --kubeconfig=kube-proxy.kubeconfig    
+```
+kubectl config set-cluster kubernetes \
+        --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+        --server=https://192.168.20.31:6443 \
+        --kubeconfig=kube-proxy.kubeconfig    
+```
 
-- 设置客户端认证参数
 
-      kubectl config set-credentials kube-proxy \
-              --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
-              --client-key=/etc/kubernetes/ssl/kube-proxy.key \
-              --kubeconfig=kube-proxy.kubeconfig
+#### 设置客户端认证参数
 
-- 生成上下文参数
+```
+kubectl config set-credentials kube-proxy \
+        --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
+        --client-key=/etc/kubernetes/ssl/kube-proxy.key \
+        --kubeconfig=kube-proxy.kubeconfig
+```
 
-      kubectl config set-context default \
-              --cluster=kubernetes \
-              --user=kube-proxy \
-              --kubeconfig=kube-proxy.kubeconfig
 
-- 切换默认上下文
+#### 生成上下文参数
 
-      kubectl config use-context default \
-              --kubeconfig=kube-proxy.kubeconfig
+```
+kubectl config set-context default \
+        --cluster=kubernetes \
+        --user=kube-proxy \
+        --kubeconfig=kube-proxy.kubeconfig
+```
 
-    - --embed-cert 都为 true，这会将certificate-authority、client-certificate和client-key指向的证书文件内容写入到生成的kube-proxy.kubeconfig文件中
-    - kube-proxy.pem证书中CN为system:kube-proxy，kube-apiserver预定义的 RoleBinding cluster-admin将User system:kube-proxy与Role system:node-proxier绑定，该Role授予了调用kube-apiserver Proxy相关API的权限
+
+#### 切换默认上下文
+
+```
+kubectl config use-context default \
+        --kubeconfig=kube-proxy.kubeconfig
+```
+
+  - --embed-cert 都为 true，这会将certificate-authority、client-certificate和client-key指向的证书文件内容写入到生成的kube-proxy.kubeconfig文件中
+  - kube-proxy.pem证书中CN为system:kube-proxy，kube-apiserver预定义的 RoleBinding cluster-admin将User system:kube-proxy与Role system:node-proxier绑定，该Role授予了调用kube-apiserver Proxy相关API的权限
+
 
 
 ### 修改配置文件 /etc/kubernetes/proxy.yaml
+
 *从v1.10版本开始，kube-proxy参数需要在配置文件中配置*
 
 /etc/kubernetes/kube-proxy.yaml
@@ -1059,13 +1159,18 @@ winkernel:
   networkName: ""
   sourceVip: ""#
 ```
+
+
 ### 配置 kubeconfig 文件的 ACL 权限
 
 ```shell
 setfacl -m u:kube:r /etc/kubernetes/*.kubeconfig
 ```
 
+
+
 ### 配置 systemd unit
+
 /etc/systemd/system/kube-proxy.service
 
 ```
@@ -1083,6 +1188,8 @@ LimitNOFILE=65536
 [Install]
 WantedBy=multi-user.target
 ```
+
+
 ### Start & Enable kube-proxy
 
 ```shell
@@ -1091,6 +1198,8 @@ WantedBy=multi-user.target
   systemctl enable kube-proxy
   systemctl status kube-proxy
 ```
+
+
 
 ## 检查集群状态
 
@@ -1102,7 +1211,10 @@ WantedBy=multi-user.target
     etcd-1               Healthy   {"health": "true"}   
     etcd-0               Healthy   {"health": "true"}  
 
+
+
 # 部署网络
+
 ## Calico(与flannel任选一种部署)
 
 ### Calico 简介
