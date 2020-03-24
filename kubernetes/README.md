@@ -236,6 +236,16 @@
 ## 2. Docker CE
 - #### [>> How install Docker-CE](https://github.com/Statemood/documents/blob/master/docker/how-install-docker-ce.md)
 
+
+
+安装依赖项
+
+```shell
+yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-tools ipvsadm
+```
+
+
+
 # 安装 Kubernetes
 
 ## 安装程序
@@ -1073,7 +1083,7 @@ kubectl get csr
 ### 生成kube-proxy的kubeconfig文件
 #### 设置集群参数
 
-```
+```shell
 kubectl config set-cluster kubernetes \
         --certificate-authority=/etc/kubernetes/ssl/ca.pem \
         --server=https://192.168.20.31:6443 \
@@ -1083,7 +1093,7 @@ kubectl config set-cluster kubernetes \
 
 #### 设置客户端认证参数
 
-```
+```shell
 kubectl config set-credentials kube-proxy \
         --client-certificate=/etc/kubernetes/ssl/kube-proxy.pem \
         --client-key=/etc/kubernetes/ssl/kube-proxy.key \
@@ -1093,7 +1103,7 @@ kubectl config set-credentials kube-proxy \
 
 #### 生成上下文参数
 
-```
+```shell
 kubectl config set-context default \
         --cluster=kubernetes \
         --user=kube-proxy \
@@ -1103,7 +1113,7 @@ kubectl config set-context default \
 
 #### 切换默认上下文
 
-```
+```shell
 kubectl config use-context default \
         --kubeconfig=kube-proxy.kubeconfig
 ```
@@ -1138,7 +1148,7 @@ conntrack:
   tcpEstablishedTimeout: 24h0m0s
 enableProfiling: false
 healthzBindAddress: 0.0.0.0:10256
-hostnameOverride: "172.16.90.204"
+hostnameOverride: "192.168.20.31"
 iptables:
   masqueradeAll: false
   masqueradeBit: 14
@@ -1195,10 +1205,10 @@ WantedBy=multi-user.target
 ### Start & Enable kube-proxy
 
 ```shell
-  systemctl daemon-reload
-  systemctl start  kube-proxy
-  systemctl enable kube-proxy
-  systemctl status kube-proxy
+systemctl daemon-reload
+systemctl start  kube-proxy
+systemctl enable kube-proxy
+systemctl status kube-proxy
 ```
 
 
