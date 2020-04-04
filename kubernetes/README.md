@@ -13,7 +13,7 @@
   - [kubelet 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#5-%E4%B8%BA-kubelet-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
   - [metrics-server 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#7-%E4%B8%BA-metrics-server-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
   - [Etcd 证书](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster.md)
-  - calico ``or`` flannel 证书
+  - calico *or* flannel 证书 (*二选一*)
   - [分发证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#8-%E5%88%86%E5%8F%91%E8%AF%81%E4%B9%A6)
 - 系统配置
   - SELinux
@@ -189,7 +189,7 @@
 
 ## 部署基础组件
 
-- 部署网络: [Calico](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-calico.md) *or* [Flannel]((https://github.com/Statemood/documents/blob/master/kubernetes/install/210-deploy-cni-flannel.md)) (*二选一*)
+- 部署网络: [Calico](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-calico.md) *or* [Flannel](https://github.com/Statemood/documents/blob/master/kubernetes/install/210-deploy-cni-flannel.md) (*二选一*)
 
 
 
