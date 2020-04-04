@@ -178,18 +178,18 @@
       # name in /etc/sysctl.d/ and put new settings there.
       #
       # For more information, see sysctl.conf(5) and sysctl.d(5).
-    
+        
       kernel.sysrq                        = 0
       kernel.core_uses_pid                = 1
       kernel.msgmnb                       = 65536
       kernel.msgmax                       = 65536
       kernel.shmmax                       = 68719476736
       kernel.shmall                       = 4294967296
-    
+        
       fs.file-max                         = 1000000
-    
+        
       vm.max_map_count                    = 500000
-    
+        
       net.bridge.bridge-nf-call-iptables  = 1
       net.core.netdev_max_backlog         = 32768
       net.core.somaxconn                  = 32768
@@ -197,7 +197,7 @@
       net.core.rmem_default               = 8388608
       net.core.wmem_max                   = 16777216
       net.core.rmem_max                   = 16777216
-    
+        
       net.ipv4.ip_forward                 = 1
       net.ipv4.tcp_max_syn_backlog        = 65536
       net.ipv4.tcp_syncookies             = 1
@@ -220,7 +220,7 @@
       net.ipv4.conf.default.accept_source_route = 0
       net.ipv4.conf.lo.arp_announce             = 2
       net.ipv4.conf.all.arp_announce            = 2
-    
+        
       net.ipv6.conf.all.disable_ipv6      = 1
       net.ipv6.conf.all.accept_redirects  = 1
 
@@ -241,7 +241,7 @@
 安装依赖项
 
 ```shell
-yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-tools ipvsadm
+yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-tools ipvsadm ipset nmap-ncat bash-completion nscd
 ```
 
 

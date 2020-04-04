@@ -91,11 +91,13 @@
     - 默认生成为 id_rsa，如当前目录已存在可以直接使用，或生成时选择其它名称
 
 - ##### 将RSA Key分发到三个节点(**包括 ceph-0 自身**)
+  
       for i in ceph-0 ceph-1 ceph-2; do ssh-copy-id $i; done
     - 可以使用 ssh-copy-id **-i** ~/.ssh/id_rsa_ceph.pub 分发指定的Key
     - 分发时会提示 "Are you sure you want to continue connecting (yes/no)? ", **输入 yes 然后回车**
 
 #### 3. 防火墙
+
 - ##### 本步骤要在每一个节点上执行
 - ##### 打开 tcp 3300, 6789, 6800-7100 端口
       firewall-cmd --zone=public --add-port=3300/tcp --permanent
@@ -126,7 +128,7 @@
 
 - ##### 安装 Ceph 源
       rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-luminous/el7/noarch/ceph-release-1-1.el7.noarch.rpm
-      
+  
 - ##### 替换 ceph.repo 服务器
   - 由于官网服务器下载速度较慢，需要替换 ceph.repo 文件中服务器地址为 **[清华镜像站进行](https://mirrors.tuna.tsinghua.edu.cn)**
   - 使用下方命令进行替换
@@ -144,7 +146,7 @@
         gpgcheck=1
         type=rpm-md
         gpgkey=https://mirrors.tuna.tsinghua.edu.cn/ceph/keys/release.asc
-
+    
         [Ceph-noarch]
         name=Ceph noarch packages
         baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-nautilus/el7/noarch
@@ -182,18 +184,19 @@
 
 - ##### 在全部节点上安装Ceph
       ceph-deploy install ceph-0 ceph-1 ceph-2
-    - ###### 或在每个节点上手动执行 `yum install -y ceph`
-
+  
+  - ###### 或在每个节点上手动执行 `yum install -y ceph`
+  
 - ##### 创建和初始化监控节点
       ceph-deploy mon create-initial
 
 - ##### 创建OSD存储节点
       ceph-deploy osd create ceph-0 --data /dev/sdc
       ceph-deploy osd create ceph-0 --data /dev/sdd 
-
+    
       ceph-deploy osd create ceph-1 --data /dev/sdc
       ceph-deploy osd create ceph-1 --data /dev/sdd
-
+    
       ceph-deploy osd create ceph-2 --data /dev/sdc 
       ceph-deploy osd create ceph-2 --data /dev/sdd 
 
@@ -254,24 +257,24 @@
 - ##### 按下方所列修改配置文件 ceph.conf (在目录 ~/ceph-install 下操作，注意替换 fsid )
 
       [global]
-
+    
       # 注意替换 fsid
       fsid = dca70270-3292-4078-91c3-1fbefcd3bd62
-
+    
       mon_initial_members = ceph-0,ceph-1,ceph-2
       mon_host = 192.168.50.20,192.168.50.21,192.168.50.22
       auth_cluster_required = cephx
       auth_service_required = cephx
       auth_client_required = cephx
-
+    
       public network  = 192.168.50.0/24
       cluster network = 172.20.0.0/24
-
+    
       [osd]
       osd data = /var/lib/ceph/osd/ceph-$id
       osd mkfs type = xfs
       osd mkfs options xfs = -f
-
+    
       filestore xattr use omap = true
       filestore min sync interval = 10
       filestore max sync interval = 15
@@ -279,12 +282,12 @@
       filestore queue max bytes = 10485760
       filestore queue committing max ops = 5000
       filestore queue committing max bytes = 10485760000
-
+    
       journal max write bytes = 1073714824
       journal max write entries = 10000
       journal queue max ops = 50000
       journal queue max bytes = 10485760000
-
+    
       osd max write size = 512
       osd client message size cap = 2147483648
       osd deep scrub stride = 131072
@@ -296,7 +299,7 @@
       osd recovery op priority = 4
       osd recovery max active = 10
       osd max backfills = 4
-
+    
       [client]
       rbd cache = true
       rbd cache size = 268435456
@@ -324,6 +327,7 @@
 
 - ##### 创建存储池
       ceph osd pool create pool_name 64
+  
     - 创建一个名为 pool_name的存储池，pg = 64
 
 #### 2. ceph-fs 文件系统

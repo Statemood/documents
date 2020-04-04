@@ -14,22 +14,36 @@
 
 #### 2. Journal 磁盘分区
   - 在新的OSD所在节点(ceph-3)上执行
+
   - 使用命令进行分区
 
-        parted /dev/vdb --script mkpart primary xfs 0% 50%
-        parted /dev/vdb --script mkpart primary xfs 50% 100%
+      ```shell
+      parted /dev/vdb --script mkpart primary xfs 0% 50%
+      parted /dev/vdb --script mkpart primary xfs 50% 100%
+      ```
+      
+      
 
 
 #### 3. 防火墙
   - 使用 firewall-cmd 命令
-        firewall-cmd --zone=public --add-port=6789/tcp --permanent
-        firewall-cmd --zone=public --add-port=6800-6810/tcp --permanent
-        firewall-cmd --reload
-
+      
+      ```shell
+      firewall-cmd --zone=public --add-port=6789/tcp --permanent
+firewall-cmd --zone=public --add-port=6800-6810/tcp --permanent
+      firewall-cmd --reload
+      ```
+      
+      
+      
   - 使用 iptables 命令
 
-        iptables -A INPUT -m conntrack --ctstate NEW -p tcp --dport 6379  -j ACCEPT
-        iptables -A INPUT -m conntrack --ctstate NEW -p tcp --dport 6800:6810  -j ACCEPT
+      ```shell
+      iptables -A INPUT -m conntrack --ctstate NEW -p tcp --dport 6379  -j ACCEPT
+      iptables -A INPUT -m conntrack --ctstate NEW -p tcp --dport 6800:6810  -j ACCEPT
+      ```
+      
+      
 
 #### 4. 时间同步
 - ##### ceph 对节点时间一致性要求较高，需要同步时间

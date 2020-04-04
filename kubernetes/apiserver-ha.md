@@ -119,6 +119,14 @@ nginx
 
 # Keepalived
 
+## 安装
+
+```shell
+yum install -y keepalived
+```
+
+
+
 ## 配置
 
 #### /etc/keepalived/keepalived.conf
