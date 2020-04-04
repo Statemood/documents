@@ -50,7 +50,7 @@
 
 ### 7. Docker
 - #### Docker-CE 17.12 或更新版本
- 
+
 ### 8. kubernetes
 - #### 以下版本均已经过测试
   - 1.8.1
@@ -77,7 +77,7 @@
         req_extensions = v3_req
         distinguished_name = req_distinguished_name
         [req_distinguished_name]
-
+    
         [ v3_req ]
         keyUsage = critical, cRLSign, keyCertSign, digitalSignature, keyEncipherment
         extendedKeyUsage = serverAuth, clientAuth
@@ -237,7 +237,7 @@
 
 - ##### 执行完毕后添加到 /etc/rc.local, 以便开机自动加载
   - /etc/rc.local 权限应为 755
- 
+
         chmod 755 /etc/rc.local
 
 ### 6. 节点优化
@@ -254,18 +254,18 @@
       # name in /etc/sysctl.d/ and put new settings there.
       #
       # For more information, see sysctl.conf(5) and sysctl.d(5).
-
+    
       kernel.sysrq                        = 0
       kernel.core_uses_pid                = 1
       kernel.msgmnb                       = 65536
       kernel.msgmax                       = 65536
       kernel.shmmax                       = 68719476736
       kernel.shmall                       = 4294967296
-
+    
       fs.file-max                         = 1000000
-
+    
       vm.max_map_count                    = 500000
-
+    
       net.bridge.bridge-nf-call-iptables  = 1
       net.core.netdev_max_backlog         = 32768
       net.core.somaxconn                  = 32768
@@ -273,7 +273,7 @@
       net.core.rmem_default               = 8388608
       net.core.wmem_max                   = 16777216
       net.core.rmem_max                   = 16777216
-
+    
       net.ipv4.ip_forward                 = 1
       net.ipv4.tcp_max_syn_backlog        = 65536
       net.ipv4.tcp_syncookies             = 1
@@ -296,7 +296,7 @@
       net.ipv4.conf.default.accept_source_route = 0
       net.ipv4.conf.lo.arp_announce             = 2
       net.ipv4.conf.all.arp_announce            = 2
-
+    
       net.ipv6.conf.all.disable_ipv6      = 1
       net.ipv6.conf.all.accept_redirects  = 1
 
@@ -399,9 +399,11 @@
           chcon -u system_u -t svirt_sandbox_file_t /data/kubelet
 
     - 修改 kubelet.service 文件
-      - 修改为 **WorkingDirectory=/data/kubelet**
-
+      
+- 修改为 **WorkingDirectory=/data/kubelet**
+      
     - 修改 /etc/kubernetes/kubelet 配置文件
+      
       - 增加参数 **--root-dir=/data/kubelet**
 
 
@@ -583,25 +585,25 @@
       #
       # The following values are used to configure the kube-apiserver
       #
-
+    
       # The address on the local server to listen to.
       KUBE_API_ADDRESS="--bind-address=192.168.50.51"
-
+    
       # The port on the local server to listen on.
       KUBE_API_PORT="--secure-port=6443 --insecure-port=0"
-
+    
       # Port minions listen on
       # KUBELET_PORT="--kubelet-port=10250"
-
+    
       # Comma separated list of nodes in the etcd cluster
       KUBE_ETCD_SERVERS="--etcd-servers=https://192.168.50.51:2379,https://192.168.50.52:2379,https://192.168.50.53:2379"
-
+    
       # Address range to use for services
       KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range=10.0.0.0/12"
-
+    
       # default admission control policies
       KUBE_ADMISSION_CONTROL="--enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
-
+    
       # Add your own!
       KUBE_API_ARGS="--allow-privileged=true \
                      --service-account-key-file=/etc/kubernetes/ssl/apiserver.key \
@@ -640,9 +642,9 @@
 
       ###
       # The following values are used to configure the kubernetes controller-manager
-
+    
       # defaults from config and apiserver should be adequate
-
+    
       # Add your own!
       KUBE_CONTROLLER_MANAGER_ARGS="\
             --master=https://192.168.50.51:6443 \
@@ -675,9 +677,9 @@
 
       ###
       # kubernetes scheduler config
-
+    
       # default config should be adequate
-
+    
       # Add your own!
       KUBE_SCHEDULER_ARGS="\
             --address=127.0.0.1 \
@@ -700,10 +702,10 @@
       #   kube-proxy.service
       # logging to stderr means we get it in the systemd journal
       KUBE_LOGTOSTDERR="--logtostderr=true"
-
+    
       # journal message level, 0 is debug
       KUBE_LOG_LEVEL="--v=2"
-
+    
       # Should this cluster be allowed to run privileged docker containers
       KUBE_ALLOW_PRIV="--allow-privileged=true"
 
@@ -712,20 +714,20 @@
 
       ###
       # kubernetes kubelet (minion) config
-
+    
       # The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
-
+    
       # The port for the info server to serve on
       # KUBELET_PORT="--port=10250"
-
+    
       # You may leave this blank to use the actual hostname
       KUBELET_HOSTNAME="--hostname-override=k8s-node-1"
-
+    
       # location of the api-server
-
+    
       # pod infrastructure container
       KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=img.linge.io/library/pause-amd64:3.1"
-
+    
       # Add your own!
       KUBELET_ARGS="--kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
                     --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
@@ -750,9 +752,9 @@
 
       ###
       # kubernetes proxy config
-
+    
       # default config should be adequate
-
+    
       # Add your own!
       KUBE_PROXY_ARGS="--bind-address=192.168.50.55 \
                        --cluster-cidr=10.0.0.0/12 \
@@ -849,7 +851,7 @@
         systemctl enable kube-proxy
 
   - 查看 IPVS 状态
-      
+    
         [root@50-52 ~]# ipvsadm -Ln
         IP Virtual Server version 1.2.1 (size=4096)
         Prot LocalAddress:Port Scheduler Flags
