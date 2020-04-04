@@ -139,126 +139,34 @@
 
 ## 8. kubernetes
 - ### 以下版本均已经过测试
-  - 1.10.x
-  - 1.11.x
-  - 1.12.x
-  - 1.13.x
-  - 1.14.x
+
   - 1.15.x
+  - 1.16.x
+  - 1.17.x
+  - 1.18.0
 
 # 系统配置
 
-### 1. SELinux
-- #### Enforcing
-  
-  - **SELinux 无需禁用**， 策略会在安装过程中进行调整
-
-## 2. Firewalld
-- 由于 iptables 会被 kube-proxy 接管，因此需 **禁用** Firewalld
-
-      systemctl disable firewalld && systemctl stop firewalld
-
-## 3. SWAP
-- 在Kubernetes集群中，所有节点无需配置 **swap**
-- 如系统已配置并启用了 **swap**，可按照如下方式禁用
-  - 执行 ``swapoff -a``
-  - 在 **/etc/fstab** 中移除 swap 相关行
-  
-## 4. 调整内核参数
-
-- #### 在所有节点执行
-- 按如下配置修改 /etc/sysctl.conf，并执行 sysctl -p 生效
-
-      # sysctl settings are defined through files in
-      # /usr/lib/sysctl.d/, /run/sysctl.d/, and /etc/sysctl.d/.
-      #
-      # Vendors settings live in /usr/lib/sysctl.d/.
-      # To override a whole file, create a new file with the same in
-      # /etc/sysctl.d/ and put new settings there. To override
-      # only specific settings, add a file with a lexically later
-      # name in /etc/sysctl.d/ and put new settings there.
-      #
-      # For more information, see sysctl.conf(5) and sysctl.d(5).
-        
-      kernel.sysrq                        = 0
-      kernel.core_uses_pid                = 1
-      kernel.msgmnb                       = 65536
-      kernel.msgmax                       = 65536
-      kernel.shmmax                       = 68719476736
-      kernel.shmall                       = 4294967296
-        
-      fs.file-max                         = 1000000
-        
-      vm.max_map_count                    = 500000
-        
-      net.bridge.bridge-nf-call-iptables  = 1
-      net.core.netdev_max_backlog         = 32768
-      net.core.somaxconn                  = 32768
-      net.core.wmem_default               = 8388608
-      net.core.rmem_default               = 8388608
-      net.core.wmem_max                   = 16777216
-      net.core.rmem_max                   = 16777216
-        
-      net.ipv4.ip_forward                 = 1
-      net.ipv4.tcp_max_syn_backlog        = 65536
-      net.ipv4.tcp_syncookies             = 1
-      net.ipv4.tcp_timestamps             = 0
-      net.ipv4.tcp_synack_retries         = 2
-      net.ipv4.tcp_syn_retries            = 2
-      net.ipv4.tcp_tw_recycle             = 1
-      net.ipv4.tcp_tw_reuse               = 1
-      net.ipv4.tcp_max_tw_buckets         = 300000
-      net.ipv4.tcp_mem                    = 94500000 915000000 927000000
-      net.ipv4.tcp_max_orphans            = 3276800
-      net.ipv4.tcp_keepalive_time         = 1200
-      net.ipv4.tcp_keepalive_intvl        = 30
-      net.ipv4.tcp_keepalive_probes       = 3
-      net.ipv4.tcp_fin_timeout            = 30
-      net.ipv4.icmp_echo_ignore_all       = 0
-      net.ipv4.ip_local_port_range        = 1024 65535
-      net.ipv4.conf.all.rp_filter               = 0
-      net.ipv4.conf.default.rp_filter           = 0
-      net.ipv4.conf.default.accept_source_route = 0
-      net.ipv4.conf.lo.arp_announce             = 2
-      net.ipv4.conf.all.arp_announce            = 2
-        
-      net.ipv6.conf.all.disable_ipv6      = 1
-      net.ipv6.conf.all.accept_redirects  = 1
-
-# 证书签发
-
-## [>> 证书签发步骤](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md)
-
-# 安装基础组件
-
-## 1. Etcd
-
-- #### []
-
-## 2. Docker CE
-
-- #### [>> How install Docker-CE](https://github.com/Statemood/documents/blob/master/docker/how-install-docker-ce.md)
-
-
-
-安装依赖项
-
-```shell
-yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-tools ipvsadm ipset nmap-ncat bash-completion nscd
-```
+- [调整内核参数](https://github.com/Statemood/documents/blob/master/kubernetes/install/091.config-kernel-parameters.md)
+- [查看 SELinux](https://github.com/Statemood/documents/blob/master/kubernetes/install/091.config-selinux.md)
+- [禁用 Firewall](https://github.com/Statemood/documents/blob/master/kubernetes/install/091.config-firewall.md)
+- [禁用 SWAP](https://github.com/Statemood/documents/blob/master/kubernetes/install/094.config-swap.md)
 
 
 
 # 安装 Kubernetes
 
-## 准备工作
+## 前期准备
 
+- [签发证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/104.gen-certs.md)
 - [安装 Etcd 集群](https://github.com/Statemood/documents/blob/master/kubernetes/install/101.install-etcd-cluster.md)
 - [安装Kubernetes二进制程序](https://github.com/Statemood/documents/blob/master/kubernetes/install/102.install-binrary.md)
 
 - [添加用户](https://github.com/Statemood/documents/blob/master/kubernetes/install/103.add-user.md)
 
 - [为 kubectl 生成 kubeconfig](https://github.com/Statemood/documents/blob/master/kubernetes/install/110.kubeconfig-4-kubectl.md)
+- [安装 Docker-CE](https://github.com/Statemood/documents/blob/master/docker/how-install-docker-ce.md)
+- [安装依赖](https://github.com/Statemood/documents/blob/master/kubernetes/install/105.install-depends.md)
 
 
 
@@ -269,10 +177,11 @@ yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-too
 - [安装 kube-controller-manager](https://github.com/Statemood/documents/blob/master/kubernetes/install/202.install-kube-controller-manager.md)
 
 - [安装 kube-scheduler](https://github.com/Statemood/documents/blob/master/kubernetes/install/203.install-kube-scheduler.md)
+- [配置 apiserver 高可用](https://github.com/Statemood/documents/blob/master/kubernetes/install/204.config-apiserver-ha.md) (*可选*)
 
-- [安装 kubelet](https://github.com/Statemood/documents/blob/master/kubernetes/install/204.install-kubelet.md)
+- [安装 kubelet](https://github.com/Statemood/documents/blob/master/kubernetes/install/205.install-kubelet.md)
 
-- [安装 kube-proxy](https://github.com/Statemood/documents/blob/master/kubernetes/install/205.install-kube-proxy.md)
+- [安装 kube-proxy](https://github.com/Statemood/documents/blob/master/kubernetes/install/206.install-kube-proxy.md)
 
 注意：**在Worker节点上**仅需安装 *kubelet & kube-proxy* 2个服务。
 
@@ -284,18 +193,8 @@ yum install -y libnetfilter_conntrack-devel libnetfilter_conntrack conntrack-too
 
 
 
-### 验证服务
-
-- 检查node是否注册
-
-```
-kubectl get nodes
-ipvsadm -ln
-```
-
-- 此时能看到已注册node节点
-- 在Node节点上执行`ipvsadm -ln`可以看到kubernetes的Service IP的规则
-
 
 # References
-1. [Create-The-File-Of-Kubeconfig-For-K8s](https://o-my-chenjian.com/2017/04/26/Create-The-File-Of-Kubeconfig-For-K8s/)
+1. [kubernetes-handbook](https://jimmysong.io/kubernetes-handbook/) ,  Jimmy Song
+2. [Create-The-File-Of-Kubeconfig-For-K8s](https://o-my-chenjian.com/2017/04/26/Create-The-File-Of-Kubeconfig-For-K8s/) , Chen Jian 
+3. [k8sre](https://www.k8sre.com/#/) , SongLin Ma
