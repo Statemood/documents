@@ -14,7 +14,7 @@
       --requestheader-extra-headers-prefix=X-Remote-Extra- \
       --requestheader-group-headers=X-Remote-Group \
       --requestheader-username-headers=X-Remote-User"
-      
+  
   - --requestheader-client-ca-file **使用集群CA证书**
   - --proxy-client-cert-file **使用kubelet 证书**
   - --proxy-client-key-file **使用kubelet key** 

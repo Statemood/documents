@@ -349,7 +349,6 @@ openssl req -new -key kube-proxy.key -out kube-proxy.csr -subj \
       -config kube-proxy.cnf
 ```
 
-
 #### 签发证书
 
 ```shell
@@ -358,7 +357,6 @@ openssl x509 -req -in kube-proxy.csr \
         -out kube-proxy.pem -days 1095 \
         -extfile kube-proxy.cnf -extensions v3_req
 ```
-
 
 ### metrics-server
 
