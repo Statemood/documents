@@ -9,10 +9,11 @@
     - ##### [使用 iSCSI 将 Ceph 存储连接到 Windows Server](https://github.com/Statemood/documents/blob/master/ceph/use-iscsi-to-windows.md)
 
     - ##### [Ceph 存储池与文件系统](#ceph-存储池与文件系统-1)
+      
       - ##### [cephfs & ceph-fuse](https://github.com/Statemood/documents/blob/master/ceph/cephfs.md)
     - ##### Ceph RBD for kubernetes
-    - ##### RGW
-
+- ##### RGW
+    
   - #### [管理](https://github.com/Statemood/documents/blob/master/ceph/maintenance-ceph.md)
     - ##### 添加OSD/在线扩容
       - [方法一(快速)](https://github.com/Statemood/documents/blob/master/ceph/the-easy-way-to-add-osds-to-existing-cluster.md)
@@ -31,9 +32,9 @@
 
 ### 应用场景
 
-Ceph 以 Storage Class 形式接入k8s集群，提供 rbd 供有状态应用容器使用，如 redis、db、es 等等；另外也能提供 cephfs 供多点挂载读写应用使用， 如应用于机器学习场景下的高吞吐量读写。
+Ceph 以 Storage Class 形式接入k8s集群，提供 rbd 供有状态应用容器使用，如 redis、db、es 等等，甚至rbd 还能供主机直接挂载使用；另外也能提供 cephfs 供多点挂载读写应用使用， 如应用于机器学习场景下的高吞吐量读写。
 
-Ceph 也能提供 S3 对象存储供 Harbor 使用，解决高可用模式下存储问题。同样的，S3 还能调试提供给业务使用。
+Ceph 也能提供 S3 对象存储供 Harbor 使用，解决高可用模式下存储问题。同样的，S3 还能同时提供给业务使用。
 
 
 
