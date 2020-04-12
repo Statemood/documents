@@ -3,7 +3,6 @@
 ### 基于自签发证书的 HTTPS
 ### 安装 Notary & Clair
 
-
 ## 环境
 
 | NAME    | INFO          |
@@ -26,7 +25,7 @@
 #### 如已有证书，可跳过本段
 ### 1. 创建 CA
 - ##### 创建并进入证书目录
-    
+  
       mkdir -p /data/harbor/ssl
       cd /data/harbor/ssl
 
@@ -66,7 +65,7 @@
         Organizational Unit Name (eg, section) []:
         Common Name (eg, your name or your server's hostname) []:img.linge.io
         Email Address []:
-
+    
         Please enter the following 'extra' attributes
         to be sent with your certificate request
         A challenge password []:
@@ -146,7 +145,7 @@
 - #### 确认容器运行状态
 
       docker ps -a
-
+    
       CONTAINER ID        IMAGE                                       COMMAND                  CREATED             STATUS                             PORTS                                                              NAMES
       f3035a636a5c        vmware/harbor-jobservice:v1.5.4             "/harbor/start.sh"       7 seconds ago       Up 5 seconds                                                                                          harbor-jobservice
       7da0be7f3cbf        vmware/nginx-photon:v1.5.4                  "nginx -g 'daemon of…"   7 seconds ago       Up 4 seconds (health: starting)    0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, 0.0.0.0:4443->4443/tcp   nginx
@@ -174,6 +173,7 @@
         Login Succeeded
 
 - #### 使用浏览器访问
+  
   - ##### https://img.linge.io
   - ##### 输入用户名／密码即可
     - 默认账号

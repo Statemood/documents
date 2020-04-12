@@ -2,27 +2,41 @@
 
 ## Commands
 ### max_bytes
-  - ##### Set max_bytes = 512TB for pool rbd
 
-        ceph osd pool set-quota rbd max_bytes 562949953421312
+Set max_bytes = 512TB for pool rbd
 
-    - 1024 \* 1024 \* 1024 \* 1024 \* 512 = 562949953421312
+```shell
+ceph osd pool set-quota rbd max_bytes 562949953421312
+```
+
+- 1024 \* 1024 \* 1024 \* 1024 \* 512 = 562949953421312
 
 ### max_objects
-  - ##### Set max_objects = 100TB for pool rbd
+Set max_objects = 100TB for pool rbd
 
-        ceph osd pool set-quota rbd max_objects 50000000
+```shell
+ceph osd pool set-quota rbd max_objects 50000000
+```
 
-    - default object size is 2MB
+- default object size is 2MB
 
 ### replicated size
-  - ##### 查看 pool 副本数量
 
-        ceph osd pool get rbd size
+查看 pool 副本数量
 
-  - ##### Set replicated size = 2 for pool rbd
+```shell
+ceph osd pool get rbd size
+```
 
-        ceph osd pool set rbd size 2
+
+
+Set replicated size = 2 for pool rbd
+
+```shell
+ceph osd pool set rbd size 2
+```
+
+  
 
 ## 管理 OSD
   - ### 删除 OSD

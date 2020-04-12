@@ -27,7 +27,7 @@
 
 #### 3. 防火墙
   - 使用 firewall-cmd 命令
-      
+    
       ```shell
       firewall-cmd --zone=public --add-port=6789/tcp --permanent
 firewall-cmd --zone=public --add-port=6800-6810/tcp --permanent

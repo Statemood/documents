@@ -10,12 +10,14 @@
 ### 创建一个名称为 files 的文件系统
 - 创建数据池, PG 32
       
-      ceph osd pool create files_data 32
-
+  
+    ceph osd pool create files_data 32
+  
 - 创建元数据池, PG 32
       
-      ceph osd pool create files_metadata 32
-
+  
+    ceph osd pool create files_metadata 32
+  
 - 创建文件系统, 名称为 files, 并分别指定 元数据 和 数据池
   
       ceph fs new files files_metadata files_data
@@ -53,11 +55,11 @@
 ##### 示例挂载 cephfs files 到 客户端机器 /data/files 目录
 ###### 以下命令除非特别说明, 否则都是在客户端机器(要挂载 cephfs 的机器)上执行
 - 安装 ceph-fuse
-    
+  
       yum install -y ceph-fuse
 
 - 创建目录 /etc/ceph
-    
+  
       mkdir -p /etc/ceph
 
 - 获取认证文件 keyring

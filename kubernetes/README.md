@@ -1,4 +1,4 @@
-# Kubernetes
+# Install Kubernetes Cluster Step by Step
 
 # 目录
 - 概览
@@ -10,7 +10,7 @@
   - [kube-controller-manager 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#3-%E4%B8%BA-kube-controller-manager-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
   - [kube-scheduler 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#4-%E4%B8%BA-kube-scheduler-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
   - [kube-proxy 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#6-%E4%B8%BA-kube-proxy-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
-  - [kubelet 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#5-%E4%B8%BA-kubelet-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
+  - [kubectl 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#5-%E4%B8%BA-kubectl-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
   - [metrics-server 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#7-%E4%B8%BA-metrics-server-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
   - [Etcd 证书](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster.md)
   - calico *or* flannel 证书 (*二选一*)
@@ -18,7 +18,7 @@
 - 系统配置
   - SELinux
   - Firewalld
-  - sysctl　
+  - sysctl
   - EPEL Repository
 - 安装配置
   - Docker CE

@@ -129,7 +129,7 @@
         gpgcheck=1
         type=rpm-md
         gpgkey=https://mirrors.tuna.tsinghua.edu.cn/ceph/keys/release.asc
-
+    
         [Ceph-noarch]
         name=Ceph noarch packages
         baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-jewel/el7/noarch
@@ -137,7 +137,7 @@
         gpgcheck=1
         type=rpm-md
         gpgkey=https://mirrors.tuna.tsinghua.edu.cn/ceph/keys/release.asc
-
+    
         [ceph-source]
         name=Ceph source packages
         baseurl=https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-jewel/el7/SRPMS
@@ -187,8 +187,9 @@
 
 - ##### 在全部节点上安装Ceph
       [root@50-55 ceph-install]# ceph-deploy install 50-55 50-56 50-57
-    - ###### 或在每个节点上手动执行 `yum install -y ceph`
-
+  
+  - ###### 或在每个节点上手动执行 `yum install -y ceph`
+  
 - ##### 创建和初始化监控节点
       [root@50-55 ceph-install]# ceph-deploy mon create-initial
 
@@ -241,31 +242,31 @@
   - **50-55**
 
         [root@50-55 ceph-install]# ceph auth get-or-create mgr.50-55 mon 'allow *' osd 'allow *' mds 'allow *'
-
+    
         [root@50-55 ceph-install]# mkdir /var/lib/ceph/mgr/ceph-50-55
-
+    
         [root@50-55 ceph-install]# ceph auth get mgr.50-55 -o  /var/lib/ceph/mgr/ceph-50-55/keyring
-
+    
         [root@50-55 ceph-install]# ceph-mgr -i 50-55
 
   - **50-56**
 
         [root@50-56 ~]# ceph auth get-or-create mgr.50-56 mon 'allow *' osd 'allow *' mds 'allow *'
-
+    
         [root@50-56 ~]# mkdir /var/lib/ceph/mgr/ceph-50-56
-
+    
         [root@50-56 ~]# ceph auth get mgr.50-56 -o  /var/lib/ceph/mgr/ceph-50-56/keyring
-
+    
         [root@50-56 ~]# ceph-mgr -i 50-56
 
   - **50-57**
 
         [root@50-57 ~]# ceph auth get-or-create mgr.50-57 mon 'allow *' osd 'allow *' mds 'allow *'
-
+    
         [root@50-57 ~]# mkdir /var/lib/ceph/mgr/ceph-50-57
-
+    
         [root@50-57 ~]# ceph auth get mgr.50-57 -o  /var/lib/ceph/mgr/ceph-50-57/keyring
-
+    
         [root@50-57 ~]# ceph-mgr -i 50-57
 
 #### 4. 清除操作
@@ -286,37 +287,37 @@
 - ##### 按下方所列修改配置文件 ceph.conf (在目录 ~/ceph-install 下操作，注意替换 fsid )
 
       [global]
-
+    
       # 注意替换 fsid
       fsid = dca70270-3292-4078-91c3-1fbefcd3bd62
-
+    
       mon_initial_members = 50-55,50-56,50-57
       mon_host = 192.168.50.55,192.168.50.56,192.168.50.57
       auth_cluster_required = cephx
       auth_service_required = cephx
       auth_client_required = cephx
-
+    
       public network  = 192.168.50.0/24
       cluster network = 172.16.50.0/24
-
+    
       [mon.a]
       host = 50-55
       mon addr = 192.168.50.55:6789
-
+    
       [mon.b]
       host = 50-56
       mon addr = 192.168.50.56:6789
-
+    
       [mon.c]
       host = 50-57
       mon addr = 192.168.50.57:6789
-
+    
       [osd]
       osd data = /var/lib/ceph/osd/ceph-$id
       osd journal size = 20000
       osd mkfs type = xfs
       osd mkfs options xfs = -f
-
+    
       filestore xattr use omap = true
       filestore min sync interval = 10
       filestore max sync interval = 15
@@ -324,12 +325,12 @@
       filestore queue max bytes = 10485760
       filestore queue committing max ops = 5000
       filestore queue committing max bytes = 10485760000
-
+    
       journal max write bytes = 1073714824
       journal max write entries = 10000
       journal queue max ops = 50000
       journal queue max bytes = 10485760000
-
+    
       osd max write size = 512
       osd client message size cap = 2147483648
       osd deep scrub stride = 131072
@@ -341,7 +342,7 @@
       osd recovery op priority = 4
       osd recovery max active = 10
       osd max backfills = 4
-
+    
       [client]
       rbd cache = true
       rbd cache size = 268435456
@@ -369,6 +370,7 @@
 
 - ##### 创建存储池
       [root@50-55 ~]# ceph osd pool create pool_name 64
+  
     - 创建一个名为 pool_name的存储池，pg = 64
 
 #### 2. ceph-fs 文件系统

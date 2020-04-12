@@ -1,6 +1,7 @@
 # Harbor HA
 
 ### 资源配置
+
 | 类型 | 地址/名称 | 配置 | 备注 |
 | --  | -- | -- | -- |
 | ECS | 192.168.10.10 | 8 核心 16GB | Harbor Server 1 |
@@ -12,10 +13,12 @@
 | SLB | 123.123.123.123/192.168.10.12 | - | 公网+私网 |
 
 ### 扩容
+
 - 后期如需扩容, 则直接增加 harbor server 即可
 
 ### HA
 - #### 模式
+  
   - SLB
 - #### 域名
   - registry.xxx.com
@@ -48,13 +51,14 @@
   - db_port = 3306
   - db_user = mysql-user
   - redis_url =
+    
     - redis_url 因使用 阿里云 redis 故此处不配置
   - clair_db_host = xxx.pg.rds.aliyuncs.com
   - clair_db_password = pg-password
   - clair_db_port = 3433
   - clair_db_username = pg-user
-  - clair_db = postgres
-
+- clair_db = postgres
+  
 - #### common/templates/registry/config.yml
   - ##### 下面仅说明需要修改的配置, 其它部分略过
 
