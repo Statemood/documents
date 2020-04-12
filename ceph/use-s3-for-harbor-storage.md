@@ -16,6 +16,66 @@
 
 
 
+### 安装 radosgw 
+
+```shell
+ceph-deploy install --rgw 192.168.0.10 192.168.0.11 192.168.0.12
+```
+
+
+
+### 创建 radosgw 
+
+```shell 
+ceph-deploy rgw create 192.168.0.10 192.168.0.11 192.168.0.12
+```
+
+
+
+测试服务是否正常
+
+```shell
+curl -s http://192.168.0.10:7480
+```
+
+正常返回如下数据
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<ListAllMyBucketsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+  <Owner>
+    <ID>anonymous</ID>
+    <DisplayName></DisplayName>
+  </Owner>
+  <Buckets></Buckets>
+</ListAllMyBucketsResult>
+```
+
+
+
+### Create Auth Key
+
+```shell
+ceph auth get-or-create client.radosgw.gateway osd 'allow rwx' mon 'allow rwx' -o /etc/ceph/ceph.client.radosgw.keyring
+```
+
+分发 */etc/ceph/ceph.client.radosgw.keyring* 到其它 radosgw 节点。
+
+
+
+
+
+### 防火墙打开端口
+
+```shell
+firewall-cmd --zone=public --add-port 7480/tcp --permanent
+firewall-cmd --reload
+```
+
+
+
+
+
 ### 查看存储池状态
 
 ```shell
