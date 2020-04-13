@@ -24,7 +24,7 @@ ceph-deploy install --rgw 192.168.0.10 192.168.0.11 192.168.0.12
 
 
 
-### 创建 radosgw 
+### 创建 radosgw
 
 ```shell 
 ceph-deploy rgw create 192.168.0.10 192.168.0.11 192.168.0.12
