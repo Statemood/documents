@@ -189,21 +189,27 @@
 
 ## 部署基础组件
 
-- 部署 [Calico](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-calico.md) *or* [Flannel](https://github.com/Statemood/documents/blob/master/kubernetes/install/210-deploy-cni-flannel.md) (*二选一*)
-- 部署 CoreDNS
-- 部署 Node Local DNS
-- 部署 Metrics Server
-- 部署 Kubernetes Dashboard
-- 部署 Ingress Controller
-- 部署 Prometheus
-- 部署 Grafana
-- 部署 NPD
+- [Calico](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-calico.md) *or* [Flannel](https://github.com/Statemood/documents/blob/master/kubernetes/install/210-deploy-cni-flannel.md) (*二选一*)
+
+- [CoreDNS](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/400.deploy-coredns.md)
+
+- [Node Local DNS](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/400.deploy-nodelocaldns.md)
+
+- [Metrics Server](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/401.deploy-metrics-server.md)
+
+- [Kubernetes Dashboard](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/401.deploy-kubernetes-dashboard.md)
+
+- [Ingress Controller](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/402.deploy-ingress-controller.md)
+
+  
 
 
 
 ## 部署附加组件
 
-
+- [Prometheus](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/403.deploy-prometheus.md)
+- [Grafana](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/403.deploy-grafana.md)
+- [NPD](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/404.deploy-npd.md)
 
 
 
@@ -211,7 +217,7 @@
 
 ## 存储
 
-- 使用 Ceph RBD 进行数据持久化
+- [使用 Ceph RBD 进行数据持久化](https://github.com/Statemood/documents/blob/master/kubernetes/uses/500.use-ceph-rbd-for-storage-class.md)
 
 
 
@@ -223,7 +229,7 @@
 
 ## 安全
 
-- 使用 TLS Client Auth 强化 WEB 服务
+- [使用 TLS Client Auth 强化 WEB 服务](https://github.com/Statemood/documents/blob/master/kubernetes/uses/501.use-tls-client-auth.md)
 - 使用 LDAP 统一管理用户
 
 
