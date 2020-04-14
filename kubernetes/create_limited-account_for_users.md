@@ -27,23 +27,32 @@
 
 - #### 设置变量
 
-      name=tom
+  ```shell
+  name=tom
+  ```
 
 - #### 创建 key
 
-      openssl genrsa -out $name.key 3072
+  ```shell
+  openssl genrsa -out $name.key 3072
+  ```
 
 - #### 创建证书请求  
 
-      openssl req -new -key $name.key -out $name.csr -subj "/CN=$name/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config client.cnf
+  ```shell
+  openssl req -new -key $name.key -out $name.csr -subj "/CN=$name/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config client.cnf
+  ```
 
   - ##### CN=CN, ST=, L= 值可以根据需要修改，其他的请保持，否则权限错误
 
 - #### 签发证书
 
-      openssl x509 -req -CA ca.pem -CAkey ca.key -CAcreateserial -in $name.csr -out $name.pem -days 1095 -extfile client.cnf -extensions v3_req
+  ```shell
+  openssl x509 -req -CA ca.pem -CAkey ca.key -CAcreateserial -in $name.csr -out $name.pem -days 1095 -extfile client.cnf -extensions v3_req
+  ```
 
 - #### 复制证书
+  
   - ##### 将 ca.pem tom.pem tom.key 三个文件复制到 kubectl 客户端机器 /etc/ssl 目录下
 
 
@@ -51,73 +60,83 @@
 
 - #### 设置集群参数
 
-      kubectl config set-cluster kubernetes \
-              --certificate-authority=/etc/kubernetes/ssl/ca.pem \
-              --embed-certs=true \
-              --server=https://192.168.50.55:6443
+  ```shell
+  kubectl config set-cluster kubernetes \
+          --certificate-authority=/etc/kubernetes/ssl/ca.pem \
+          --embed-certs=true \
+          --server=https://192.168.50.55:6443
+  ```
 
 - #### 设置客户端认证参数
 
-      kubectl config set-credentials tom \
-              --client-certificate=/etc/ssl/tom.pem \
-              --client-key=/etc/ssl/tom.key \
-              --embed-certs=true
+  ```shell
+  kubectl config set-credentials tom \
+          --client-certificate=/etc/ssl/tom.pem \
+          --client-key=/etc/ssl/tom.key \
+          --embed-certs=true
+  ```
 
 - #### 设置上下文参数
 
-      kubectl config set-context kubernetes \
-              --cluster=kubernetes \
-              --user=tom
+  ```shell
+  kubectl config set-context kubernetes \
+          --cluster=kubernetes \
+          --user=tom
+  ```
 
   - 如指定默认 NAMESPACE, 则使用 --namespace=NAMESPACE
 
 - #### 设置默认上下文
 
-      kubectl config use-context kubernetes
+  ```shell
+  kubectl config use-context kubernetes
+  ```
 
 ## 4. RBAC 权限
 
 - #### 文件 rbac-user-tom.yaml
 
-      kind: Role
-      apiVersion: rbac.authorization.k8s.io/v1beta1
-      metadata:
-        namespace: default
-        name: user-tom
-      rules:
-      - apiGroups: [""]
-        resources: ["pods", "pods/log", "services", "replicationcontrollers"]
-        verbs:     ["get", "watch", "list"]
-      # Allow user into pod by 'exec'
-      - apiGroups: [""]
-        resources: ["pods/exec"]
-        verbs:     ["create"]
-      - apiGroups: ["extensions", "apps"]
-        resources: ["deployments", "replicasets", "statefulsets"]
-        verbs:     ["get", "list", "watch"]
-      - apiGroups: ["batch"]
-        resources: ["cronjobs", "jobs"]
-        verbs:     ["get", "list", "watch"]
-      ---
-      kind: RoleBinding
-      apiVersion: rbac.authorization.k8s.io/v1beta1
-      metadata:
-        name: user-tom
-        namespace: default
-      subjects:
-      - kind: User
-        name: tom
-        apiGroup: rbac.authorization.k8s.io
-      roleRef:
-        kind: Role
-        name: user-tom
-        apiGroup: rbac.authorization.k8s.io
-      ---
-      apiVersion: v1
-      kind: ServiceAccount
-      metadata:
-        name: user-tom
-        namespace: default
+  ```yaml
+  kind: Role
+  apiVersion: rbac.authorization.k8s.io/v1beta1
+  metadata:
+    namespace: default
+    name: user-tom
+  rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "replicationcontrollers"]
+    verbs:     ["get", "watch", "list"]
+  # Allow user into pod by 'exec'
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs:     ["create"]
+  - apiGroups: ["extensions", "apps"]
+    resources: ["deployments", "replicasets", "statefulsets"]
+    verbs:     ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["cronjobs", "jobs"]
+    verbs:     ["get", "list", "watch"]
+  ---
+  kind: RoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1beta1
+  metadata:
+    name: user-tom
+    namespace: default
+  subjects:
+  - kind: User
+    name: tom
+    apiGroup: rbac.authorization.k8s.io
+  roleRef:
+    kind: Role
+    name: user-tom
+    apiGroup: rbac.authorization.k8s.io
+  ---
+  apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: user-tom
+    namespace: default
+  ```
 
   - ##### 这里在配置文件中我们设置的 Namespace 是 default
   - ##### 权限与资源请参阅此文件
@@ -127,24 +146,36 @@
 
 - #### 创建 RBAC 权限
 
-      kubectl create -f rbac-user-tom.yaml
+  ```shell
+  kubectl create -f rbac-user-tom.yaml
+  ```
 
 ## 5. Dashboard 访问
+
 - #### 获取用户 Secret
 
-      kubectl get secret -n default | grep user-tom-token
+  ```shell
+  kubectl get secret -n default | grep user-tom-token
+  ```
 
 - #### 获取用户 Token
 
-      kubectl get secret user-tom-token-xxxxx -n default -o yaml | grep 'token: ' | awk '{print $2}' | base64 -d
+  ```shell
+  kubectl get secret user-tom-token-xxxxx -n default -o yaml | grep 'token: ' | awk '{print $2}' | base64 -d
+  ```
 
 - #### 使用 Token 登录 Dashboard 即可
 - #### 更新 Token
   - 如需更新 Token，直接删除 Secret 即自动重建
     - 先取得 Secret 名称
 
-          kubectl get secret -n default | grep user-tom-token
+      ```shell
+  kubectl get secret -n default | grep user-tom-token
+      ```
 
     - 删除 Secret
+    
+      ```shell
+      kubectl delete secret user-tom-token-xxxxx -n default
+      ```
 
-          kubectl delete secret user-tom-token-xxxxx -n default
