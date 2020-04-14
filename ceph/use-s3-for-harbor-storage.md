@@ -130,8 +130,6 @@ radosgw-admin zonegroup get
 
 ## Harbor
 
-
-
 ### 修改 harbor 配置文件
 
 harbor.yml

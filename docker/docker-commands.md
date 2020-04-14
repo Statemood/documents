@@ -93,6 +93,7 @@
   - Manage images
   - 管理镜像
   - 用法:
+    
     - docker image import [OPTIONS] file|URL|- [REPOSITORY[:TAG]]
   - ##### prune
     - 删除未使用的镜像
@@ -117,6 +118,7 @@
   - 管理 Swarm 节点
 
 #### [plugin](https://docs.docker.com/engine/reference/commandline/plugin/#child-commands)
+
   - Manage plugins
   - 管理插件
 
@@ -136,6 +138,7 @@
   - ##### [docker service ls](https://docs.docker.com/engine/reference/commandline/service_ls/)
     - 列出服务
   - ##### [docker service ps](https://docs.docker.com/engine/reference/commandline/service_ps/)
+    
     - 列出一或多个服务的任务
   - ##### [docker service rm](https://docs.docker.com/engine/reference/commandline/service_rm/)
     - 删除一或多个服务
@@ -286,6 +289,7 @@
         - 如容器 f70d58fd623a，ID 可以是 f7, 也可以是 f70d
 
 #### build
+
   - Build an image from a Dockerfile
   - 以 Dockerfile 文件构建一个镜像
 
@@ -294,6 +298,7 @@
       - 如上述命令将构建一个名称为 **my-registry.server.com/library/centos**，TAG=**7** 的镜像，最后的 "." 表示 **Dockerfile 路径** 在当前目录
 
 #### commit
+
   - Create a new image from a container's changes
   - 将当前容器的更改保存为一个新的镜像
 
