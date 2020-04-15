@@ -1,36 +1,43 @@
 
 
-# 
-
-Ceph 快速安装指南
+# Ceph 快速安装指南
 
 ## 目录
   - #### [环境](#环境-1)
-  - #### [准备](#准备-1)
-  - #### [安装](#安装-1)
-  - #### [配置](#配置-1)
-  - #### 使用
-    - ##### [使用 iSCSI 将 Ceph 存储连接到 Windows Server](https://github.com/Statemood/documents/blob/master/ceph/use-iscsi-to-windows.md)
 
-    - ##### [Ceph 存储池与文件系统](#ceph-存储池与文件系统-1)
-      
-      - ##### [cephfs & ceph-fuse](https://github.com/Statemood/documents/blob/master/ceph/cephfs.md)
-    - ##### Ceph RBD for kubernetes
-- ##### RGW
-  
-  - #### [管理](https://github.com/Statemood/documents/blob/master/ceph/maintenance-ceph.md)
-    - ##### 添加OSD/在线扩容
+  - #### [准备](#准备-1)
+
+  - #### [安装](#安装-1)
+
+  - #### [配置](#配置-1)
+
+  - #### 使用
+    - [使用 iSCSI 将 Ceph 存储连接到 Windows Server](https://github.com/Statemood/documents/blob/master/ceph/use-iscsi-to-windows.md)
+
+    - [Ceph 存储池与文件系统](#ceph-存储池与文件系统-1)
+
+      [cephfs & ceph-fuse](https://github.com/Statemood/documents/blob/master/ceph/cephfs.md)
+
+    - Ceph RBD for kubernetes
+
+    - RGW
+
+    
+
+    #### [管理](https://github.com/Statemood/documents/blob/master/ceph/maintenance-ceph.md)
+
+    - 添加OSD/在线扩容
       - [方法一(快速)](https://github.com/Statemood/documents/blob/master/ceph/the-easy-way-to-add-osds-to-existing-cluster.md)
       - [方法二(细节)](https://github.com/Statemood/documents/blob/master/ceph/the-hard-way-to-add-osds-to-existing-cluster.md)
-    
-    - ##### [删除OSD](https://github.com/Statemood/documents/blob/master/ceph/maintenance-ceph.md#%E5%88%A0%E9%99%A4-osd)
 
-  - #### 高级
-    - CRUSH
-    - 为 Pool 指定存储介质
-    - 缓存分层，分离冷热数据
+    - [删除OSD](https://github.com/Statemood/documents/blob/master/ceph/maintenance-ceph.md#%E5%88%A0%E9%99%A4-osd)
 
-  - #### [监控](#monitor)
+    - 高级
+      - CRUSH
+      - 为 Pool 指定存储介质
+      - 缓存分层，分离冷热数据
+
+    - [监控](#monitor)
 
 ## 概述
 
@@ -44,25 +51,53 @@ Ceph 也能提供 S3 对象存储供 Harbor 使用，解决高可用模式下存
 
 ## 环境
 
-#### 系统
-  - CentOS 7 minimal x86_64
-
-#### 安全
-  - SELinux   
-    - **enforcing**
-  - Firewalld
-    - **running**
-
-#### 网络
-  - 公共网络(供客户端连接使用)
-    - **192.168.50.0/24**
-  - 集群网络(供集群内部使用，与其它网络隔离)
-    - **172.20.0.0/24**
+### OS
 
 #### 版本
 
+CentOS 7 minimal x86_64
+
+
+
+#### 安全
+
+##### SELinux   
+
+状态：*enforcing*
+
+
+
+##### Firewalld
+
+状态：*running*
+
+
+
+#### 网络
+
+##### 公共网络
+
+网段：*192.168.50.0/24*
+
+用途：供客户端连接使用
+
+
+
+##### 集群网络
+
+网段：172.20.0.0/24
+
+用途：供集群内部使用，与其它网络隔离
+
+
+
+#### Ceph 版本
+
   - Ceph 14.2.2 Nautilus
+
   - Ceph-deploy 2.0.1
+
+    
 
 #### 典型配置
 
@@ -88,6 +123,7 @@ Ceph 也能提供 S3 对象存储供 Harbor 使用，解决高可用模式下存
 ## 准备
 
 ### 一. 系统设置
+
 #### 1. 绑定主机名
 ###### 如有本地DNS, 则在DNS中解析即可
 ###### 本步骤要在每一个节点上执行
@@ -157,25 +193,27 @@ cd .ssh
   
 ```shell
   yum install -y ntpdate chrony
-  ```
+```
+
   
-  
-  
+
 - ##### 先同步一下时间
-  
 ```shell
   ntpdate cn.pool.ntp.org
-  ```
+```
+
   
-  
-  
+
 - ##### 将 ntpdate 设置到计划任务中
   
   ```shell
   echo -e "\n00  00  *  *  * \troot\tntpdate cn.pool.ntp.org" >> /etc/crontab
   ```
   - 设置每天 00:00 执行同步
+  
   - 如果机器比较老旧，可以更频繁的进行同步，如每隔6小时一次
+  
+    
 
 #### 5. 安装 yum 源 与 ceph-deploy
 
@@ -269,10 +307,10 @@ ceph-deploy new ceph-0 ceph-1 ceph-2
   
 ```shell
   ceph-deploy mon create-initial
-  ```
+```
+
   
-  
-  
+
 - ##### 创建OSD存储节点
   
   ```shell
@@ -312,23 +350,24 @@ ceph-deploy new ceph-0 ceph-1 ceph-2
 ```shell
   ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
 ```
+
   
-  
-  
+
 - ##### 使用 ceph -s 命令查看集群状态
   
 ```shell
   ceph -s
 ```
-  
+
     - ###### 如集群正常则显示 health HEALTH_OK
-  
+      
     - ###### 如OSD未全部启动，则使用下方命令重启相应节点, @ 后面为 OSD ID
          ```shell
         systemctl start ceph-osd@0
         ```
-        
-        
+
+
+​        
 
 #### 2. 部署 MDS 元数据服务
 - ##### 如果需要以POSIX标准形式挂载 ceph-fs，则需要启动 MDS 服务
@@ -423,23 +462,22 @@ ceph-deploy mds create ceph-0 ceph-1 ceph-2
       rbd cache max dirty = 134217728
       rbd cache max dirty age = 5
   
-
 - ##### 将配置文件同步到其它节点
   
 ```shell
   ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
-  ```
+```
+
   
-  
-  
+
 - ##### 逐一重启各个节点
   
 ```shell
   systemctl restart ceph\*.service ceph\*.target
-  ```
+```
+
   
-  
-  
+
 - ##### 此时
   
   - ceph-mon 进程应监听在 192.168.50.0 网段IP上
@@ -455,10 +493,10 @@ ceph-deploy mds create ceph-0 ceph-1 ceph-2
   
 ```shell
   ceph osd pool ls
-  ```
+```
+
   
-  
-  
+
 - ##### 创建存储池
 
   ```shell
@@ -497,10 +535,10 @@ rados -p rbd bench 60 write
   
 ```shell
   rados -p rbd -b 4096 bench 60 write -t 128 --run-name test1
-  ```
+```
+
   
-  
-  
+
 - ##### rados bench 更多信息请参阅 [官方文档](http://docs.ceph.com/docs/master/)
 
 #### 2. 使用 fio 测试 ceph-fs
@@ -517,18 +555,18 @@ yum install -y fio
   
 ```shell
   cd /data/files
-  ```
+```
+
   
-  
-  
+
 - ##### 执行测试
   
 ```shell
   fio -direct=1 -iodepth=128 -rw=randwrite -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=iotest -name=Rand_Write_Testing
-  ```
+```
+
   
-  
-  
+
 - ###### 更多 fio 信息请查阅相关文档
 
 ## Monitor

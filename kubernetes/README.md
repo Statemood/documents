@@ -98,51 +98,68 @@
 
 # 环境
 ## 1. OS
-- CentOS 7.2 minimal x86_64 或以上版本
+
+#### 版本
+
+CentOS 7.2 minimal x86_64 或以上版本
+
+
+
+#### 磁盘分区
+
+确保根分区 `/` 或独立挂载的 `/var/log` 具有20GB以上的可用空间。
+
+
 
 ## 2. 资源配置
 
 | 节点 | IP | 配置 | 备注 |
 | :---: | :--: | :--: | :--: |
-| k8s-master-1 | 192.168.20.31 | 4 CPU, 4G MEM, 30G DISK | - |
-| k8s-master-2 | 192.168.20.32 | 4 CPU, 4G MEM, 30G DISK | - |
-| k8s-master-3 | 192.168.20.33 | 4 CPU, 4G MEM, 30G DISK | - |
+| k8s-master-1 | 192.168.20.31 | 4 CPU, 8G MEM, 30G DISK | - |
+| k8s-master-2 | 192.168.20.32 | 4 CPU, 8G MEM, 30G DISK | - |
+| k8s-master-3 | 192.168.20.33 | 4 CPU, 8G MEM, 30G DISK | - |
 
 - 本配置为不分角色的混合部署，在同一节点上部署
   - etcd
   - master
   - worker
-- 推荐在生成环境中
+- 推荐在生产环境中
   - 使用更高配置
-  - 独立部署 Etcd 并使用高性能SSD
-  - 独立部署 Master, 根据集群规模和Pod数量，至少4C8G
-  - 对集群进行压力和破坏性测试
+  - 独立部署 Etcd 并使用高性能SSD (PCIe)
+  - 独立部署 Master, 根据集群规模和Pod数量，至少4C8G，建议8C16G起
+  - 对集群进行性能和破坏性测试
 
 ## 2. 网络
 
-- ### Calico
-  - 如使用 Calico网络，请忽略任何与 Flannel 相关操作
-  - BGP (default)
-  - IPIP
+### Calico
 
-- ### Flannel
-  - vxlan
+- 如使用 Calico网络，请忽略任何与 Flannel 相关操作
+- BGP (default)
+- IPIP
 
-- ### Subnet
 
-  #### Service Network
 
-  IP 网段：10.0.0.0/12
+### Flannel
 
-  IP 数量：1,048,576 
+- vxlan
 
-  
 
-  #### Pod Network
 
-  IP 网段：10.64.0.0/10
+### Subnet
 
-  IP 数量：4,194,304
+#### Service Network
+
+IP 网段：10.0.0.0/12
+
+IP 数量：1,048,576 
+
+
+
+#### Pod Network
+
+IP 网段：10.64.0.0/10
+
+IP 数量：4,194,304
 
 
 
