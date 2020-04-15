@@ -159,58 +159,45 @@ CentOS 7 minimal x86_64
 
 #### 2. SSH RSA Key
 
-###### 在ceph-0上操作
+*在ceph-0上操作*
 
-- ##### 进入 ~/.ssh 目录，如果不存在则创建(.ssh目录权限700)
-  ```shell
-  mkdir -m 700 .ssh
+##### 进入 ~/.ssh 目录，如果不存在则创建(.ssh目录权限700)
+```shell
+mkdir -m 700 .ssh
 cd .ssh
-  ```
+```
   
 
-
-
-
-
-- ##### 生成RSA Key
+##### 生成RSA Key
   
-  ```shell
-  ssh-keygen -t rsa -b 3072
-  ```
-   - 使用 ssh-keygen 命令生成一个3072位的RSA Key
-  - 默认生成为 id_rsa，如当前目录已存在可以直接使用，或生成时选择其它名称
-
-
-
-
-
-- ##### 将RSA Key分发到三个节点(**包括 ceph-0 自身**)
-
-  - 可以使用 ssh-copy-id **-i** ~/.ssh/id_rsa_ceph.pub 分发指定的Key
-  - 分发时会提示 "Are you sure you want to continue connecting (yes/no)? ", **输入 yes 然后回车**
-
-  ```shell
-  for i in ceph-0 ceph-1 ceph-2; do ssh-copy-id $i; done
-  ```
-
+```shell
+ssh-keygen -t rsa -b 3072
+```
   
+- 使用 ssh-keygen 命令生成一个3072位的RSA Key
+- 默认生成为 id_rsa，如当前目录已存在可以直接使用，或生成时选择其它名称
 
 
+##### 将RSA Key分发到三个节点(**包括 ceph-0 自身**)
+
+- 可以使用 ssh-copy-id **-i** ~/.ssh/id_rsa_ceph.pub 分发指定的Key
+- 分发时会提示 "Are you sure you want to continue connecting (yes/no)? ", **输入 yes 然后回车**
+
+```shell
+for i in ceph-0 ceph-1 ceph-2; do ssh-copy-id $i; done
+```
 
 #### 3. 防火墙
 
-- ##### 本步骤要在每一个节点上执行
-- ##### 打开 tcp 3300, 6789, 6800-7100 端口
-  ```shell
-  firewall-cmd --zone=public --add-port=3300/tcp --permanent
-  firewall-cmd --zone=public --add-port=6789/tcp --permanent
-  firewall-cmd --zone=public --add-port=6800-7100/tcp --permanent
-  firewall-cmd --reload
-  ```
+*本步骤要在每一个节点上执行*
 
-
-
-
+##### 打开 tcp 3300, 6789, 6800-7100 端口
+```shell
+firewall-cmd --zone=public --add-port=3300/tcp --permanent
+firewall-cmd --zone=public --add-port=6789/tcp --permanent
+firewall-cmd --zone=public --add-port=6800-7100/tcp --permanent
+firewall-cmd --reload
+```
 
 #### 4. 时间同步
 
