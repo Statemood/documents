@@ -1,6 +1,7 @@
 # Install Kubernetes Cluster Step by Step
 
 # 目录
+
 - 概览
   - 环境
   - 组件
@@ -187,21 +188,18 @@
 
 
 
+- [添加一个新节点](https://github.com/Statemood/documents/blob/master/kubernetes/install/207.add-a-new-worker-node.md)
+
+
+
 ## 部署基础组件
 
 - [Calico](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-calico.md) *or* [Flannel](https://github.com/Statemood/documents/blob/master/kubernetes/install/210-deploy-cni-flannel.md) (*二选一*)
-
 - [CoreDNS](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/400.deploy-coredns.md)
-
 - [Node Local DNS](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/400.deploy-nodelocaldns.md)
-
 - [Metrics Server](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/401.deploy-metrics-server.md)
-
 - [Kubernetes Dashboard](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/401.deploy-kubernetes-dashboard.md)
-
 - [Ingress Controller](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/402.deploy-ingress-controller.md)
-
-  
 
 
 
