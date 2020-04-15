@@ -59,6 +59,8 @@ CentOS 7 minimal x86_64
 
 
 
+
+
 #### 安全
 
 ##### SELinux   
@@ -67,9 +69,13 @@ CentOS 7 minimal x86_64
 
 
 
+
+
 ##### Firewalld
 
 状态：*running*
+
+
 
 
 
@@ -83,6 +89,8 @@ CentOS 7 minimal x86_64
 
 
 
+
+
 ##### 集群网络
 
 网段：172.20.0.0/24
@@ -91,26 +99,35 @@ CentOS 7 minimal x86_64
 
 
 
+
+
 #### Ceph 版本
 
   - Ceph 14.2.2 Nautilus
-
   - Ceph-deploy 2.0.1
 
-    
+
+
+
 
 #### 典型配置
 
-适用于生产环境
+**适用于生产环境**
+
 |  主机          |  IP            |  角色        | 配置        |
 | :----------:  | :------------- | :----------- | :--------- |
-| ceph-0         | em0: 192.168.50.20(**Public**)<br />em1: 172.20.0.20(**Cluster**)   | MON<br />OSD | 8C 32G MEM<br />256G x 2 RAID 1(**OS**)<br />1TB PCIe SSD \* 2(**OSD:SSD**)<br />4TB SAS \* 4(**OSD:SAS**)|
-| ceph-1         | em0: 192.168.50.21(**Public**)<br />em1: 172.20.0.21(**Cluster**)   | MON<br />OSD | 8C 32G MEM<br />256G x 2 RAID 1(**OS**)<br />1TB PCIe SSD \* 2(**OSD:SSD**)<br />4TB SAS \* 4(**OSD:SAS**)|
-| ceph-2         | em0: 192.168.50.22(**Public**)<br />em1: 172.20.0.22(**Cluster**)   | MON<br />OSD | 8C 32G MEM<br />256G x 2 RAID 1(**OS**)<br />1TB PCIe SSD \* 2(**OSD:SSD**)<br />4TB SAS \* 4(**OSD:SAS**)|
+| ceph-0         | em0: 192.168.50.20(**Public**)<br />em1: 172.20.0.20(**Cluster**)   | MON<br />OSD | 16C 32G MEM<br />256G x 2 RAID 1(**OS**)<br />1TB PCIe SSD \* 2(**OSD:SSD**)<br />4TB SAS \* 4(**OSD:SAS**) |
+| ceph-1         | em0: 192.168.50.21(**Public**)<br />em1: 172.20.0.21(**Cluster**)   | MON<br />OSD | 16C 32G MEM<br />256G x 2 RAID 1(**OS**)<br />1TB PCIe SSD \* 2(**OSD:SSD**)<br />4TB SAS \* 4(**OSD:SAS**) |
+| ceph-2         | em0: 192.168.50.22(**Public**)<br />em1: 172.20.0.22(**Cluster**)   | MON<br />OSD | 16C 32G MEM<br />256G x 2 RAID 1(**OS**)<br />1TB PCIe SSD \* 2(**OSD:SSD**)<br />4TB SAS \* 4(**OSD:SAS**) |
 
 - 推荐使用更高带宽的网络, 在生产环境, 建议最低10Gbps * 2
 
-最小化配置, 供测试及学习
+
+
+
+
+**最小化配置, 供测试及学习**
+
 |  主机          |  IP            |  角色        | 配置        |
 | :----------:  | :------------: | :----------: | ---------- |
 | ceph-0         | em0: 192.168.50.20(**Public**)<br />em1: 172.20.0.20(**Cluster**)   | MON<br />OSD | CPU 2核心 <br />内存 2G<br />DISK 0 15G(**OS**)<br />DISK 1 20G(**OSD**)<br />DISK 2 20G(**OSD**)|
@@ -120,12 +137,17 @@ CentOS 7 minimal x86_64
 - OSD 磁盘单块10G也可以
 - Cluster 网络可选
 
+
+
+
+
 ## 准备
 
 ### 一. 系统设置
 
 #### 1. 绑定主机名
 ###### 如有本地DNS, 则在DNS中解析即可
+
 ###### 本步骤要在每一个节点上执行
 - ##### 由于后续安装及配置都涉及到主机名，故此需先绑定
 - ##### 依次在三个节点上执行以下命令完成hosts绑定
@@ -133,17 +155,23 @@ CentOS 7 minimal x86_64
   echo -e "\n# Ceph Cluster\n192.168.50.20\tceph-0\n192.168.50.21\tceph-1\n192.168.50.22\tceph-2" >> /etc/hosts
   ```
 
+
+
 #### 2. SSH RSA Key
 
 ###### 在ceph-0上操作
+
 - ##### 进入 ~/.ssh 目录，如果不存在则创建(.ssh目录权限700)
   ```shell
   mkdir -m 700 .ssh
 cd .ssh
   ```
   
-  
-  
+
+
+
+
+
 - ##### 生成RSA Key
   
   ```shell
@@ -151,6 +179,8 @@ cd .ssh
   ```
    - 使用 ssh-keygen 命令生成一个3072位的RSA Key
   - 默认生成为 id_rsa，如当前目录已存在可以直接使用，或生成时选择其它名称
+
+
 
 
 
@@ -180,93 +210,85 @@ cd .ssh
 
 
 
+
+
 #### 4. 时间同步
 
-###### 本步骤要在每一个节点上执行
-- ##### ceph 对节点时间一致性要求较高，需要同步时间
+*本步骤要在每一个节点上执行*
 
-- ##### 全部节点应使用同一个时间服务器
+ceph 对节点时间一致性要求较高，需要同步时间。 全部节点应使用同一个时间服务器。
 
-- ##### 时间服务器使用 cn.pool.ntp.org
+时间服务器使用 cn.pool.ntp.org
 
-- ##### 安装 ntpdate
-  
+##### 安装 ntpdate
 ```shell
-  yum install -y ntpdate chrony
+yum install -y ntpdate chrony
 ```
 
-  
-
-- ##### 先同步一下时间
+##### 先同步一下时间
 ```shell
-  ntpdate cn.pool.ntp.org
+ntpdate cn.pool.ntp.org
 ```
 
+##### 将 ntpdate 设置到计划任务中
   
+```shell
+ echo -e "\n00  00  *  *  * \troot\tntpdate cn.pool.ntp.org" >> /etc/crontab
+```
 
-- ##### 将 ntpdate 设置到计划任务中
-  
-  ```shell
-  echo -e "\n00  00  *  *  * \troot\tntpdate cn.pool.ntp.org" >> /etc/crontab
-  ```
-  - 设置每天 00:00 执行同步
-  
-  - 如果机器比较老旧，可以更频繁的进行同步，如每隔6小时一次
-  
-    
+- 设置每天 00:00 执行同步
+- 如果机器比较老旧，可以更频繁的进行同步，如每隔6小时一次
+
+
 
 #### 5. 安装 yum 源 与 ceph-deploy
 
-###### 本步骤要在每一个节点上执行
-- ##### 安装 EPEL 源
-  ```shell
-rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/centos/7/extras/x86_64/Packages/epel-release-7-11.noarch.rpm
-  ```
-  
-  
-  
-- ##### 安装 Ceph 源
-  
-  ```shell
-  rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-nautilus/el7/noarch/ceph-release-1-1.el7.noarch.rpm
-  ```
-  
-  
-  
-- ##### 替换 ceph.repo 服务器
-  
-  - 由于官网服务器下载速度较慢，需要替换 ceph.repo 文件中服务器地址为 **[清华镜像站进行](https://mirrors.tuna.tsinghua.edu.cn)**
-  
-- 使用下方命令进行替换
+*本步骤要在每一个节点上执行*
 
-  ```shell
-  sed -i 's#htt.*://download.ceph.com#https://mirrors.tuna.tsinghua.edu.cn/ceph#g' /etc/yum.repos.d/ceph.repo
-  ```
+##### 安装 EPEL 源
+```shell
+rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/centos/7/extras/x86_64/Packages/epel-release-7-11.noarch.rpm
+```
+  
+  
+##### 安装 Ceph 源
+```shell
+rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-nautilus/el7/noarch/ceph-release-1-1.el7.noarch.rpm
+```
+  
+  
+  
+##### 替换 ceph.repo 服务器
+
+由于官网服务器下载速度较慢，需要替换 ceph.repo 文件中服务器地址为 **[清华镜像站进行](https://mirrors.tuna.tsinghua.edu.cn)**
+
+  
+使用下方命令进行替换
+
+```shell
+sed -i 's#htt.*://download.ceph.com#https://mirrors.tuna.tsinghua.edu.cn/ceph#g' /etc/yum.repos.d/ceph.repo
+```
 
     
 
 #### 6. 安装 ceph-deploy
 
-- ##### 使用 yum 安装 ceph-deploy
-  ```shell
+##### 使用 yum 安装 ceph-deploy
+```shell
 yum install -y ceph-deploy
-  ```
+```
   
-  
-  
-- 执行 ceph-deploy --version, 确认版本
-  
-      ```shell
-  ceph-deploy --version
-      ```
-  
-  
-  
-- ##### 创建 ceph-install 目录并进入，安装时产生的文件都将在这个目录
-  ```shell
-  mkdir ceph-install && cd ceph-install
-  ```
 
+执行 ceph-deploy --version, 确认版本
+```shell
+ceph-deploy --version
+```
+  
+  
+##### 创建 ceph-install 目录并进入，安装时产生的文件都将在这个目录
+```shell
+mkdir ceph-install && cd ceph-install
+```
 
 
 ### 二. 准备硬盘
@@ -282,123 +304,119 @@ yum install -y ceph-deploy
 
     - 如安装过程中遇到问题，也可以通过本操作清除所有OSD分区，以便从头再来
 
+
+
 ## 安装
 
 ### 三. 安装 Ceph
 #### 1. 使用 ceph-deploy 安装 Ceph
-- ##### 创建一个新的Ceph 集群
-  ```shell
+##### 创建一个新的Ceph 集群
+```shell
 ceph-deploy new ceph-0 ceph-1 ceph-2
-  ```
+```
   
-  
-  
-- ##### 在全部节点上安装Ceph
-  
-  ```shell
-  ceph-deploy install ceph-0 ceph-1 ceph-2
-  ```
-  
-  - 或在每个节点上手动执行 `yum install -y ceph`
-  
-  
-  
-- ##### 创建和初始化监控节点
+
+##### 在全部节点上安装Ceph
   
 ```shell
-  ceph-deploy mon create-initial
+ceph-deploy install ceph-0 ceph-1 ceph-2
+```  
+- 或在每个节点上手动执行 `yum install -y ceph`
+  
+
+##### 创建和初始化监控节点  
+```shell
+ceph-deploy mon create-initial
 ```
 
+##### 创建OSD存储节点
   
-
-- ##### 创建OSD存储节点
-  
-  ```shell
-  ceph-deploy osd create ceph-0 --data /dev/sdc
-  ceph-deploy osd create ceph-0 --data /dev/sdd 
+```shell
+ceph-deploy osd create ceph-0 --data /dev/sdc
+ceph-deploy osd create ceph-0 --data /dev/sdd 
     
-  ceph-deploy osd create ceph-1 --data /dev/sdc
-  ceph-deploy osd create ceph-1 --data /dev/sdd
+ceph-deploy osd create ceph-1 --data /dev/sdc
+ceph-deploy osd create ceph-1 --data /dev/sdd
     
-  ceph-deploy osd create ceph-2 --data /dev/sdc 
-  ceph-deploy osd create ceph-2 --data /dev/sdd 
-  ```
+ceph-deploy osd create ceph-2 --data /dev/sdc 
+ceph-deploy osd create ceph-2 --data /dev/sdd 
+```
 
+###### 错误排查
 
-
-- ###### 错误排查
-
-  - 在 Running command: vgcreate --force --yes xxxx, 返回:
-           stderr: Device /dev/vdd excluded by a filter.
-          --> Was unable to complete a new OSD, will rollback changes
+在 Running command: vgcreate --force --yes xxxx, 返回:
+```
+stderr: Device /dev/vdd excluded by a filter.
+        --> Was unable to complete a new OSD, will rollback changes
         --> OSD will be fully purged from the cluster, because the ID was generated
+```
 
-       - 解决办法:
+- 解决办法:
 
-           DISK=OSD 磁盘名称
+DISK=OSD 磁盘名称
+```shell
+dd if=/dev/urandom of=/dev/DISK bs=512 count=64
+```
+          
 
-           
-
-           dd if=/dev/urandom of=/dev/DISK bs=512 count=64
-
-  
-
-  
 
 - 将配置文件同步到其它节点
-  
-```shell
+  ```shell
   ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
-```
+  ```
 
   
 
-- ##### 使用 ceph -s 命令查看集群状态
+##### 使用 ceph -s 命令查看集群状态
   
 ```shell
-  ceph -s
+ceph -s
+```
+*如集群正常则显示 health HEALTH_OK*
+
+
+如OSD未全部启动，则使用下方命令重启相应节点, @ 后面为 OSD ID
+
+```shell
+systemctl start ceph-osd@0
 ```
 
-    - ###### 如集群正常则显示 health HEALTH_OK
-      
-    - ###### 如OSD未全部启动，则使用下方命令重启相应节点, @ 后面为 OSD ID
-         ```shell
-        systemctl start ceph-osd@0
-        ```
 
 
-​        
+
 
 #### 2. 部署 MDS 元数据服务
-- ##### 如果需要以POSIX标准形式挂载 ceph-fs，则需要启动 MDS 服务
-  ```shell
+##### 如果需要以POSIX标准形式挂载 ceph-fs，则需要启动 MDS 服务
+```shell
 ceph-deploy mds create ceph-0 ceph-1 ceph-2
-  ```
+```
+
+- 上方命令会在 ceph-0 和 ceph-1 上启动MDS
   
-    - 上方命令会在 ceph-0 和 ceph-1 上启动MDS
-
+      
 #### 3. 部署 mgr
-- ##### luminous 版本需要启动 mgr, 否则 ceph -s 会有 no active mgr 提示
-- ##### 官方文档建议在每个 monitor 上都启动一个 mgr
+*luminous 版本需要启动 mgr, 否则 ceph -s 会有 no active mgr 提示*
+*官方文档建议在每个 monitor 上都启动一个 mgr*
 
-  ```shell
-  ceph-deploy mgr create ceph-0:ceph-0 ceph-1:ceph-1 ceph-2:ceph-2
-  ```
+```shell
+ceph-deploy mgr create ceph-0:ceph-0 ceph-1:ceph-1 ceph-2:ceph-2
+```
+
 
 #### 4. 清除操作
-- ##### 安装过程中如遇到奇怪的错误，可以通过以下步骤清除操作从头再来
-  ```shell
-  ceph-deploy purge ceph-0 ceph-1 ceph-2
-  ceph-deploy purgedata ceph-0 ceph-1 ceph-2
-  ceph-deploy forgetkeys
-  ```
 
+##### 安装过程中如遇到奇怪的错误，可以通过以下步骤清除操作从头再来
+```shell
+ceph-deploy purge ceph-0 ceph-1 ceph-2
+ceph-deploy purgedata ceph-0 ceph-1 ceph-2
+ceph-deploy forgetkeys
+```
 
 - VG Remove
   
-  ```shell
-  vgremove -y `vgdisplay | grep ' VG Name' | grep 'ceph-' | awk '{print $3}'`
-  ```
+```shell
+vgremove -y `vgdisplay | grep ' VG Name' | grep 'ceph-' | awk '{print $3}'`
+```
 
 ## 配置
 
@@ -462,18 +480,18 @@ ceph-deploy mds create ceph-0 ceph-1 ceph-2
       rbd cache max dirty = 134217728
       rbd cache max dirty age = 5
   
-- ##### 将配置文件同步到其它节点
+##### 将配置文件同步到其它节点
   
 ```shell
-  ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
+ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
 ```
 
   
 
-- ##### 逐一重启各个节点
+##### 逐一重启各个节点
   
 ```shell
-  systemctl restart ceph\*.service ceph\*.target
+systemctl restart ceph\*.service ceph\*.target
 ```
 
   
@@ -489,21 +507,21 @@ ceph-deploy mds create ceph-0 ceph-1 ceph-2
 
 ###### 本操作可以在任一节点上执行
 #### 1. pool 存储池
-- ##### 查看存储池
+##### 查看存储池
   
 ```shell
-  ceph osd pool ls
+ceph osd pool ls
 ```
 
   
 
-- ##### 创建存储池
+##### 创建存储池
 
-  ```shell
-  ceph osd pool create pool_name 64
-  ```
+```shell
+ceph osd pool create pool_name 64
+```
 
-  创建一个名为 pool_name的存储池，pg = 64
+创建一个名为 pool_name的存储池，pg = 64
 
 
 
@@ -514,60 +532,59 @@ ceph-deploy mds create ceph-0 ceph-1 ceph-2
 
 
 #### 3. rbd
+关于 rbd 的更多信息，请参阅文档 [RBD – MANAGE RADOS BLOCK DEVICE (RBD) IMAGES]](http://docs.ceph.com/docs/master/man/8/rbd/)
 
-- ##### 关于 rbd 的更多信息，请参阅文档 [RBD – MANAGE RADOS BLOCK DEVICE (RBD) IMAGES]](http://docs.ceph.com/docs/master/man/8/rbd/)
-
-- ##### 若要在其它主机上使用 rbd, 需安装 ceph-common (提供 rbd 命令), 否则将无法创建文件系统
+##### 若要在其它主机上使用 rbd, 需安装 ceph-common (提供 rbd 命令), 否则将无法创建文件系统
   - 对于 k8s, kube-controller-manager 所在系统也需要安装 ceph-common 
 
 ## 测试
 
 ### 测试Ceph性能
 #### 1. 使用 rados bench 测试 rbd
-- ##### 使用 `rados -p rbd bench 60 write` 进行 顺序写入
-  ```shell
+##### 使用 `rados -p rbd bench 60 write` 进行 顺序写入
+```shell
 rados -p rbd bench 60 write
-  ```
+```
   
   
   
-- ##### 使用 `rados -p rbd -b 4096 bench 60 write -t 256 --run-name test1` 进行 4k 写入
+##### 使用 `rados -p rbd -b 4096 bench 60 write -t 256 --run-name test1` 进行 4k 写入
   
 ```shell
-  rados -p rbd -b 4096 bench 60 write -t 128 --run-name test1
+rados -p rbd -b 4096 bench 60 write -t 128 --run-name test1
 ```
 
   
 
-- ##### rados bench 更多信息请参阅 [官方文档](http://docs.ceph.com/docs/master/)
+##### rados bench 更多信息请参阅 [官方文档](http://docs.ceph.com/docs/master/)
 
 #### 2. 使用 fio 测试 ceph-fs
-- ##### 在节点 50-50 上进行
+##### 在节点 50-50 上进行
 
-- ##### 使用 `yum install -y fio` 安装 fio
-  ```shell
+##### 使用 `yum install -y fio` 安装 fio
+```shell
 yum install -y fio
-  ```
+```
   
   
   
-- ##### 进入 ceph-fs 挂载目录内
+##### 进入 ceph-fs 挂载目录内
   
 ```shell
-  cd /data/files
+cd /data/files
 ```
 
   
 
-- ##### 执行测试
+##### 执行测试
   
 ```shell
-  fio -direct=1 -iodepth=128 -rw=randwrite -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=iotest -name=Rand_Write_Testing
+fio -direct=1 -iodepth=128 -rw=randwrite -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=iotest -name=Rand_Write_Testing
 ```
 
   
 
-- ###### 更多 fio 信息请查阅相关文档
+###### 更多 fio 信息请查阅相关文档
 
 ## Monitor
 
@@ -577,6 +594,6 @@ yum install -y fio
 ## 附录
 
 #### 参考文档
-##### 1. [Ceph 中文文档](http://docs.ceph.org.cn/)
-##### 2. [Ceph Documentation](http://docs.ceph.com/docs/master/)
-##### 3. [在 CentOS 7.1 上安装分布式存储系统 Ceph](https://www.vpsee.com/2015/07/install-ceph-on-centos-7/)
+1. [Ceph 中文文档](http://docs.ceph.org.cn/)
+2. [Ceph Documentation](http://docs.ceph.com/docs/master/)
+3. [在 CentOS 7.1 上安装分布式存储系统 Ceph](https://www.vpsee.com/2015/07/install-ceph-on-centos-7/)
