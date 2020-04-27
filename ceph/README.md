@@ -1,4 +1,4 @@
-
+ [ws]()
 
 # Ceph 快速安装指南
 
@@ -166,14 +166,14 @@ CentOS 7 minimal x86_64
 mkdir -m 700 .ssh
 cd .ssh
 ```
-  
+
 
 ##### 生成RSA Key
-  
+
 ```shell
 ssh-keygen -t rsa -b 3072
 ```
-  
+
 - 使用 ssh-keygen 命令生成一个3072位的RSA Key
 - 默认生成为 id_rsa，如当前目录已存在可以直接使用，或生成时选择其它名称
 
@@ -218,9 +218,9 @@ ntpdate cn.pool.ntp.org
 ```
 
 ##### 将 ntpdate 设置到计划任务中
-  
+
 ```shell
- echo -e "\n00  00  *  *  * \troot\tntpdate cn.pool.ntp.org" >> /etc/crontab
+echo -e "\n00  00  *  *  * \troot\tntpdate cn.pool.ntp.org" >> /etc/crontab
 ```
 
 - 设置每天 00:00 执行同步
@@ -236,27 +236,27 @@ ntpdate cn.pool.ntp.org
 ```shell
 rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/centos/7/extras/x86_64/Packages/epel-release-7-11.noarch.rpm
 ```
-  
-  
+
+
 ##### 安装 Ceph 源
 ```shell
 rpm -ivh https://mirrors.tuna.tsinghua.edu.cn/ceph/rpm-nautilus/el7/noarch/ceph-release-1-1.el7.noarch.rpm
 ```
+
   
-  
-  
+
 ##### 替换 ceph.repo 服务器
 
 由于官网服务器下载速度较慢，需要替换 ceph.repo 文件中服务器地址为 **[清华镜像站进行](https://mirrors.tuna.tsinghua.edu.cn)**
 
-  
+
 使用下方命令进行替换
 
 ```shell
 sed -i 's#htt.*://download.ceph.com#https://mirrors.tuna.tsinghua.edu.cn/ceph#g' /etc/yum.repos.d/ceph.repo
 ```
 
-    
+​    
 
 #### 6. 安装 ceph-deploy
 
@@ -264,14 +264,14 @@ sed -i 's#htt.*://download.ceph.com#https://mirrors.tuna.tsinghua.edu.cn/ceph#g'
 ```shell
 yum install -y ceph-deploy
 ```
-  
+
 
 执行 ceph-deploy --version, 确认版本
 ```shell
 ceph-deploy --version
 ```
-  
-  
+
+
 ##### 创建 ceph-install 目录并进入，安装时产生的文件都将在这个目录
 ```shell
 mkdir ceph-install && cd ceph-install
@@ -301,13 +301,13 @@ mkdir ceph-install && cd ceph-install
 ```shell
 ceph-deploy new ceph-0 ceph-1 ceph-2
 ```
-  
+
 
 ##### 在全部节点上安装Ceph
-  
+
 ```shell
 ceph-deploy install ceph-0 ceph-1 ceph-2
-```  
+```
 - 或在每个节点上手动执行 `yum install -y ceph`
   
 
@@ -317,7 +317,7 @@ ceph-deploy mon create-initial
 ```
 
 ##### 创建OSD存储节点
-  
+
 ```shell
 ceph-deploy osd create ceph-0 --data /dev/sdc
 ceph-deploy osd create ceph-0 --data /dev/sdd 
@@ -344,7 +344,7 @@ DISK=OSD 磁盘名称
 ```shell
 dd if=/dev/urandom of=/dev/DISK bs=512 count=64
 ```
-          
+
 
 
 - 将配置文件同步到其它节点
@@ -355,7 +355,7 @@ dd if=/dev/urandom of=/dev/DISK bs=512 count=64
   
 
 ##### 使用 ceph -s 命令查看集群状态
-  
+
 ```shell
 ceph -s
 ```
@@ -380,7 +380,7 @@ ceph-deploy mds create ceph-0 ceph-1 ceph-2
 
 - 上方命令会在 ceph-0 和 ceph-1 上启动MDS
   
-      
+  ​    
 #### 3. 部署 mgr
 *luminous 版本需要启动 mgr, 否则 ceph -s 会有 no active mgr 提示*
 *官方文档建议在每个 monitor 上都启动一个 mgr*
@@ -468,7 +468,7 @@ vgremove -y `vgdisplay | grep ' VG Name' | grep 'ceph-' | awk '{print $3}'`
       rbd cache max dirty age = 5
   
 ##### 将配置文件同步到其它节点
-  
+
 ```shell
 ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
 ```
@@ -476,7 +476,7 @@ ceph-deploy --overwrite-conf admin ceph-0 ceph-1 ceph-2
   
 
 ##### 逐一重启各个节点
-  
+
 ```shell
 systemctl restart ceph\*.service ceph\*.target
 ```
@@ -495,7 +495,7 @@ systemctl restart ceph\*.service ceph\*.target
 ###### 本操作可以在任一节点上执行
 #### 1. pool 存储池
 ##### 查看存储池
-  
+
 ```shell
 ceph osd pool ls
 ```
@@ -532,11 +532,11 @@ ceph osd pool create pool_name 64
 ```shell
 rados -p rbd bench 60 write
 ```
+
   
-  
-  
+
 ##### 使用 `rados -p rbd -b 4096 bench 60 write -t 256 --run-name test1` 进行 4k 写入
-  
+
 ```shell
 rados -p rbd -b 4096 bench 60 write -t 128 --run-name test1
 ```
@@ -552,11 +552,11 @@ rados -p rbd -b 4096 bench 60 write -t 128 --run-name test1
 ```shell
 yum install -y fio
 ```
+
   
-  
-  
+
 ##### 进入 ceph-fs 挂载目录内
-  
+
 ```shell
 cd /data/files
 ```
@@ -564,7 +564,7 @@ cd /data/files
   
 
 ##### 执行测试
-  
+
 ```shell
 fio -direct=1 -iodepth=128 -rw=randwrite -ioengine=libaio -bs=4k -size=1G -numjobs=1 -runtime=1000 -group_reporting -filename=iotest -name=Rand_Write_Testing
 ```
@@ -584,3 +584,4 @@ fio -direct=1 -iodepth=128 -rw=randwrite -ioengine=libaio -bs=4k -size=1G -numjo
 1. [Ceph 中文文档](http://docs.ceph.org.cn/)
 2. [Ceph Documentation](http://docs.ceph.com/docs/master/)
 3. [在 CentOS 7.1 上安装分布式存储系统 Ceph](https://www.vpsee.com/2015/07/install-ceph-on-centos-7/)
+

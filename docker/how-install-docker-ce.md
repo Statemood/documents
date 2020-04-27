@@ -61,10 +61,6 @@
                 "max-size": "500m",
                 "max-file": "3"
             },
-            "registry-mirrors": [
-                 "https://dockerhub.azk8s.cn",
-                 "https://docker.mirrors.ustc.edu.cn/"
-            ],
             "oom-score-adjust": -1000,
             "default-ulimits": {
                 "nofile": {
@@ -75,11 +71,11 @@
             }
         }
         ```
-
         
-
+        
+        
       - 启动 Docker，生成目录
-        
+  
         ```shell
-      systemctl start docker
+systemctl start docker
         ```
