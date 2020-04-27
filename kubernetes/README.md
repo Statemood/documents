@@ -174,7 +174,7 @@ Docker-CE 18.03 或更高版本
 
 ## 部署基础组件
 
-- [Calico](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-calico.md) *or* [Flannel](https://github.com/Statemood/documents/blob/master/kubernetes/install/210-deploy-cni-flannel.md) (*二选一*)
+- [Calico](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-calico.md) *or* [Flannel](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-flannel.md) (*二选一*)
 - [CoreDNS](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/400.deploy-coredns.md)
 - [Node Local DNS](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/400.deploy-nodelocaldns.md)
 - [Metrics Server](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/401.deploy-metrics-server.md)
