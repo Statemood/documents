@@ -1,100 +1,43 @@
 # Install Kubernetes Cluster Step by Step
 
-# 目录
-
-- 概览
-  - 环境
-  - 组件
-- 证书签发
-  - [CA 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#1-%E7%AD%BE%E5%8F%91ca%E5%9C%A8-20-31-%E4%B8%8A%E8%BF%9B%E8%A1%8C%E5%8F%AF%E4%BB%A5%E6%98%AF%E4%BB%BB%E4%B8%80%E5%AE%89%E8%A3%85-openssl-%E7%9A%84%E4%B8%BB%E6%9C%BA)
-  - [kube-apiserver 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#2-%E4%B8%BA-kube-apiserver-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
-  - [kube-controller-manager 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#3-%E4%B8%BA-kube-controller-manager-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
-  - [kube-scheduler 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#4-%E4%B8%BA-kube-scheduler-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
-  - [kube-proxy 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#6-%E4%B8%BA-kube-proxy-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
-  - [kubectl 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#5-%E4%B8%BA-kubectl-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
-  - [metrics-server 证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#7-%E4%B8%BA-metrics-server-%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
-  - [Etcd 证书](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster.md)
-  - calico *or* flannel 证书 (*二选一*)
-  - [分发证书](https://github.com/Statemood/documents/blob/master/kubernetes/install/gen-certs.md#8-%E5%88%86%E5%8F%91%E8%AF%81%E4%B9%A6)
-- 系统配置
-  - SELinux
-  - Firewalld
-  - sysctl
-  - EPEL Repository
-- 安装配置
-  - Docker CE
-    - 准备 Repository
-    - 安装 Docker CE
-    - 配置 Docker CE
-  - Etcd 集群
-    - [证书](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster.md#1--%E7%AD%BE%E5%8F%91%E8%AF%81%E4%B9%A6)
-    - [安装](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster.md#%E4%BA%8C%E5%AE%89%E8%A3%85)
-    - [配置](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster.md#%E4%B8%89%E9%85%8D%E7%BD%AE)
-    - [启动](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster.md#%E5%9B%9B%E5%90%AF%E5%8A%A8--%E5%88%9D%E5%A7%8B%E5%8C%96%E9%9B%86%E7%BE%A4)
-    - [测试](https://github.com/Statemood/documents/blob/master/kubernetes/etcd_cluster.md#7-%E6%9F%A5%E7%9C%8B%E9%9B%86%E7%BE%A4%E6%88%90%E5%91%98)
-  - Kubernetes
-    - 下载
-    - 解压    
-    - 安装
-    - 添加用户
-    - 配置证书
-    - kubeconfig
-    - kube-apiserver
-    - kube-controller-manager
-    - kube-scheduler
-    - kube-proxy
-    - kubelet
-  - 网络
-
-- 附加组件
-  - CoreDNS
-  - Ingress
-    - Ingress Controller
-    - Ingress Demo
-      - with SSL
-      - with TLS Client Auth
-  - Heapster
-  - Dashboard
-  - Prometheus
-  - [HPA](https://github.com/Statemood/documents/blob/master/kubernetes/HPA.md)
-  - Grafana
-  - EFK
-  - Image Pull Secret
-  - CSI
-  - Storage Class
-    - Ceph
-      - [RBD](https://github.com/Statemood/documents/blob/master/kubernetes/storage-class.md)
-      - CephFS
-- 管理维护
-  - 备份
-  - 监控
-  - 测试
-    - 压力测试
-    - 破坏性测试
-  - 权限
-    - RBAC
-    - Token
-  - 升级
-
 # 概览
 - 通过二进制文件安装 Kubernetes 1.10 及以上版本
+
 - 本文档指导如何安装一个具有3 Master、2 Worker的高可用集群，在升级下方硬件配置后，可以应用于生成环境
 
+  
+
 ## 1. 组件
+
 - etcd
+
 - calico
+
 - flannel
+
 - docker
+
 - kube-apiserver
+
 - kube-controller-manager
+
 - kube-scheduler
+
 - kube-proxy
+
 - kubelet
+
 - metrics-server
+
 - dashboard
+
 - coredns
+
 - ingress
+
 - prometheus
+
+  
 
 # 环境
 ## 1. OS
