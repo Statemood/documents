@@ -11,11 +11,13 @@
 | Firewall | **On**|
 
 ### 二、安装
+
 #### 1. 使用 yum 安装 openssl 和 FreeRADIUS
 
     [root@network ~]# yum install -y openssl freeradius freeradius-utils radcli
 
 #### 2. 生成证书
+
 - 进入 /etc/raddb/certs 目录
 
       [root@network raddb]# cd certs
@@ -29,6 +31,7 @@
   - server.cnf
   - client.cnf
 ###### 主要修改以下字段
+
     - default_days, default_crl_days
       - 证书有效期
     - certificate_authority
@@ -63,8 +66,9 @@
       [root@network ~]# cd /etc/raddb
 
 - radiusd.conf
-  - ###### 使用默认配置或根据需要修改
-
+  
+- ###### 使用默认配置或根据需要修改
+  
 - client.conf
   - 增加客户端配置, 如接入点 my-wifi
 

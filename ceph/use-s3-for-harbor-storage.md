@@ -137,7 +137,7 @@ harbor.yml
 ```yaml
 storage_service:
   s3:
-    region: us-east-1
+    region: cn-shanghai-1
     regionendpoint: http://192.168.0.10:7480
     bucket: harbor
     secure: false
