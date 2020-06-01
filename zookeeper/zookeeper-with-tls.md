@@ -19,7 +19,7 @@ PASS=confidential
 
 ```shell
 openssl req -new -x509 -days 1825 -keyout ca.key -out ca.pem -nodes \
-			-subj "/C=CN/ST=Shanghai/L=Shanghai/O=Services/CN=Services Security Authority"
+            -subj "/C=CN/ST=Shanghai/L=Shanghai/O=Services/CN=Services Security Authority"
 ```
 
 
@@ -28,7 +28,7 @@ openssl req -new -x509 -days 1825 -keyout ca.key -out ca.pem -nodes \
 
 ```shell
 keytool -keystore truststore.p12 -deststoretype pkcs12 -storepass $PASS \
-		-import -alias ca-root -file ca.pem -noprompt
+        -import -alias ca-root -file ca.pem -noprompt
 ```
 
 
@@ -37,8 +37,8 @@ keytool -keystore truststore.p12 -deststoretype pkcs12 -storepass $PASS \
 
 ```shell
 keytool -keystore $NAME.p12 -storepass $PASS -alias $NAME -validity 1825 \
-		-genkey -keyalg RSA -keysize 2048 -keypass $PASS -deststoretype pkcs12 \
-		-dname "C=CN/ST=Shanghai/L=Shanghai/O=Services/CN=$NAME"
+		    -genkey -keyalg RSA -keysize 2048 -keypass $PASS -deststoretype pkcs12 \
+		    -dname "C=CN/ST=Shanghai/L=Shanghai/O=Services/CN=$NAME"
 ```
 
 
@@ -54,9 +54,9 @@ keytool -keystore $NAME.p12 -storepass $PASS -alias $NAME -certreq -file $NAME-c
 #### Sign the request with the key of private CA and also add a SAN-extension, so that the signed certificate is also valid for IP address
 
 ```shell
-openssl x509 -req -CA ca.pem -CAkey ca.key -in $NAME-cert-file -out $NAME.pem -days 1825 \
-		-CAcreateserial -extensions SAN \
-		-extfile <(printf "\n[SAN]\nsubjectAltName=DNS:*.zk-svc,IP:10.10.20.151,IP:10.10.20.152,IP:10.10.20.153")
+openssl x509 -req -CA ca.pem -CAkey ca.key -in $NAME-cert-file -out $NAME.pem \
+             -days 1825 -CAcreateserial -extensions SAN \
+		         -extfile <(printf "\n[SAN]\nsubjectAltName=DNS:*.zk-svc,IP:10.10.20.151,IP:10.10.20.152,IP:10.10.20.153")
 ```
 
 
