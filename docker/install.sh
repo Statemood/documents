@@ -57,5 +57,3 @@ chcon -R -t container_var_lib_t /data/docker
 chcon -R -t container_share_t /data/docker/overlay2
 systemctl restart docker 
 ll -Z /data/docker
-
-
