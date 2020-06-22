@@ -1,7 +1,5 @@
 # Nginx TLS Client Authentication
 
-[TOC]
-
 ## 应用场景
 
 一部分开源服务或平台并没有认证系统，因而会引发安全隐患。
@@ -122,19 +120,18 @@ openssl pkcs12 -export -in client.pem -inkey client.key -out client.p12 \
 
 ```nginx
 server{				
-		listen 443 ssl;
-  	server_name jenkins.rulin.me;
+    listen 443 ssl;
+    server_name jenkins.rulin.me;
   	
-  	ssl_certificate					ssl/jenkins.rulin.me.pem;
-  	ssl_certificate_key			ssl/jenkins.rulin.me.key;
-  	ssl_client_certificate  ssl/tls-client-auth-ca.pem;
-    ssl_verify_client 			on;
+    ssl_certificate         ssl/jenkins.rulin.me.pem;
+    ssl_certificate_key     ssl/jenkins.rulin.me.key;
+    ssl_client_certificate  ssl/tls-client-auth-ca.pem;
+    ssl_verify_client       on;
  		
-  	...
+    ...
     ...
 }
 ```
-
 
 
 
