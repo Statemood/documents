@@ -44,10 +44,9 @@
         chcon -R -t container_var_lib_t /data/docker
         chcon -R -t container_share_t /data/docker/overlay2
         ```
-
         
 
-      - 修改 docker 配置 (vim /etc/docker/daemon.json)
+      - 修改 docker 配置 (*vim /etc/docker/daemon.json*)
 
         ```json
         {
@@ -61,21 +60,23 @@
                 "max-size": "500m",
                 "max-file": "3"
             },
+            "registry-mirrors": [
+                "https://docker.mirrors.ustc.edu.cn/"
+            ],
             "oom-score-adjust": -1000,
             "default-ulimits": {
                 "nofile": {
                     "Name": "nofile",
-                    "Hard": 64000,
-                    "Soft": 64000
+                    "Hard": 655360,
+                    "Soft": 655360
                 }
             }
         }
         ```
         
         
-        
       - 启动 Docker，生成目录
   
         ```shell
-systemctl start docker
+        systemctl start docker
         ```

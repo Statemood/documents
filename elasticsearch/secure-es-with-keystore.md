@@ -7,15 +7,12 @@
 本文档介绍如何配置 `xpack security` 加强 *Elasticsearch* 安全性。
 
 
-
 # 步骤
-
 
 
 ## 证书
 
 TLS 证书用于 Elasticsearch 的 *http* & *transport*。
-
 
 
 #### CA
