@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+spec:
+  serviceName: kafka-svc
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      terminationGracePeriodSeconds: 75
+      initContainers:
+      - name: init
+        image: statemood/alpine:3.11
+        command:
+        - sh
+        - -c
+        - rm -rf /data/lost+found
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      containers:
+      - name: kafka
+        imagePullPolicy: Always
+        image: statemood/kafka:2.4.1
+        command:
+        - sh
+        - -c
+        - "/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-}"
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 800m
+          limits:
+            memory: 4Gi
+            cpu: 800m
+        ports:
+        - containerPort: 9093
+          name: server
+        env:
+        - name: KAFKA_HEAP_OPTS
+          value : "-Xmx2g -Xms2g"
+        - name: KAFKA_OPTS
+          value: "-Dlogging.level=INFO"
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/kafka
+        - name: config
+          mountPath: /opt/kafka/config/server.properties
+          subPath: server.properties
+        readinessProbe:
+          exec:
+           command:
+            - sh
+            - -c
+            - "/opt/kafka/bin/kafka-topics.sh --list --zookeeper zk-0.zk-svc:2181,zk-1.zk-svc:2181,zk-2.zk-svc:2181"
+      securityContext:
+        runAsUser: 500
+        fsGroup: 500
+      volumes:
+      - name: config
+        configMap:
+          defaultMode: 0644
+          name: kafka-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: data
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 20Gi

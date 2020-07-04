@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: APP_NAME_V
+  namespace: NAMESPACE_V
+
+spec:
+  ports:
+  - port: APP_PORT
+  selector:
+    app: APP_NAME_V

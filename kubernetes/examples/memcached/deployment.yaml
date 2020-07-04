@@ -1,0 +1,32 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+
+metadata:
+  name: NAME
+  namespace: db
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: NAME
+  template:
+    metadata:
+      labels:
+        app: NAME
+    spec:
+      nodeSelector:
+        zone: memory
+      containers:
+      - name: NAME
+        image: statemood/memcached:1.4.15
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 11211
+        env:
+        - name: "MEMCACHED_PORT"
+          value: "11211"
+        - name: "MEMCACHED_MAX_MEM"
+          value: "128"
+        - name: "MEMCACHED_MAX_CONN"
+          value: "512"

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: mongodb-test
+  namespace: default
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb-test
+  template:
+    metadata:
+      labels:
+        app: mongodb-test
+    spec:
+      #nodeSelector:
+      #  zone: memory
+      containers:
+      - name: mongodb-test
+        image: statemood/mongodb:3.4.9
+        securityContext:
+          privileged: true
+          seLinuxOptions:
+            user: system_u
+            role: object_r
+            type: fusefs_t
+            level: "s0:c123,c456"
+        ports:
+        - containerPort: 27017

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-server-config-APP_NAME_V
+  namespace: NAMESPACE_V
+data:
+  server.conf: |-
+    server {
+      listen APP_PORT;
+
+      root WEB_ROOT;
+
+      location ~ \.php$ {
+          include fastcgi_params;
+          fastcgi_index index.php;
+          fastcgi_pass  127.0.0.1:9000;
+          fastcgi_split_path_info ^(.+\.php)(/.*)$;
+          fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+          fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      }
+    }

@@ -1,0 +1,98 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: data-pg-data
+  namespace: default
+  annotations:
+    volume.beta.kubernetes.io/storage-class: data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: default
+spec:
+  ports:
+  - name: pgql
+    port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: postgres
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+              - key: beta.kubernetes.io/os
+                operator: In
+                values:
+                - linux
+      containers:
+      - name: postgres
+        image: postgres:11-alpine
+        env:
+        - name: POSTGRES_USER
+          value: kong
+        - name: POSTGRES_PASSWORD
+          value: kong
+        - name: POSTGRES_DB
+          value: kong
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: pg-data
+        resources:
+          limits:
+            cpu: 900m
+            memory: 2Gi
+          requests:
+            cpu: 900m
+            memory: 2Gi
+        livenessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 20
+      volumes:
+      - name: pg-data
+        persistentVolumeClaim:
+          claimName: data-pg-data

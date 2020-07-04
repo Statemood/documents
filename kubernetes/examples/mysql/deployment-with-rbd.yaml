@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: mysql-test
+  namespace: default
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-test
+  template:
+    metadata:
+      labels:
+        app: mysql-test
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: key
+                operator: In
+                values:
+                - value
+      containers:
+      - name: mysql-test
+        image: statemood/mysql:5.7.21
+        imagePullPolicy: Always
+        env:
+        - name:  "MYSQL_CONFIG_FILE"
+          value: "/var/lib/mysql/my.cnf"
+          # If MYSQL_ROOT_PASSWORD is empty, the password will be set to 'qwe123'
+          # See https://github.com/Statemood/dockerfiles/tree/master/Dockerfiles/mysql for more information
+        - name:  "MYSQL_ROOT_PASSWORD"
+          value: ""
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: data
+        ports:
+        - containerPort: 3306
+        resources:
+          limits:
+            cpu: 900m
+            memory: 2Gi
+          requests:
+            cpu: 900m
+            memory: 2Gi
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 20
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-mysql-test

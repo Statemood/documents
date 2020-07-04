@@ -1,0 +1,129 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: es-master
+  labels:
+    app: es
+    role: master
+spec:
+  replicas: 3
+  serviceName: es-discovery
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: es
+      role: master
+  template:
+    metadata:
+      labels:
+        app: es
+        role: master
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - es
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - es
+            topologyKey: "kubernetes.io/hostname"
+      initContainers:
+      - name: init-data
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0-amd64
+        imagePullPolicy: "IfNotPresent"
+        command:
+        - /bin/bash
+        - -c
+        - chown -R elasticsearch. /usr/share/elasticsearch
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: data
+      - name: init-sysctl
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0-amd64
+        imagePullPolicy: IfNotPresent
+        command: ["sysctl", "-w", "vm.max_map_count=500000"]
+        securityContext:
+          privileged: true
+      containers:
+      - name: es-master
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0-amd64
+        imagePullPolicy: Always
+        securityContext:
+          capabilities:
+            add:
+            - IPC_LOCK
+            - SYS_RESOURCE
+        ports:
+        - containerPort: 9200
+          name: http
+        - containerPort: 9300
+          name: transport
+        env:
+        - name:  "ES_JAVA_OPTS"
+          value: "-Xms4g -Xmx4g"
+        - name: "cluster.name"
+          value: "es"
+        - name: "node.name"
+          value: "${HOSTNAME}"
+        - name:  "bootstrap.memory_lock"
+          value: "false"
+        - name: "discovery.seed_hosts"
+          value: "es-discovery"
+        - name: "cluster.initial_master_nodes"
+          value: "es-master-0,es-master-1,es-master-2"
+        - name: "discovery.zen.ping_timeout"
+          value: "5s"
+        - name: "node.master"
+          value: "true"
+        - name: "node.data"
+          value: "false"
+        - name: "node.ingest"
+          value: "false"
+        resources:
+          limits:
+            cpu: "2"
+            memory: 8Gi
+          requests:
+            cpu: "2"
+            memory: 8Gi
+        livenessProbe:
+          httpGet:
+            path: /_cluster/health?local=true
+            port: 9200
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health?local=true
+            port: 9200
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 20
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: data
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100Gi

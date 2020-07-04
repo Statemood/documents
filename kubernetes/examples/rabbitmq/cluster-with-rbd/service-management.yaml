@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-management
+  labels:
+    app: rabbitmq
+spec:
+  ports:
+  - port: 15672
+    name: http
+  selector:
+    app: rabbitmq

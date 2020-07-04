@@ -9,23 +9,30 @@
 ## 新建cephfs
 ### 创建一个名称为 files 的文件系统
 - 创建数据池, PG 32
-      
   
+  ```shell
     ceph osd pool create files_data 32
+  ```
+  
+  
   
 - 创建元数据池, PG 32
-      
   
+      ```shell
     ceph osd pool create files_metadata 32
+      ```
+  
+  
   
 - 创建文件系统, 名称为 files, 并分别指定 元数据 和 数据池
   
       ceph fs new files files_metadata files_data
 
 ## 权限
+
 ### cephfs 简单权限控制
 #### 使用 ceph auth
-    ceph auth add client.files mds 'allow rw' osd 'allow rw data=files' mon 'allow r'
+    ceph auth add client.files mds 'allow rw' osd 'allow rw tag files data=files' mon 'allow r'
 
 - 添加一个用户 client.files
   - mds 
@@ -69,8 +76,13 @@
   - 复制输出内容到客户端机器, 保存为 /etc/ceph/keyring
 
 - 创建挂载点目录 /data/files
-      mkdir -p /data/files
-
+  
+```shell
+  mkdir -p /data/files
+  ```
+  
+  
+  
 - 使用 `ceph-fuse` 挂载
 
       ceph-fuse -m ceph-0,ceph-1,ceph-2:6789 /data/files --id files --client_mds_namespace files

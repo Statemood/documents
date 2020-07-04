@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: redis-test
+  namespace: default
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-test
+  template:
+    metadata:
+      labels:
+        app: redis-test
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: key
+                operator: In
+                values:
+                - value
+      containers:
+      - name: redis
+        image: statemood/redis:4.0.6
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6379
+        env:
+        # Set REDIS PASSWORD
+        # false:  No password 
+        # true:   Create a random password
+        # or set to '123456'
+        - name:  "REDIS_PASSWORD"
+          value: "false"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 300m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+          periodSeconds: 10
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/redis
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-redis-test

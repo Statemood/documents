@@ -1,0 +1,58 @@
+# --------------------------------------------
+# Created by Statemood, 2018.01.06
+#            I.am.RuLin@gmail.com
+#
+# Project dockerfiles:
+#    https://github.com/Statemood/dockerfiles
+# --------------------------------------------
+
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: zipkin
+  namespace: logs
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zipkin
+  template:
+    metadata:
+      labels:
+        app: zipkin
+    spec:
+      containers:
+      - name: zipkin
+        image: statemood/zipkin:2.5.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9411
+        env:
+        - name:  "ES_HOST"
+          value: "192.168.50.10"
+        - name:  "ES_PORT"
+          value: "9200"
+        - name:  "JAVA_OPTS"
+          value: "-Xmx1g -Xms1g"
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1536Mi
+          requests:
+            cpu: 300m
+            memory: 1256Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9411
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9411
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+          periodSeconds: 20

@@ -29,7 +29,9 @@
   - SLB 将请求转 harbor
 
 ### 配置
+
 - #### RDS: MySQL
+  
   - 添加连接用户(在阿里云 RDS 控制台直接配置)
   - 通过 DMS 或者客户端登录数据库
     1. 创建数据库 harbor
@@ -37,10 +39,11 @@
 
 
 - #### RDS: PostgreSQL
+  
   - 添加连接用户(在阿里云 RDS 控制台直接配置)
   - 通过 DMS 或者客户端登录数据库
-    1. 创建数据库 harbor
-
+  1. 创建数据库 harbor
+  
 - #### harbor.cfg
   - ###### 修改如下
   - hostname = registry.xxx.com

@@ -1,0 +1,65 @@
+# Allow developer tom access & operator to namespace dev
+# For more details:
+#     https://github.com/Statemood/documents/blob/master/kubernetes-1.8/create_users_for_developer.md
+
+################################################
+# REPLACE                                      #
+#     USERNAME    -> Your username             #
+#     NAMESPACE   -> NameSpace                 #
+################################################
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: NAMESPACE
+  name: user-USERNAME
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/exec", "pods/log", "services", "replicationcontrollers", "configmaps", "secrets"]
+  verbs:     ["create", "delete", "patch", "watch", "get", "list"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims", "events", "endpoints"]
+  verbs:     ["list", "get", "watch"]
+- apiGroups: ["extensions", "apps"]
+  resources: ["ingresses"]
+  verbs:     ["list", "get", "watch"]
+- apiGroups: ["extensions", "apps"]
+  resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+  verbs:     ["create", "delete", "patch", "watch", "get", "list"]
+- apiGroups: ["batch"]
+  resources: ["cronjobs", "jobs"]
+  verbs:     ["create", "delete", "patch", "watch", "get", "list"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: user-USERNAME
+  namespace: NAMESPACE
+subjects:
+- kind: User
+  name: user-USERNAME
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: user-USERNAME
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: user-USERNAME
+  namespace: NAMESPACE
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: user-USERNAME-binding
+  namespace: NAMESPACE
+subjects:
+- kind: ServiceAccount
+  name: user-USERNAME
+roleRef:
+  kind: Role
+  name: user-USERNAME
+  apiGroup: rbac.authorization.k8s.io

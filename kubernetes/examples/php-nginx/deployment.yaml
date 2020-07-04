@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: APP_NAME_V
+  namespace: NAMESPACE_V
+spec:
+  replicas: REPLICAS_NUM
+  selector:
+    matchLabels:
+      app: APP_NAME_V
+  template:
+    metadata:
+      labels:
+        app: APP_NAME_V
+    spec:
+      nodeSelector:
+        zone: K8S_NODE_ZONE
+      containers:
+      - name: APP_NAME_V
+        image: DOCKER_IMAGE_NAME:DOCKER_TAG
+        imagePullPolicy: IMAGE_PULL_POLICY
+        securityContext:
+          runAsUser:  K8S_RUN_USER_ID
+        #  privileged: true
+        # seLinuxOptions:
+        #    user: system_u
+        #    role: object_r
+        #    type: fusefs_t
+        #    level: "s0:c123,c456"
+        ports:
+        - containerPort: APP_PORT
+        env:
+        - name:  "APP_ENV"
+          value: "APP_ENV_V"
+        - name:  "APP_NAME"
+          value: "APP_NAME_V"
+        - name:  "APP_NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        livenessProbe:
+          httpGet:
+            path: LIVENESS_URL
+            port: APP_PORT
+          initialDelaySeconds: LIVENESS_IDS
+          timeoutSeconds: LIVENESS_TIMEOUT
+          periodSeconds: LIVENESS_PERIOD
+        readinessProbe:
+          httpGet:
+            path: READINESS_URL
+            port: APP_PORT
+          initialDelaySeconds: READINESS_IDS
+          timeoutSeconds: READINESS_TIMEOUT
+          periodSeconds: READINESS_PERIOD
+        resources:
+          limits:
+            cpu: LIMIT_MAX_CPU
+            memory: LIMIT_MAX_MEM
+          requests:
+            cpu: LIMIT_MIN_CPU
+            memory: LIMIT_MIN_MEM
+        volumeMounts:
+        - name: nginx-server-config
+      volumes:
+      - name: nginx-server-config
+        configMap:
+          defaultMode: 0600
+          name: nginx-server-config-APP_NAME_V
+      imagePullSecrets:
+      - name: IMAGE_PULL_SECRET

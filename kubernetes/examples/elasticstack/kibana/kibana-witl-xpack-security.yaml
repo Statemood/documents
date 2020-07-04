@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kibana
+type: Opaque
+data:
+  # echo -n xxx | base64
+  es.username: a2liYW5h
+  es.password: ejY3SlZ6WDRONUF5MFZETDhSbVRK
+  # base64 -w 0 file
+  es-client.key: 
+  es-client.pem: 
+  es-ca.pem: 
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  labels:
+    k8s-app: kibana
+    addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: kibana
+  template:
+    metadata:
+      labels:
+        k8s-app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:7.7.0
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: "2"
+            memory: 4Gi
+          requests:
+            cpu: "2"
+            memory: 4Gi
+        env:
+        - name:  I18N_LOCALE
+          value: zh-CN
+        - name:  ELASTICSEARCH_HOSTS
+          value: https://es-client.svc:9200
+        - name:  ELASTICSEARCH_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: kibana 
+              key:  es.username
+        - name:  ELASTICSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kibana
+              key:  es.password
+        - name:  ELASTICSEARCH_SSL_KEY
+          value: /etc/kibana/ssl/es-client.key        
+        - name:  ELASTICSEARCH_SSL_CERTIFICATE
+          value: /etc/kibana/ssl/es-client.pem
+        - name:  ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES
+          value: /etc/kibana/ssl/es-ca.pem
+        ports:
+        - containerPort: 5601
+          name: ui
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5601
+          initialDelaySeconds: 60
+          timeoutSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5601
+          initialDelaySeconds: 60
+          timeoutSeconds: 30
+        volumeMounts:
+        - name: es-ssl
+          mountPath: /etc/kibana
+          readOnly: true
+      volumes:
+      - name: es-ssl
+        secret:
+          secretName: kibana 
+          items:
+          - key:  es-client.key 
+            path: ssl/es-client.key
+          - key:  es-client.pem
+            path: ssl/es-client.pem
+          - key:  es-ca.pem
+            path: ssl/es-ca.pem
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+spec:
+  type: ClusterIP
+  ports:
+  - name: ui
+    port: 5601
+    targetPort: 5601
+  selector:
+    k8s-app: kibana

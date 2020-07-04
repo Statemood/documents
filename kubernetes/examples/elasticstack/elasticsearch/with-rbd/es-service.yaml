@@ -1,0 +1,35 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: es
+  labels:
+    app: es
+    role: client
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: es
+    role: client
+  ports:
+  - name: http
+    port: 9200
+    targetPort: 9200
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: es-discovery
+  labels:
+    app: es
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: es
+  ports:
+  - name: trasport
+    port: 9300
+    targetPort: 9300

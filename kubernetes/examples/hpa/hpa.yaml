@@ -1,0 +1,15 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  namespace: NAMESPACE_V
+  name: hpa-APP_LABEL_V
+  labels:
+    app: APP_LABEL_V
+spec:
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: APP_LABEL_V
+  minReplicas: REPLICAS_MIN_NUM
+  maxReplicas: REPLICAS_MAX_NUM
+  targetCPUUtilizationPercentage: HPA_TARGET_CPU

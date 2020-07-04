@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-slave-0
+  labels:
+    name: redis-slave-0
+spec:
+  ports:
+    - port: 6379
+  selector:
+    name: redis-slave-0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-slave-0
+  labels:
+    name: redis-slave-0
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      name: redis-slave-0
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: redis-slave-0
+    spec:
+      hostname: redis-slave-0
+      terminationGracePeriodSeconds: 20
+      containers:
+      - name: redis
+        # Build your own image with Dockerfile at
+        #     https://github.com/Statemood/dockerfiles/tree/master/Dockerfiles/redis/4.0.12
+        image: statemood/redis:4.0.12
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6379
+        env:
+        - name:  REDIS_MODE
+          value: "slave"
+        - name:  REDIS_MASTER_SVC_HOST
+          value: "redis-master"
+        - name:  REDIS_MASTER_SVC_PORT
+          value: "6379"
+        - name:  REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: redisAuthPass
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/redis
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 20
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-redis-slave-0

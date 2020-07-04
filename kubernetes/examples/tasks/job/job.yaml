@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: JOB_NAME_V
+  namespace: NAMESPACE_V
+spec:
+  backoffLimit: 5
+  activeDeadlineSeconds: 100
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: provider
+                operator: In
+                values:
+                - K8S_AFFINITY_PROVIDER
+              - key: role
+                operator: In
+                values:
+                - K8S_AFFINITY_ROLE
+              - key: region
+                operator: In
+                values:
+                - K8S_AFFINITY_REGION
+      containers:
+      - name: JOB_NAME_V
+        image: DOCKER_IMAGE_NAME:DOCKER_TAG
+        imagePullPolicy: IMAGE_PULL_POLICY
+        command: 
+        - /bin/job.sh
+        env:
+        - name:  "APP_ENV"
+          value: "APP_ENV_V"
+        - name:  "APP_NAME"
+          value: "APP_NAME_V"
+        - name:  "APP_ROOT"
+          value: "APP_ROOT_V"
+        - name:  "APP_SERVICE"
+          value: "APP_SERVICE_V"
+        - name:  "APP_JOB_TYPE"
+          value: "APP_JOB_TYPE_V"
+        - name:  "JOB_COMMAND"
+          value: "JOB_COMMAND_V"
+        - name:  "APP_NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          limits:
+            cpu: LIMIT_MAX_CPU
+            memory: LIMIT_MAX_MEM
+          requests:
+            cpu: LIMIT_MIN_CPU
+            memory: LIMIT_MIN_MEM
+      restartPolicy: OnFailure
+      imagePullSecrets:
+      - name: IMAGE_PULL_SECRET

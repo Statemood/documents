@@ -1,0 +1,158 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zk-svc
+  labels:
+    app: zk-svc
+spec:
+  ports:
+  - port: 2888
+    name: server
+  - port: 3888
+    name: leader-election
+  clusterIP: None
+  selector:
+    app: zk
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zk-cm
+data:
+  jvm.heap: "1000"
+  tick: "2000"
+  init: "10"
+  sync: "5"
+  client.cnxns: "300"
+  snap.retain: "7"
+  purge.interval: "24"
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: zk-pdb
+spec:
+  selector:
+    matchLabels:
+      app: zk
+  minAvailable: 2
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zk
+spec:
+  serviceName: zk-svc
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zk
+  template:
+    metadata:
+      labels:
+        app: zk
+    spec:
+      initContainers:
+      - name: init-dir
+        image: statemood/alpine:3.11
+        command:
+        - /bin/sh
+        - -c
+        - mkdir -p /data/zk; chown -v 567. /data/zk
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      containers:
+      - name: zk
+        imagePullPolicy: Always
+        image: statemood/zookeeper:3.6.0
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        ports:
+        - containerPort: 2181
+          name: client
+        - containerPort: 2888
+          name: server
+        - containerPort: 3888
+          name: leader-election
+        - containerPort: 8080
+          name: admin
+        env:
+        - name : ZK_INIT_REPLICAS
+          value: "3"
+        - name:  ZK_4LW_COMMANDS_WHITELIST
+          value: "ruok, cons, stat, mntr"
+        - name : ZK_SERVER_HEAP
+          valueFrom:
+            configMapKeyRef:
+                name: zk-cm
+                key: jvm.heap
+        - name : ZK_TICK_TIME
+          valueFrom:
+            configMapKeyRef:
+                name: zk-cm
+                key: tick
+        - name : ZK_INIT_LIMIT
+          valueFrom:
+            configMapKeyRef:
+                name: zk-cm
+                key: init
+        - name : ZK_SYNC_LIMIT
+          valueFrom:
+            configMapKeyRef:
+                name: zk-cm
+                key: sync
+        - name : ZK_MAX_CLIENT_CNXNS
+          valueFrom:
+            configMapKeyRef:
+                name: zk-cm
+                key: client.cnxns
+        - name: ZK_SNAP_RETAIN_COUNT
+          valueFrom:
+            configMapKeyRef:
+                name: zk-cm
+                key: snap.retain
+        - name: ZK_PURGE_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+                name: zk-cm
+                key: purge.interval
+        - name: ZK_LOG_DIR
+          value: "/tmp"
+        - name: ZK_CLIENT_PORT
+          value: "2181"
+        - name: ZK_SERVER_PORT
+          value: "2888"
+        - name: ZK_ELECTION_PORT
+          value: "3888"
+        readinessProbe:
+          exec:
+            command:
+            - "zkOk.sh"
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - "zkOk.sh"
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        securityContext:
+          runAsUser: 567
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: data
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi

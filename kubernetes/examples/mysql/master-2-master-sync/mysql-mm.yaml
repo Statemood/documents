@@ -1,0 +1,243 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-auth
+  labels:
+    app: mysql
+type: Opaque
+data:
+  hc.password:   dTNx2ldzJDtc3dYQozc=
+  repl.password: MjhuMxRKW3N4eEtzb1A=
+  root.password: aHhNb9pLP2k5VstSiGU=
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-scripts
+  labels:
+    app: mysql
+data:
+  health-check.sh: |-
+    #! /bin/bash
+    mysql -u health_check -p$MYSQL_HC_PASSWORD -e "select Db from mysql.db where Db = 'sys';"
+
+  mysql-mm-init.sh: |-
+    #! /bin/bash
+
+    svc=mysql-mm-svc
+
+    Command(){
+        mysql -u root -p$MYSQL_ROOT_PASSWORD -h $1 -e "$2" 2>/dev/null
+    }
+
+    MasterStatus(){ 
+        Command $1 "show master status\G" 
+    }
+
+    echo "Waiting for mm-1 is ready."
+    while true
+    do
+        ping -c 1 mysql-mm-1.$svc > /dev/null 2>&1
+        if [ $? = 0 ]
+        then
+            echo "mm-1 is Ready!"
+            break
+        else
+            echo "mm-1 still not ready. Waiting..."
+            sleep 3
+        fi
+    done 
+
+    for m in 0 1
+    do  
+        test $m = 0 && s=1 || s=0
+
+           add=mysql-mm-$m.$svc
+        master=mysql-mm-$s.$svc
+        
+        echo "Set permisson to replication"
+        Command $master "GRANT RELOAD, SUPER, REPLICATION SLAVE ON *.* TO 'repl'@'%' identified by '$MYSQL_REPL_PASSWORD';"
+
+        echo "Get bin log file and position from $master"
+        blf=`MasterStatus $master | awk '/File: /{print $2}'`
+        blp=`MasterStatus $master | awk '/Position: /{print $2}'`
+
+        echo "Set master for $add to $master, BLF=$blf, BLP=$blp"
+        Command $add "CHANGE MASTER TO MASTER_HOST='$master', MASTER_USER='repl', MASTER_PASSWORD='$MYSQL_REPL_PASSWORD', MASTER_LOG_FILE='$blf', MASTER_LOG_POS=$blp;"
+
+        echo "Start slave on $add"
+        Command $add "start slave;"
+
+        echo "Get slave status"
+        Command $add "show slave status\G"
+    done
+    echo "MySQL MM is Ready."
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-mm-svc
+spec:
+  clusterIP: None
+  ports:
+  - port: 3306
+    targetPort: 3306
+  selector:
+    app: mysql-mm
+    role: master
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-mm-client
+spec:
+  ports:
+  - port: 3306
+    targetPort: 3306
+  selector:
+    app: mysql-mm
+    role: master
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-mm
+spec:
+  serviceName: mysql-mm-svc
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mysql-mm
+  template:
+    metadata:
+      labels:
+        app: mysql-mm
+        role: master
+    spec:
+      initContainers:
+      - name: init-dir
+        image: statemood/mysql:5.7.30
+        command:
+        - /bin/sh
+        - -c
+        - test -d /data/mysql || mkdir -p /data/mysql; chown -R mysql. /data/mysql
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: mysql
+        image: statemood/mysql:5.7.30
+        imagePullPolicy: Always
+        env:
+        - name:  MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: root.password
+              name: mysql-auth
+        - name:  MYSQL_REPL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: repl.password
+              name: mysql-auth
+        - name:  MYSQL_HC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: hc.password
+              name: mysql-auth
+        - name:  MYSQL_RUN_ROLE
+          value: MM
+        ports:
+        - containerPort: 3306
+        resources:
+          limits:
+            cpu: 600m
+            memory: 2Gi
+          requests:
+            cpu: 600m
+            memory: 2Gi
+        readinessProbe:
+          exec:
+            command:
+            - /opt/health-check.sh
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - /opt/health-check.sh
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: scripts
+          mountPath: /opt
+      volumes:
+      - name: scripts
+        configMap:
+          defaultMode: 0755
+          name: mysql-scripts
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: data
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 20Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mysql-mm-init
+spec:
+  template:
+    spec:
+      containers:
+      - name: init
+        image: statemood/mysql:5.7.30
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        - /opt/mysql-mm-init.sh
+        env:
+        - name:  MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: root.password
+              name: mysql-auth
+        - name:  MYSQL_REPL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: repl.password
+              name: mysql-auth
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        volumeMounts:
+        - name: scripts
+          mountPath: /opt
+      volumes:
+      - name: scripts
+        configMap:
+          defaultMode: 0755
+          name: mysql-scripts
+      restartPolicy: Never
+  backoffLimit: 4

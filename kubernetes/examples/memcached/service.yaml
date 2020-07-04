@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: NAME
+  namespace: db
+
+spec:
+  ports:
+  - port: 11211
+  selector:
+    app: NAME

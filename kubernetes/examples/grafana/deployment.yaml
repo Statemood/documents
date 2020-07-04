@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: grafana
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      initContainers:
+      - name: init-data-perm
+        image: alpine:3.11
+        command: ["chown", "-R", "472:104", "/var/lib/grafana"]
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: data
+      containers:
+      - name: grafana
+        image: grafana/grafana:7.0.4
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: data
+        ports:
+        - containerPort: 3000
+        resources:
+          limits:
+            cpu: 2
+            memory: "4G"
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+        livenessProbe:
+          httpGet:
+            port: 3000
+            path: /
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            port: 3000
+            path: /
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 20
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-grafana

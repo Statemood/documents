@@ -1,0 +1,203 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: filebeat
+subjects:
+- kind: ServiceAccount
+  name: filebeat
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: filebeat
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: filebeat
+  labels:
+    k8s-app: filebeat
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources:
+  - namespaces
+  - pods
+  verbs:
+  - get
+  - watch
+  - list
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: filebeat
+  namespace: kube-system
+  labels:
+    k8s-app: filebeat
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: filebeat-kafka-tls
+  namespace: kube-system
+  labels:
+    app: filebeat
+data:
+  # base64 -w 0 ca.pem
+  ca.pem: 
+  # base64 -w 0 kafka.pem
+  kafka.pem: 
+  # base64 -w 0 kafka.key
+  kafka.key: 
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: kube-system
+  labels:
+    k8s-app: filebeat
+data:
+  filebeat.yml: |-
+    filebeat.config:
+      inputs:
+        enabled: true
+        reload.enabled: true
+        reload.period: 10s
+
+    filebeat.inputs:
+    - type: log
+      paths:
+      - /var/log/messages
+      scan_frequency: 5s
+      max_bytes: 1048576
+      fields:
+        topic: "syslog"
+
+    - type: log
+      paths:
+      - /var/log/secure
+      scan_frequency: 5s
+      max_bytes: 1048576
+      fields:
+        topic: "secure"
+
+    - type: log
+      paths:
+      - /var/log/audit/audit.log
+      fields:
+        topic: "audit"
+
+    - type: container
+      paths:
+        - /var/lib/docker/containers/*/*.log
+      scan_frequency: 5s
+      max_bytes: 1048576
+      fields:
+        topic: "k8s"
+      processors:
+      - add_kubernetes_metadata:
+          in_cluster: true
+          host: ${NODE_NAME}
+          matchers:
+          - logs_path:
+              logs_path: "/var/lib/docker/containers/"
+    output.kafka:
+      enabled: true
+      ssl.enabled: true
+      ssl.key: "/etc/filebeat/kafka/ssl/kafka.key"
+      ssl.certificate: "/etc/filebeat/kafka/ssl/kafka.pem"
+      ssl.certificate_authorities: ["/etc/filebeat/kafka/ssl/ca.pem"]
+      ssl.supported_protocols: [TLSv1.2]
+      hosts: ["kafka-0.kafka-svc:9192", "kafka-1.kafka-svc:9192", "kafka-2.kafka-svc:9192"]
+      topic: "%{[fields.topic]}"
+      partition.round_robin:
+        reachable_only: false
+
+      required_acks: 1
+      compression: gzip
+      max_message_bytes: 1000000
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat
+  namespace: kube-system
+  labels:
+    k8s-app: filebeat
+spec:
+  selector:
+    matchLabels:
+      k8s-app: filebeat
+  template:
+    metadata:
+      labels:
+        k8s-app: filebeat
+    spec:
+      serviceAccountName: filebeat
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: filebeat
+        image: docker.elastic.co/beats/filebeat:7.7.0
+        args: [
+          "-c", "/etc/filebeat.yml",
+          "-e",
+        ]
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        securityContext:
+          runAsUser: 0
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: 200m
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/filebeat.yml
+          readOnly: true
+          subPath: filebeat.yml
+        - name: kafka-certs
+          mountPath: /etc/filebeat/kafka
+        - name: data
+          mountPath: /usr/share/filebeat/data
+        - name: containers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: varlog
+          mountPath: /var/log
+          readOnly: true
+        - name: containers
+          mountPath: /data/docker/containers
+      volumes:
+      - name: config
+        configMap:
+          defaultMode: 0600
+          name: filebeat-config
+      - name: containers
+        hostPath:
+          path: /data/docker/containers
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: data
+        hostPath:
+          path: /var/lib/filebeat-data
+          type: DirectoryOrCreate
+      - name: kafka-certs
+        secret:
+          secretName: filebeat-kafka-tls
+          items:
+          - key:  ca.pem
+            path: ssl/ca.pem
+          - key:  kafka.pem
+            path: ssl/kafka.pem
+          - key:  kafka.key
+            path: ssl/kafka.key 
