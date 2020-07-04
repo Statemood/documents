@@ -1,60 +1,125 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: zk-svc
-  labels:
-    app: zk-svc
-spec:
-  ports:
-  - port: 2888
-    name: server
-  - port: 3888
-    name: leader-election
-  clusterIP: None
-  selector:
-    app: zk
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: zk-cm
+  name: zk-scripts
+  labels:
+    app: zk
 data:
-  jvm.heap: "1000"
-  tick: "2000"
-  init: "10"
-  sync: "5"
-  client.cnxns: "300"
-  snap.retain: "7"
-  purge.interval: "24"
+  run.sh: |-
+    #!/bin/sh
+    # Created by Lin.Ru@msn.com
+    
+    set -e
+
+    home=/opt/zookeeper
+    myid=${HOSTNAME##*-}
+    data=${ZK_DATA_DIR:-/data/zk}
+
+    CaC(){
+        echo $((count++)) > /dev/null
+        continue
+    }
+
+    # Generate the config only if it doesn't exist
+    if [ ! -f $home/conf/zoo.cfg ]
+    then
+        mcnf=$home/conf/zoo.cfg
+        dcnf=$home/conf/zoo_dynamic.cfg
+
+        echo "Generate ZK config"
+        {
+            echo "dataDir=$data"
+            echo "tickTime=${ZK_TICK_TIME:-2000}"
+            echo "initLimit=${ZK_INIT_LIMIT:-10}"
+            echo "syncLimit=${ZK_SYNC_LIMIT:-5}"
+
+            echo "autopurge.snapRetainCount=${ZK_SNAP_RETAIN_COUNT:-7}"
+            echo "autopurge.purgeInterval=${ZK_PURGE_INTERVAL:-24}"
+            echo "maxClientCnxns=${ZK_MAX_CLIENT_CNXNS:-20}"
+            echo "reconfigEnabled=true"
+            echo "standaloneEnabled=${ZK_STANDALONE_ENABLED:-false}"
+            echo "admin.enableServer=${ZK_ADMINSERVER_ENABLED:-false}"
+            echo "4lw.commands.whitelist=${ZK_4LW_COMMANDS_WHITELIST:-ruok}"
+            echo "dynamicConfigFile=$dcnf"
+
+            echo "metricsProvider.httpPort=${ZK_METRICS_PORT:-7000}"
+            echo "metricsProvider.exportJvmInfo=${ZK_METRICS_JVM_INFO:-true}"
+            echo "metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider"
+        } >> $mcnf
+
+        count=0
+        total=${ZK_INIT_REPLICAS:-3}
+
+        let total--
+
+        while true
+        do
+            echo "server.$count=zk-$count.`hostname -d`:2888:3888;2181" >> $dcnf
+            test $count = $total && test $myid -lt $total && CaC
+            test  $myid = $count && break
+            CaC
+        done
+    fi
+
+    echo "$myid" > $data/myid
+
+    test -z "$@" && exec $home/bin/zkServer.sh start-foreground || exec "$@"
+
 ---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
-  name: zk-pdb
+  name: zk
 spec:
   selector:
     matchLabels:
       app: zk
   minAvailable: 2
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zk
+  labels:
+    app: zk
+spec:
+  ports:
+  - port: 2181
+    name: client
+  - port: 2888
+    name: server
+  - port: 3888
+    name: leader-election
+  - port: 7000
+    name: metrics
+  clusterIP: None
+  selector:
+    app: zk
+
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: zk
 spec:
-  serviceName: zk-svc
+  serviceName: zk
   replicas: 3
   selector:
     matchLabels:
       app: zk
   template:
     metadata:
+      annotations:
+        prometheus.io/port: "7000"
+        prometheus.io/scrape: "true"
       labels:
         app: zk
     spec:
       initContainers:
-      - name: init-dir
-        image: statemood/alpine:3.11
+      - name: init
+        image: alpine:3.11
         command:
         - /bin/sh
         - -c
@@ -64,8 +129,12 @@ spec:
           mountPath: /data
       containers:
       - name: zk
-        imagePullPolicy: Always
         image: statemood/zookeeper:3.6.0
+        imagePullPolicy: Always
+        command:
+        - /bin/sh
+        - -c
+        - /opt/bin/run.sh
         resources:
           requests:
             memory: "1Gi"
@@ -80,73 +149,38 @@ spec:
           name: server
         - containerPort: 3888
           name: leader-election
-        - containerPort: 8080
-          name: admin
+        - containerPort: 7000
+          name: metrics
         env:
         - name : ZK_INIT_REPLICAS
           value: "3"
-        - name:  ZK_4LW_COMMANDS_WHITELIST
-          value: "ruok, cons, stat, mntr"
         - name : ZK_SERVER_HEAP
-          valueFrom:
-            configMapKeyRef:
-                name: zk-cm
-                key: jvm.heap
-        - name : ZK_TICK_TIME
-          valueFrom:
-            configMapKeyRef:
-                name: zk-cm
-                key: tick
-        - name : ZK_INIT_LIMIT
-          valueFrom:
-            configMapKeyRef:
-                name: zk-cm
-                key: init
-        - name : ZK_SYNC_LIMIT
-          valueFrom:
-            configMapKeyRef:
-                name: zk-cm
-                key: sync
-        - name : ZK_MAX_CLIENT_CNXNS
-          valueFrom:
-            configMapKeyRef:
-                name: zk-cm
-                key: client.cnxns
-        - name: ZK_SNAP_RETAIN_COUNT
-          valueFrom:
-            configMapKeyRef:
-                name: zk-cm
-                key: snap.retain
-        - name: ZK_PURGE_INTERVAL
-          valueFrom:
-            configMapKeyRef:
-                name: zk-cm
-                key: purge.interval
-        - name: ZK_LOG_DIR
-          value: "/tmp"
-        - name: ZK_CLIENT_PORT
-          value: "2181"
-        - name: ZK_SERVER_PORT
-          value: "2888"
-        - name: ZK_ELECTION_PORT
-          value: "3888"
+          value: "1000"
         readinessProbe:
           exec:
             command:
-            - "zkOk.sh"
+            - zkOk.sh
           initialDelaySeconds: 10
           timeoutSeconds: 5
         livenessProbe:
           exec:
             command:
-            - "zkOk.sh"
+            - zkOk.sh
           initialDelaySeconds: 10
           timeoutSeconds: 5
+        securityContext:
+          runAsUser: 567
         volumeMounts:
         - name: data
           mountPath: /data
-        securityContext:
-          runAsUser: 567
+        - name: scripts
+          mountPath: /opt/bin
+          readOnly: true
+      volumes:
+      - name: scripts
+        configMap:
+          defaultMode: 0755
+          name: zk-scripts
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -155,4 +189,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 10Gi
+          storage: 20Gi

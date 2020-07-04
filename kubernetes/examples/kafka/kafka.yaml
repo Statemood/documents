@@ -1,10 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-scripts
+data:
+  library.sh: |-
+    #! /bin/sh 
+
+     zp=2181
+     zk=zookeeper
+    bin=/opt/kafka/bin
+    zks="zk-0.zk:$zp,zk-1.zk:$zp,zk-2.zk:$zp"
+
+  run.sh: |-
+    #! /bin/sh
+
+    . $(dirname $0)/library.sh
+
+    cfg=/tmp/server.properties
+    bsc=/opt/kafka/config/base-$(basename $cfg)
+    cmd=$bin/kafka-server-start.sh
+
+    echo "Generate config $cfg based from $bsc"
+    cp -rfv $bsc $cfg
+
+    echo "Generate extra config settings"
+    {   
+        echo "broker.id=${HOSTNAME##*-}"
+        echo "log.dirs=/var/lib/kafka/data"
+        echo "$zk.connect=$zks/kafka"
+    } > $cfg
+
+    exec $cmd $cfg
+
+  health-check.sh: |-
+    #! /bin/sh 
+
+    . $(dirname $0)/library.sh
+
+    $bin/kafka-topics.sh --$zk $zks --list
+
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: kafka-pdb
+spec:
+  selector:
+    matchLabels:
+      app: kafka
+  minAvailable: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  labels:
+    app: kafka
+spec:
+  ports:
+  - port: 9093
+    name: server
+  clusterIP: None
+  selector:
+    app: kafka
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: kafka
 spec:
-  serviceName: kafka-svc
-  replicas: 3
+  serviceName: kafka
+  replicas: 5
   selector:
     matchLabels:
       app: kafka
@@ -13,60 +79,74 @@ spec:
       labels:
         app: kafka
     spec:
-      terminationGracePeriodSeconds: 75
       initContainers:
       - name: init
-        image: statemood/alpine:3.11
+        image: alpine:3.11
         command:
         - sh
         - -c
-        - rm -rf /data/lost+found
+        - mkdir -p /k/data; chown 500. /k/data
         volumeMounts:
         - name: data
-          mountPath: /data
+          mountPath: /k
       containers:
       - name: kafka
         imagePullPolicy: Always
-        image: statemood/kafka:2.4.1
+        image: statemood/kafka:2.5.0
         command:
         - sh
         - -c
-        - "/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-}"
+        - /opt/bin/run.sh
         resources:
           requests:
-            memory: 4Gi
-            cpu: 800m
+            memory: 8Gi
+            cpu: "2"
           limits:
-            memory: 4Gi
-            cpu: 800m
+            memory: 8Gi
+            cpu: "2"
         ports:
         - containerPort: 9093
           name: server
         env:
         - name: KAFKA_HEAP_OPTS
-          value : "-Xmx2g -Xms2g"
+          value : "-Xmx4g -Xms4g"
         - name: KAFKA_OPTS
           value: "-Dlogging.level=INFO"
         volumeMounts:
         - name: data
           mountPath: /var/lib/kafka
+        - name: base-config
+          mountPath: /opt/kafka/config/base-server.properties
+          subPath: base-server.properties
         - name: config
           mountPath: /opt/kafka/config/server.properties
           subPath: server.properties
+        livenessProbe:
+          exec:
+            command:
+            - /opt/bin/health-check.sh
+          initialDelaySeconds: 20
+          timeoutSeconds: 10
         readinessProbe:
           exec:
-           command:
-            - sh
-            - -c
-            - "/opt/kafka/bin/kafka-topics.sh --list --zookeeper zk-0.zk-svc:2181,zk-1.zk-svc:2181,zk-2.zk-svc:2181"
-      securityContext:
-        runAsUser: 500
-        fsGroup: 500
+            command:
+            - /opt/bin/health-check.sh
+          initialDelaySeconds: 20
+          timeoutSeconds: 10
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/kafka
+        - name: scripts
+          mountPath: /opt/bin
       volumes:
-      - name: config
+      - name: kbc
         configMap:
-          defaultMode: 0644
-          name: kafka-config
+          defaultMode: 0444
+          name: kafka-base-config
+      - name: scripts
+        configMap:
+          defaultMode: 0755
+          name: kafka-scripts
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -75,4 +155,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 20Gi
+          storage: 500Gi

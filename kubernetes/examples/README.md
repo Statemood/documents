@@ -4,23 +4,23 @@
 
 ### Zookeeper
 
-[Zookeeper](https://github.com/Statemood/dockerfiles/tree/master/k8s/zookeeper)
+[Zookeeper](https://github.com/Statemood/documents/tree/master/kubernetes/examples/zookeeper)
 
 
 
 ### Kafka
 
-[Kafka (StatefulSet with PVC)](https://github.com/Statemood/dockerfiles/tree/master/k8s/kafka)
+[Kafka (StatefulSet with PVC)](https://github.com/Statemood/documents/tree/master/kubernetes/examples/kafka)
 
 
 
 ### Redis
 
-[Standalone](https://github.com/Statemood/dockerfiles/tree/master/k8s/redis/standalone)<br />
+[Standalone](https://github.com/Statemood/documents/tree/master/kubernetes/examples/redis/standalone)<br />
 
-[Sentinel](https://github.com/Statemood/dockerfiles/tree/master/k8s/redis/sentinel-deploy-with-pvc)<br />
+[Sentinel](https://github.com/Statemood/documents/tree/master/kubernetes/examples/redis/sentinel-deploy-with-pvc)<br />
 
-[Cluster](https://github.com/Statemood/dockerfiles/tree/master/k8s/redis/cluster)<br />
+[Cluster](https://github.com/Statemood/documents/tree/master/kubernetes/examples/redis/cluster)<br />
 
 
 
@@ -30,9 +30,9 @@
 
 ### MySQL
 
-[MySQL Standalone](https://github.com/Statemood/dockerfiles/tree/master/k8s/mysql/standalone )
+[MySQL Standalone](https://github.com/Statemood/documents/tree/master/kubernetes/examples/mysql/standalone )
 
-[MM HA](https://github.com/Statemood/dockerfiles/tree/master/k8s/mysql/mm)
+[MM HA](https://github.com/Statemood/documents/tree/master/kubernetes/examples/mysql/mm)
 
 Master / Replicas
 
@@ -44,19 +44,18 @@ Master / Replicas
 
 ### MongoDB
 
-[MongoDB Standalone](https://github.com/Statemood/dockerfiles/tree/master/k8s/mongodb)
-
+[MongoDB Standalone](https://github.com/Statemood/documents/tree/master/kubernetes/examples/mongodb)
 
 
 
 
 ### Memcached
 
-[Memcached](https://github.com/Statemood/dockerfiles/tree/master/k8s/memcached)
+[Memcached](https://github.com/Statemood/documents/tree/master/kubernetes/examples/memcached)
 
 
 
 ### RabbitMQ
 
-[RabbitMQ Cluster](https://github.com/Statemood/dockerfiles/tree/master/k8s/rabbitmq)
+[RabbitMQ Cluster](https://github.com/Statemood/documents/tree/master/kubernetes/examples/rabbitmq)
 
