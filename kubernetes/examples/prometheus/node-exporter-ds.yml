@@ -7,27 +7,24 @@ metadata:
     k8s-app: node-exporter 
     kubernetes.io/cluster-service: "true"
     addonmanager.kubernetes.io/mode: Reconcile
-    version: v0.15.2
 spec:
   selector:
     matchLabels:
       k8s-app: node-exporter 
-      version: v0.15.2
   updateStrategy:
     type: OnDelete
   template:
     metadata:
       labels:
         k8s-app: node-exporter 
-        version: v0.15.2
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       priorityClassName: system-node-critical
       containers:
         - name: prometheus-node-exporter
-          image: "prom/node-exporter:v0.15.2"
-          imagePullPolicy: "IfNotPresent"
+          image: prom/node-exporter:v1.0.1
+          imagePullPolicy: IfNotPresent
           args:
             - --path.procfs=/host/proc
             - --path.sysfs=/host/sys
