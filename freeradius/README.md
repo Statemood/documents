@@ -105,6 +105,7 @@
       [root@network radius]# iptables -A INPUT -m conntrack --ctstate NEW -p udp --dport 1812:1813  -j ACCEPT
 
 #### 6. 连接测试
+
 - ##### 在RADIUS本机上进行
 
 - 命令及返回信息如下
