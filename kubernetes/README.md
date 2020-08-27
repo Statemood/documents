@@ -129,8 +129,8 @@ Docker-CE 18.03 或更高版本
 # 系统配置
 
 - [调整内核参数](https://github.com/Statemood/documents/blob/master/kubernetes/install/091.config-kernel-parameters.md)
-- [查看 SELinux](https://github.com/Statemood/documents/blob/master/kubernetes/install/091.config-selinux.md)
-- [禁用 Firewall](https://github.com/Statemood/documents/blob/master/kubernetes/install/091.config-firewall.md)
+- [查看 SELinux](https://github.com/Statemood/documents/blob/master/kubernetes/install/092.config-selinux.md)
+- [禁用 Firewall](https://github.com/Statemood/documents/blob/master/kubernetes/install/093.config-firewall.md)
 - [禁用 SWAP](https://github.com/Statemood/documents/blob/master/kubernetes/install/094.config-swap.md)
 
 

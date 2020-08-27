@@ -112,6 +112,13 @@ CentOS 7 minimal x86_64
 
 #### 典型配置
 
+TODO: 
+
+1. 标准集群，角色分离，5MON/2RGW/10OSD
+2. 补充架构图
+
+
+
 **适用于生产环境**
 
 |  主机          |  IP            |  角色        | 配置        |
@@ -435,20 +442,7 @@ vgremove -y `vgdisplay | grep ' VG Name' | grep 'ceph-' | awk '{print $3}'`
       osd data = /var/lib/ceph/osd/ceph-$id
       osd mkfs type = xfs
       osd mkfs options xfs = -f
-        
-      filestore xattr use omap = true
-      filestore min sync interval = 10
-      filestore max sync interval = 15
-      filestore queue max ops = 25000
-      filestore queue max bytes = 10485760
-      filestore queue committing max ops = 5000
-      filestore queue committing max bytes = 10485760000
-        
-      journal max write bytes = 1073714824
-      journal max write entries = 10000
-      journal queue max ops = 50000
-      journal queue max bytes = 10485760000
-        
+      
       osd max write size = 512
       osd client message size cap = 2147483648
       osd deep scrub stride = 131072
