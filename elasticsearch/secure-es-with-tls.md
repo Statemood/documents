@@ -72,6 +72,7 @@ IP.3 = 10.10.20.153
 ```
 
 - IP 为 ES Node IP，不在列表中的IP将无法加入本集群
+  对应配置为 `xpack.security.transport.ssl.verification_mode: full`
 
 
 
@@ -190,9 +191,6 @@ xpack.security.transport.ssl.certificate: ssl/es-server.pem
 xpack.security.transport.ssl.certificate_authorities: ["ssl/es-ca.pem"]
 ```
 
-*xpack.security.transport.ssl.verification_mode* > [更多相关信息](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-settings.html#transport-tls-ssl-settings)
-
-
 
 #### 重启 Elasticsearch 集群
 
@@ -211,7 +209,6 @@ systemctl restart elasticsearch
 ```shell
 /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto
 ```
-
 
 
 通过交互形式手动输入账号及密码
@@ -278,3 +275,6 @@ curl -s --cacert es-ca.pem --cert es-client.pem --key es-client.key \
 
   
 
+# 附录
+[1]. [Security settings in Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-settings.html)
+[2]. [Transport TLS/SSL settings](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-settings.html#transport-tls-ssl-settings)
