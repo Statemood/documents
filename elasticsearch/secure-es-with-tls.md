@@ -121,16 +121,7 @@ distinguished_name  = req_distinguished_name
 basicConstraints    = CA:FALSE
 extendedKeyUsage    = clientAuth, serverAuth
 keyUsage            = nonRepudiation, digitalSignature, keyEncipherment
-#subjectAltName      = @alt_names
-#[alt_names]
-#IP.1 = 10.10.20.151
-#IP.2 = 10.10.20.152
-#IP.3 = 10.10.20.153
 ```
-
-- 当客户端运行于容器中时可不加IP限制
-- 配合亲和性调度策略，可以指定运行主机，从而启用IP限制
-
 
 
 ##### 生成 es-client Key
