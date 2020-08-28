@@ -6,14 +6,12 @@
 
 本文档介绍如何配置 `xpack security` 加强 *Elasticsearch* 安全性。
 
-
 # 步骤
 
 
 ## 证书
 
 TLS 证书用于 Elasticsearch 的 *http* & *transport*。
-
 
 #### CA
 
@@ -45,7 +43,7 @@ openssl genrsa -out es-ca.key 3072
 
 ```shell
 openssl req -x509 -new -nodes -key es-ca.key 	\
-						-days 1825 -out es-ca.pem      		\
+            -days 1825 -out es-ca.pem      		\
 						-subj "/C=CN/ST=Shanghai/L=Shanghai/O=EFK/CN=EFK Security Authorities" \
 						-config ca.cnf -extensions v3_req
 ```
@@ -180,18 +178,20 @@ cluster.initial_master_nodes: ["10.10.20.151", "10.10.20.152", "10.10.20.153"]
 xpack.security.enabled: true
 
 xpack.security.http.ssl.enabled: true
-xpack.security.http.ssl.client_authentication: optional
+xpack.security.http.ssl.client_authentication: required
 xpack.security.http.ssl.key: ssl/es-server.key
 xpack.security.http.ssl.certificate: ssl/es-server.pem
 xpack.security.http.ssl.certificate_authorities: ["ssl/es-ca.pem"]
 
 xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: full
-xpack.security.transport.ssl.client_authentication: optional
+xpack.security.transport.ssl.client_authentication: required
 xpack.security.transport.ssl.key: ssl/es-server.key
 xpack.security.transport.ssl.certificate: ssl/es-server.pem
 xpack.security.transport.ssl.certificate_authorities: ["ssl/es-ca.pem"]
 ```
+
+*xpack.security.transport.ssl.verification_mode* > [更多相关信息](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-settings.html#transport-tls-ssl-settings)
 
 
 
@@ -223,6 +223,39 @@ systemctl restart elasticsearch
 
 
 
+#### 本地用户
+
+*可选步骤*
+
+添加本地超级用户
+
+```shell
+/usr/share/elasticsearch/bin/elasticsearch-users useradd admin --password admin12345 -r superuser
+```
+
+
+
+#### 修改密码
+
+通过本地用户权限修改集群内用户密码
+
+```shell
+user="elastic"
+pass="elastic"
+head="Content-Type:application/json"
+auth="admin:admin12345"
+  ca="/etc/ssl/es/es-ca.pem"
+ key="/etc/ssl/es/es-client.key"
+cert="/etc/ssl/es/es-client.pem"
+ url="https://10.10.20.171:9200/_xpack/security/user/$user/_password"
+
+curl -k -XPUT -H $head --user $auth --cacert $ca --cert $cert --key $key -d '{"password": "$pass"}'
+```
+
+
+
+
+
 ## 验证
 
 通过 curl 使用证书访问 Elasticsearch 集群
@@ -231,4 +264,18 @@ systemctl restart elasticsearch
 curl -s --cacert es-ca.pem --cert es-client.pem --key es-client.key \
 				--user $ES_USERNAME:$ES_PASSWORD https://10.10.20.151:9200/
 ```
+
+
+
+
+
+# 其它服务
+
+- Logstash
+
+- Filebeat
+
+- Kibana
+
+  
 
