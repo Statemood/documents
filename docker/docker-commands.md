@@ -552,9 +552,14 @@
 
 #### unpause
   - Unpause all processes within one or more containers
+
   - 恢复一或多个容器的全部已暂停进程
 
-        docker unpause centos_7
+        ```shell
+      docker unpause centos_7
+        ```
+      
+      
 
 #### update
   - Update configuration of one or more containers
