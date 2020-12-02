@@ -17,8 +17,8 @@ data:
     . $(dirname $0)/library.sh
 
     cfg=/tmp/server.properties
-    bsc=/opt/kafka/config/base-$(basename $cfg)
     cmd=$bin/kafka-server-start.sh
+    bsc=/opt/kafka/config/base-$(basename $cfg)
 
     echo "Generate config $cfg based from $bsc"
     cp -rfv $bsc $cfg
@@ -27,7 +27,17 @@ data:
     {   
         echo "broker.id=${HOSTNAME##*-}"
         echo "log.dirs=/var/lib/kafka/data"
+        echo "logging.level=INFO"
+        echo "num.network.threads=8"
+        echo "num.io.threads=16"
+        echo "num.partitions=3"
+        echo "num.replica.fetchers=3"
+        echo "num.recovery.threads.per.data.dir=1"
+        echo "delete.topic.enable=true"
+        echo "auto.create.topics.enable=false"
+        echo "default.replication.factor=3"
         echo "$zk.connect=$zks/kafka"
+        echo "$zk.set.acl=false"
     } > $cfg
 
     exec $cmd $cfg
@@ -40,16 +50,6 @@ data:
     $bin/kafka-topics.sh --$zk $zks --list
 
 ---
-apiVersion: policy/v1beta1
-kind: PodDisruptionBudget
-metadata:
-  name: kafka-pdb
-spec:
-  selector:
-    matchLabels:
-      app: kafka
-  minAvailable: 3
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -58,7 +58,7 @@ metadata:
     app: kafka
 spec:
   ports:
-  - port: 9093
+  - port: 9092
     name: server
   clusterIP: None
   selector:
@@ -70,7 +70,7 @@ metadata:
   name: kafka
 spec:
   serviceName: kafka
-  replicas: 5
+  replicas: 3
   selector:
     matchLabels:
       app: kafka
@@ -81,11 +81,11 @@ spec:
     spec:
       initContainers:
       - name: init
-        image: alpine:3.11
+        image: alpine:3.12
         command:
         - sh
         - -c
-        - mkdir -p /k/data; chown 500. /k/data
+        - mkdir -pv /k/data; chown -v 500. /k/data
         volumeMounts:
         - name: data
           mountPath: /k
@@ -105,39 +105,31 @@ spec:
             memory: 8Gi
             cpu: "2"
         ports:
-        - containerPort: 9093
+        - containerPort: 9092
           name: server
         env:
         - name: KAFKA_HEAP_OPTS
           value : "-Xmx4g -Xms4g"
-        - name: KAFKA_OPTS
-          value: "-Dlogging.level=INFO"
-        volumeMounts:
-        - name: data
-          mountPath: /var/lib/kafka
-        - name: base-config
-          mountPath: /opt/kafka/config/base-server.properties
-          subPath: base-server.properties
-        - name: config
-          mountPath: /opt/kafka/config/server.properties
-          subPath: server.properties
         livenessProbe:
           exec:
             command:
             - /opt/bin/health-check.sh
-          initialDelaySeconds: 20
+          initialDelaySeconds: 45
           timeoutSeconds: 10
         readinessProbe:
           exec:
             command:
             - /opt/bin/health-check.sh
-          initialDelaySeconds: 20
+          initialDelaySeconds: 45
           timeoutSeconds: 10
         volumeMounts:
         - name: data
           mountPath: /var/lib/kafka
         - name: scripts
           mountPath: /opt/bin
+        - name: base-config
+          mountPath: /opt/kafka/config/base-server.properties
+          subPath: base-server.properties
       volumes:
       - name: kbc
         configMap:

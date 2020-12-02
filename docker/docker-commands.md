@@ -317,23 +317,36 @@
 
 #### create
   - Create a new container
+
   - 创建一个新的容器，注意，容器的STATUS只是 **Created**
+
+    
 
 #### diff
   - Inspect changes to files or directories on a container's filesystem
+
   - 查看容器文件系统内有差异的文件
 
-        docker diff centos_7
-        C /root
-        A /root/.bash_history
-        C /tmp
-        A /tmp/resolv.conf
+      ```shell
+      docker diff centos_7
+      C /root
+      A /root/.bash_history
+      C /tmp
+      A /tmp/resolv.conf
+      ```
+      
+      
 
 #### events
   - Get real time events from the server
+
   - 实时输出Docker服务器端的事件，包括容器的创建，启动，关闭等
 
-        docker events
+        ```shell
+      docker events
+        ```
+      
+      
 
 #### exec
   - Run a command in a running container
@@ -359,27 +372,49 @@
 
 #### history
   - Show the history of an image
+
   - 显示指定镜像的历史记录
 
-        docker history centos:7
+        ```shell
+      docker history image
+        ```
+      
+      
+      
+      
 
 #### images
   - List images
+
   - 列出当前系统中的Docker 镜像
 
-        docker images
+        ```shell
+      docker images
+        ```
+      
+      
 
 #### import
   - Import the contents from a tarball to create a filesystem image
+
   - 根据tar文件的内容新建一个镜像
 
-        docker import centos-7.tar centos:7
+        ```shell
+      docker import centos-7.tar centos:7
+        ```
+      
+      
 
 #### info
   - Display system-wide information
+
   - 显示Docker系统信息
 
-        docker system info
+        ```she
+      docker system info
+        ```
+      
+      
 
 #### inspect
   - Return low-level information on Docker objects
@@ -394,107 +429,176 @@
 
 #### kill
   - Kill one or more running containers
+
   - 强制停止一或多个运行中的容器
 
-        docker kill centos_7 centos_6
+        ```shell
+      docker kill centos_7 centos_6
+        ```
+      
+      
 
 #### load
   - Load an image from a tar archive or STDIN
+
   - 从标准输入或者tar文件载入镜像
 
-        docker load centos-7.tar
+        ```she
+      docker load centos-7.tar
+        ```
+      
+      
 
 #### login
   - Log in to a Docker registry
+
   - 登录到Docker Registry
 
-        docker login -u username -p password my-registry.server.com
+        ```she
+      docker login -u username -p password my-registry.server.com
+        ```
+      
+      
 
 
 #### logout
   - Log out from a Docker registry
+
   - 从已登录的 Registry 中注销
 
-        docker logout my-registry.server.com
+        ```shell
+      docker logout my-registry.server.com
+        ```
+      
+      
 
 #### logs
   - Fetch the logs of a container
+
   - 显示指定容器的日志
 
-        docker logs centos_7
+        ```shell
+      docker logs centos_7
+        ```
+      
+      
 
 #### pause
   - Pause all processes within one or more containers
+
   - 暂停一或多个容器内所有进程, **STATUS 变为 Paused**
 
-        docker pause centos_7
+        ```she
+docker pause centos_7
+        ```
 
+      
+      
       - 对应取消暂停命令
-
+      
             docker unpause centos_7
 
 #### port
+
   - List port mappings or a specific mapping for the container
+
   - 列出容器与主机的端口映射
 
-        docker port centos_7
+       ```shell
+      docker port centos_7
+       ```
+
+
 
 #### ps
+
   - List containers
+
   - 列出当前正在运行(**Up**)的容器
 
-        docker ps
-
+        ```she
+docker ps
+        ```
+      
       - **-a** 参数将列出当前主机所有状态的容器
+      - **-q** 参数将仅显示容器ID
 
 #### pull
+
   - Pull an image or a repository from a registry
+
   - 从仓库中拉取镜像
+
   - 格式: docker pull IMAGE_NAME:DOCKER_TAG
 
-        docker pull centos:7
-
+        ```shell
+docker pull centos:7
+        ```
+      
       - 如未指定DOCKER_TAG, 则默认使用 latest
         - 如无 latest, 则报错
 
 #### push
   - Push an image or a repository to a registry
+
   - 推送一个(本地)镜像到仓库
 
-        docker push my-registry.server.com/library/centos:7
-
-      - 镜像名称须与要使用的镜像仓库相匹配
+        ```she
+docker push my-registry.server.com/library/centos:7
+        ```
+      
+- 镜像名称须与要使用的镜像仓库相匹配
       - 使用 **docker tag** 命令对镜像重命名
-
+      
               docker tag centos:7 my-registry.server.com/library/centos:7
 
 #### rename
   - Rename a container
+
   - 重命名容器名称
 
-        docker rename container-ID-or-NAME centos_7
-
+        ```she
+docker rename container-ID-or-NAME centos_7
+        ```
+      
       - rename 目标可以是 容器ID或名称
 
 #### restart
   - Restart one or more containers
+
   - 重启一或多个容器
 
-        docker restart centos_7
+      ```shel
+      docker restart centos_7
+      ```
+      
+      
 
 #### rm
   - Remove one or more containers
+
   - 删除一或多个容器
+
   - **-f** 参数可以强制删除
 
-        docker rm centos_7
+       ```shell
+      docker rm centos_7
+       ```
+      
+      
 
 #### rmi
   - Remove one or more images
+
   - 删除一或多个镜像
+
   - **-f** 参数可以强制删除
 
-        docker rmi centos:7
+       ```shell
+      docker rmi centos:7
+       ```
+      
+      
 
 #### run
   - Run a command in a new container
@@ -510,47 +614,89 @@
 
 #### save
   - Save one or more images to a tar archive (streamed to STDOUT by default)
+
   - 保存一或多个镜像并使用tar打包
 
-        docker save centos:7 -o centos7.tar
+       ```shell
+      docker save centos:7 -o centos7.tar
+       ```
+      
+      
+      
+      
 
 #### search
   - Search the Docker Hub for images
+
   - 在Docker Hub中搜索镜像
 
-        docker search centos
+        ```shell
+      docker search centos
+        ```
+      
+      
+      
+      
 
 #### start
   - Start one or more stopped containers
+
   - 启动一或多个已停止的容器
 
-        docker start centos_7
+        ```shell
+      docker start centos_7
+        ```
+
+
 
 #### stats
+
   - Display a live stream of container(s) resource usage statistics
+
   - 实时输出指定容器的资源使用状态
 
-        docker stats centos_7
+       ```shell
+      docker stats centos_7
+       ```
+      
+      
 
 #### stop
   - Stop one or more running containers
+
   - 停止一或多个运行中的容器
 
-        docker stop centos_7
+       ```shell
+      docker stop centos_7
+       ```
+      
+      
 
 #### tag
   - Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+
   - 从指定镜像创建一个新镜像(名称)
 
-        docker tag centos:7 my-registry.server.com/library/centos:7
+      ```shell
+      docker tag centos:7 my-registry.server.com/library/centos:7
+      ```
+      
+      
 
 #### top
+
   - Display the running processes of a container
+
   - 显示指定容器运行中的进程信息
 
-        docker top centos_7
+        ```shell
+      docker top centos_7
+        ```
+      
+      
 
 #### unpause
+
   - Unpause all processes within one or more containers
 
   - 恢复一或多个容器的全部已暂停进程
@@ -562,22 +708,37 @@
       
 
 #### update
+
   - Update configuration of one or more containers
+
   - 更新一或多个容器配置
+
   - 如资源配额、重启策略等等
 
-        docker update [options] centos_7
-
+        ```shell
+docker update [options] centos_7
+        ```
+      
       - 请使用命令 **docker update --help** 查看更多详细参数
 
 #### version
   - Show the Docker version information
+
   - 显示 Docker 版本信息
 
-        docker version
+        ```shell
+      docker version
+        ```
+      
+      
 
 #### wait
   - Block until one or more containers stop, then print their exit codes
-  - 捕捉一或多个容器的退出状态
 
-        docker wait centos_7
+  - 捕捉一或多个容器的退出状态  
+
+      ```shell
+      docker wait centos_7
+      ```
+      
+      

@@ -17,8 +17,6 @@ data:
     controlled.shutdown.max.retries=3 
     controlled.shutdown.retry.backoff.ms=5000 
     controller.socket.timeout.ms=30000 
-    default.replication.factor=3
-    delete.topic.enable=true 
     fetch.purgatory.purge.interval.requests=1000 
     group.max.session.timeout.ms=300000 
     group.min.session.timeout.ms=6000 
@@ -51,13 +49,9 @@ data:
     log.roll.jitter.hours=0 
     log.segment.bytes=1073741824 
     log.segment.delete.delay.ms=60000 
-    logging.level=INFO
     max.connections.per.ip=2147483647 
     message.max.bytes=1000012 
     min.insync.replicas=1 
-    num.io.threads=8 
-    num.network.threads=3 
-    num.partitions=3
     num.recovery.threads.per.data.dir=1 
     num.replica.fetchers=1 
     offset.metadata.max.bytes=4096 
@@ -68,7 +62,7 @@ data:
     offsets.retention.minutes=1440 
     offsets.topic.compression.codec=0 
     offsets.topic.num.partitions=50 
-    offsets.topic.replication.factor=3 
+    offsets.topic.replication.factor=2
     offsets.topic.segment.bytes=104857600 
     producer.purgatory.purge.interval.requests=1000
     queued.max.requests=500 
@@ -93,4 +87,3 @@ data:
     unclean.leader.election.enable=true 
     zookeeper.connection.timeout.ms=6000
     zookeeper.session.timeout.ms=6000 
-    zookeeper.set.acl=false 
