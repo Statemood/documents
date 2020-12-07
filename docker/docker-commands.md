@@ -66,16 +66,18 @@
   - 管理Docker配置(文件)
   - 创建配置(文件)提供给一或多个容器使用
   - ##### create
-    - 创建一个配置并以文件或标准输入为内容
-
+    
+- 创建一个配置并以文件或标准输入为内容
+    
           echo "This is a config" | docker config create my-config -
   - ##### inspect
     - 显示一或多个配置(文件)详细信息
 
           docker config inspect my-config
   - ##### ls
-    - 列出配置
-
+    
+- 列出配置
+    
           docker config ls
   - ##### rm
     - 删除一或多个配置文件
@@ -90,6 +92,7 @@
   - **请看下方基本命令介绍**
 
 #### image
+
   - Manage images
   - 管理镜像
   - 用法:
@@ -341,11 +344,10 @@
   - Get real time events from the server
 
   - 实时输出Docker服务器端的事件，包括容器的创建，启动，关闭等
-
-        ```shell
+  
+      ```shell
       docker events
-        ```
-      
+      ```
       
 
 #### exec
@@ -363,34 +365,37 @@
   - Export a container's filesystem as a tar archive
   - 将容器的文件系统导出并打包成 tar 文件
     - 方法1:
-
-          docker export -o centos_7 centos-7.tar
+        ```shell
+        docker export -o centos_7 centos-7.tar
+        ```
 
     - 方法2:
-
-          docker export centos_7 > centos-7.tar
+        ```shell
+        docker export centos_7 > centos-7.tar
+        ```
 
 #### history
   - Show the history of an image
 
   - 显示指定镜像的历史记录
 
-        ```shell
+      ```shell
       docker history image
-        ```
+      ```
       
       
       
       
 
 #### images
+
   - List images
 
   - 列出当前系统中的Docker 镜像
 
-        ```shell
+      ```shell
       docker images
-        ```
+      ```
       
       
 
@@ -399,9 +404,9 @@
 
   - 根据tar文件的内容新建一个镜像
 
-        ```shell
+      ```shell
       docker import centos-7.tar centos:7
-        ```
+      ```
       
       
 
@@ -410,9 +415,9 @@
 
   - 显示Docker系统信息
 
-        ```she
+      ```she
       docker system info
-        ```
+      ```
       
       
 
@@ -432,9 +437,9 @@
 
   - 强制停止一或多个运行中的容器
 
-        ```shell
+      ```shell
       docker kill centos_7 centos_6
-        ```
+      ```
       
       
 
@@ -443,9 +448,9 @@
 
   - 从标准输入或者tar文件载入镜像
 
-        ```she
+      ```she
       docker load centos-7.tar
-        ```
+      ```
       
       
 
@@ -454,9 +459,9 @@
 
   - 登录到Docker Registry
 
-        ```she
+      ```she
       docker login -u username -p password my-registry.server.com
-        ```
+      ```
       
       
 
@@ -466,9 +471,9 @@
 
   - 从已登录的 Registry 中注销
 
-        ```shell
+      ```shell
       docker logout my-registry.server.com
-        ```
+      ```
       
       
 
@@ -477,9 +482,9 @@
 
   - 显示指定容器的日志
 
-        ```shell
+      ```shell
       docker logs centos_7
-        ```
+      ```
       
       
 
@@ -488,12 +493,10 @@
 
   - 暂停一或多个容器内所有进程, **STATUS 变为 Paused**
 
-        ```she
-docker pause centos_7
-        ```
+      ```she
+      docker pause centos_7
+      ```
 
-      
-      
       - 对应取消暂停命令
       
             docker unpause centos_7
@@ -504,9 +507,9 @@ docker pause centos_7
 
   - 列出容器与主机的端口映射
 
-       ```shell
+      ```shell
       docker port centos_7
-       ```
+      ```
 
 
 
@@ -516,9 +519,9 @@ docker pause centos_7
 
   - 列出当前正在运行(**Up**)的容器
 
-        ```she
-docker ps
-        ```
+      ```shell
+      docker ps
+      ```
       
       - **-a** 参数将列出当前主机所有状态的容器
       - **-q** 参数将仅显示容器ID
@@ -531,35 +534,36 @@ docker ps
 
   - 格式: docker pull IMAGE_NAME:DOCKER_TAG
 
-        ```shell
-docker pull centos:7
-        ```
+      ```shell
+      docker pull centos:7
+      ```
       
-      - 如未指定DOCKER_TAG, 则默认使用 latest
-        - 如无 latest, 则报错
+      - 如未指定DOCKER_TAG, 则默认使用 latest, 如无 latest, 则报错.
 
 #### push
   - Push an image or a repository to a registry
 
   - 推送一个(本地)镜像到仓库
 
-        ```she
-docker push my-registry.server.com/library/centos:7
-        ```
+      ```shell
+      docker push my-registry.server.com/library/centos:7
+      ```
       
 - 镜像名称须与要使用的镜像仓库相匹配
-      - 使用 **docker tag** 命令对镜像重命名
-      
-              docker tag centos:7 my-registry.server.com/library/centos:7
+  - 使用 **docker tag** 命令对镜像重命名
+  
+      ```shell
+      docker tag centos:7 my-registry.server.com/library/centos:7
+      ```
 
 #### rename
   - Rename a container
 
   - 重命名容器名称
 
-        ```she
-docker rename container-ID-or-NAME centos_7
-        ```
+      ```shell
+      docker rename container-ID-or-NAME centos_7
+      ```
       
       - rename 目标可以是 容器ID或名称
 
@@ -568,13 +572,14 @@ docker rename container-ID-or-NAME centos_7
 
   - 重启一或多个容器
 
-      ```shel
+      ```shell
       docker restart centos_7
       ```
       
       
 
 #### rm
+
   - Remove one or more containers
 
   - 删除一或多个容器
@@ -601,6 +606,7 @@ docker rename container-ID-or-NAME centos_7
       
 
 #### run
+
   - Run a command in a new container
   - 启动一个新容器并运行指定命令
   - 格式: **docker run [options] IMAGE_NAME:DOCKER_TAG COMMAND**
@@ -630,9 +636,9 @@ docker rename container-ID-or-NAME centos_7
 
   - 在Docker Hub中搜索镜像
 
-        ```shell
+      ```shell
       docker search centos
-        ```
+      ```
       
       
       
@@ -643,9 +649,9 @@ docker rename container-ID-or-NAME centos_7
 
   - 启动一或多个已停止的容器
 
-        ```shell
+      ```shell
       docker start centos_7
-        ```
+      ```
 
 
 
@@ -666,9 +672,9 @@ docker rename container-ID-or-NAME centos_7
 
   - 停止一或多个运行中的容器
 
-       ```shell
+      ```shell
       docker stop centos_7
-       ```
+      ```
       
       
 
@@ -689,9 +695,9 @@ docker rename container-ID-or-NAME centos_7
 
   - 显示指定容器运行中的进程信息
 
-        ```shell
+      ```shell
       docker top centos_7
-        ```
+      ```
       
       
 
@@ -701,9 +707,9 @@ docker rename container-ID-or-NAME centos_7
 
   - 恢复一或多个容器的全部已暂停进程
 
-        ```shell
+      ```shell
       docker unpause centos_7
-        ```
+      ```
       
       
 
@@ -715,9 +721,9 @@ docker rename container-ID-or-NAME centos_7
 
   - 如资源配额、重启策略等等
 
-        ```shell
-docker update [options] centos_7
-        ```
+      ```shell
+      docker update [options] centos_7
+      ```
       
       - 请使用命令 **docker update --help** 查看更多详细参数
 
@@ -726,9 +732,9 @@ docker update [options] centos_7
 
   - 显示 Docker 版本信息
 
-        ```shell
+      ```shell
       docker version
-        ```
+      ```
       
       
 
@@ -740,5 +746,3 @@ docker update [options] centos_7
       ```shell
       docker wait centos_7
       ```
-      
-      
