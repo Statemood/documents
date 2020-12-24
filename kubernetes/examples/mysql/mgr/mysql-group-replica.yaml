@@ -1,0 +1,464 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-mgr-config
+
+data:
+  mysql.cnf: |
+    [mysqldump]
+    quick
+    max_allowed_packet  = 32M
+
+    [mysql]
+    socket              = /tmp/mysql.sock
+
+    [mysqld]
+    port                            = 3306
+    datadir                         = /data/mysql
+    socket                          = /tmp/mysql.sock
+    pid-file                        = /data/mysql/mysql.pid
+    skip-name-resolve
+    character-set-server            = utf8
+    enforce_gtid_consistency        = ON
+    gtid_mode                       = ON
+    sql_mode                        = NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+
+    slow_query_log                  = ON
+    slow_query_log_file             = /data/mysql/slow_sql.log
+    binlog_checksum                 = NONE
+    log_bin                         = mysql-bin
+    max_binlog_cache_size           = 64M
+    max_binlog_size                 = 512M
+    expire_logs_days                = 7
+    log-error-verbosity             = 3
+    log_timestamps                  = SYSTEM
+    relay-log                       = relay-bin
+    relay-log-recovery              = ON
+    relay_log_info_repository       = TABLE
+
+    innodb_buffer_pool_size         = 768M
+    innodb_flush_log_at_trx_commit  = 1
+    innodb_log_buffer_size          = 64M
+    innodb_log_file_size            = 256M
+    innodb_log_files_in_group       = 2
+    innodb_max_dirty_pages_pct      = 50
+    master_info_repository          = TABLE
+    max_connect_errors              = 1000
+    max_allowed_packet              = 256M
+    transaction_write_set_extraction= XXHASH64
+    sort_buffer_size                = 4M
+    read_buffer_size                = 4M
+    join_buffer_size                = 8M
+    thread_cache_size               = 64
+
+    # slave
+    log_slave_updates               = ON
+    slave_parallel_type             = LOGICAL_CLOCK
+    slave_parallel_workers          = 8
+    slave-preserve-commit-order     = ON
+
+    # Group Replication
+    loose-group_replication_start_on_boot   = OFF
+    loose-group_replication_bootstrap_group = OFF
+    loose-group_replication_group_name      = "01e5fb97-be64-41f7-bafd-3afc7a6ab555"
+    loose-group_replication_ip_whitelist    = '10.0.0.0/8,172.16.0.0/16,172.17.0.0/16'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-mgr-auth
+  labels:
+    app: mysql-mgr
+type: Opaque
+data:
+  hc.password:   
+  repl.password: 
+  root.password: 
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-mgr-scripts
+  labels:
+    app: mysql-mgr
+data:
+  init.sql: |-
+    ALTER USER 'root'@'localhost' IDENTIFIED BY 'MYSQL_ROOT_PASSWORD';
+    GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'MYSQL_ROOT_PASSWORD' WITH GRANT OPTION;
+    GRANT SELECT ON mysql.db TO 'health_check'@'%' IDENTIFIED BY 'MYSQL_HC_PASSWORD';
+    GRANT REPLICATION SLAVE ON *.* to 'repl'@'%' IDENTIFIED BY 'MYSQL_REPL_PASSWORD';
+
+  health-check.sh: |-
+    #! /bin/bash
+    mysql -S /tmp/mysql.sock -u health_check -p$MYSQL_HC_PASSWORD -e "select Db from mysql.db where Db = 'sys';"
+
+  mysql-mgr-init.sh: |-
+    #! /bin/bash
+
+    name=$MYSQL_MGR_INSTANCE_NAME
+     svc=$name
+
+    msg(){
+        echo "`date +'%F %T'` $@"
+    }
+
+    Command(){
+        mysql -u root -p$MYSQL_ROOT_PASSWORD -h $1 -S /tmp/mysql.sock -e "$2" 2>/dev/null
+    }
+
+    Install_Module(){
+        Command "$1" "INSTALL PLUGIN group_replication SONAME 'group_replication.so';"
+    }
+
+    msg "Waiting for MySQL is ready."
+    while true
+    do
+        sleep 5
+        t=$name-2.$svc
+        ping -c 1 $t > /dev/null 2>&1
+        if [ $? = 0 ]
+        then
+            msg "MySQL $t is Ready!"
+            break
+        else
+            msg "MySQL $t still not ready. Waiting..."
+        fi
+    done
+
+    for i in {0..2}
+    do
+        h=$name-$i.$svc
+        msg "$h: Install module 'group_replication.so'"
+        Install_Module $h
+
+        msg    "$h: Change master channel"
+        Command $h "CHANGE MASTER TO MASTER_USER='repl',MASTER_PASSWORD='$MYSQL_REPL_PASSWORD' FOR CHANNEL 'group_replication_recovery';"
+
+        if [ $i = 0 ]
+        then
+            msg    "$h: Set group_replication_bootstrap_group to ON"
+            Command $h "SET GLOBAL group_replication_bootstrap_group=ON;"
+        else
+            msg    "$h: Reset master"
+            Command $h "reset master;"
+        fi
+
+        msg    "$h: Start GROUP_REPLICATION"
+        Command $h "START GROUP_REPLICATION;"
+
+        if [ $i = 0 ]
+        then
+            msg    "$h: Set group_replication_bootstrap_group to OFF"
+            Command $h "SET GLOBAL group_replication_bootstrap_group=OFF;"
+        fi
+
+        msg "$h: Display replication_group_members"
+        Command $h "select * from performance_schema.replication_group_members;"
+    done
+
+    msg "MySQL Group Replication is Ready."
+
+  run.sh: |-
+    #! /bin/bash
+
+    # --------------------------------------------
+    # Created by Lin.Ru@msn.com, 2018.01.06
+    # Updated by Lin.Ru@msn.com, 2020.08.02
+    #
+    # Project dockerfiles:
+    #    https://github.com/Statemood/dockerfiles
+    # --------------------------------------------
+
+    msg(){
+        echo "`date +'%F %T'` $@"
+    }
+
+    mysql_mgr(){
+        msg "Init MGR config"
+        local  p=13306
+        local hn=`hostname -f`
+        local hd=`hostname -d`
+        local hi=`hostname -i`
+        local nn=${MYSQL_INSTANCE_NAME%-*}
+        {
+            lgr=loose-group_replication
+            echo "server-id=$p${HOSTNAME##*-}"
+            echo "report_host=$hn"
+            echo "${lgr}_local_address=$hi:$p"
+            echo "${lgr}_group_seeds=$nn-0.$hd:$p,$nn-1.$hd:$p,$nn-2.$hd:$p"
+        } >> $conf
+    }
+
+    mysql_mm(){
+        msg "Init MM config"
+
+        local aii=auto_increment_increment
+        local aio=auto_increment_offset
+
+        grep -q $aii $conf
+        test $? = 1 && echo $aii=2 >> $conf
+
+        # Require Kubernetes STATEFULSET
+        grep -q "^$aio" $conf
+
+        if [ $? = 1 ]
+        then
+            # set mm-0 offset=1, others to 2
+            test ${HOSTNAME##*-} -gt 0 && offset=2 || offset=1
+            echo "$aio=$offset" >> $conf
+        fi
+    }
+
+    if [ -z "$@" ]
+    then
+        ###############################################
+        # NOTE: DO NOT include '/' in the PASSWORD!!! #
+        ###############################################
+        conf="/tmp/my.cnf"
+        default_conf="/etc/mysql/mysql.cnf"
+        mysql_default_password="sdc3eci.2dcdX"
+        MYSQL_DATA_DIR="/data/mysql"
+        MYSQL_SERVER_ID="$RANDOM"
+
+        test -z "$MYSQL_RUN_OPTS"         && MYSQL_RUN_OPTS="--datadir=$MYSQL_DATA_DIR --user=mysql"
+        test -z "$MYSQL_ROOT_PASSWORD"    && MYSQL_ROOT_PASSWORD="$mysql_default_password"
+
+        if [ -d "$MYSQL_DATA_DIR/mysql" ] && [ -d "$MYSQL_DATA_DIR/sys" ]
+        then
+            msg "Exist MySQL data detected, loading..."
+            chown -R $MYSQL_USER:$MYSQL_GROUP $MYSQL_DATA_DIR
+        else
+            irp="/usr/share/mysql/init.sql"
+            ips="/tmp/mysql.init.sql"
+
+            msg "Initial NEW MySQL"
+
+            test -f $default_conf && cat $default_conf > $conf
+            test -f /opt/init.sql && irp=/opt/init.sql
+
+            msg "Update MySQL root Password"
+            cat $irp > $ips
+
+            sed -i "s/MYSQL_ROOT_PASSWORD/$MYSQL_ROOT_PASSWORD/" $ips
+            sed -i "s/MYSQL_REPL_PASSWORD/$MYSQL_REPL_PASSWORD/" $ips
+            sed -i   "s/MYSQL_HC_PASSWORD/$MYSQL_HC_PASSWORD/"   $ips
+
+            sed -i "s/MYSQL_SERVER_ID/$MYSQL_SERVER_ID/" $conf
+
+            case "$MYSQL_RUN_ROLE" in
+                MM)    mysql_mm        ;;
+                MGR)   mysql_mgr       ;;
+                STD)   mysql_standard  ;;
+            esac
+
+            msg "Initial MySQL"
+            mysqld --initialize-insecure --init-file=$ips --console --log-error-verbosity=3 $MYSQL_RUN_OPTS
+
+            if [ $? != 0 ]
+            then
+                msg "Error occurred in MySQL initial"
+                exit 1
+            fi
+
+            test -f $ips && rm -f $ips && msg "Removed $ips"
+        fi
+
+        msg "Start MySQL Server"
+        exec mysqld --defaults-file=$conf --defaults-extra-file=/etc/mysql/my.extra.cnf
+    else
+        exec "$@"
+    fi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-mgr
+  labels:
+    app: mysql-mgr
+spec:
+  ports:
+  - port: 3306
+  clusterIP: None
+  selector:
+    app: mysql-mgr
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: mysql-mgr
+  labels:
+    app: mysql-mgr
+
+spec:
+  serviceName: mysql-mgr
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mysql-mgr
+  template:
+    metadata:
+      labels:
+        app: mysql-mgr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+      initContainers:
+      - name: mysql-mgr-init-data
+        image: alpine:3.12
+        command:
+        - /bin/sh
+        - -c
+        - mkdir -pv /data/mysql; chown -Rv 27. /data/mysql
+        volumeMounts:
+        - name: data
+          mountPath: /data
+          readOnly: false
+      containers:
+      - name: mysql-mgr
+        image: mysql:5.7.32
+        imagePullPolicy: Always
+        command:
+        - /bin/sh
+        - -c
+        - /opt/run.sh
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                key: root.password
+                name: mysql-mgr-auth
+        - name:  MYSQL_REPL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: repl.password
+              name: mysql-mgr-auth
+        - name:  MYSQL_HC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: hc.password
+              name: mysql-mgr-auth
+        - name: MYSQL_INSTANCE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name:  MYSQL_RUN_ROLE
+          value: MGR
+        ports:
+        - containerPort: 3306
+        securityContext:
+          runAsUser: 27
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        readinessProbe:
+          exec:
+            command:
+            - /opt/health-check.sh
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - /opt/health-check.sh
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: scripts
+          mountPath: /opt
+        - name: data
+          mountPath: /data
+          readOnly: false
+        - name: config
+          mountPath: /etc/mysql/mysql.cnf
+          subPath: mysql.cnf
+      volumes:
+      - name: config
+        configMap:
+          name: mysql-mgr-config
+          items:
+          - key:  mysql.cnf
+            path: mysql.cnf
+      - name: scripts
+        configMap:
+          defaultMode: 0755
+          name: mysql-mgr-scripts
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: data
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 20Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mysql-mgr-init
+  labels:
+    app: mysql-mgr
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+      containers:
+      - name: mysql-mgr-init-cluster
+        image: mysql:5.7.32
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        - /opt/mysql-mgr-init.sh
+        env:
+        - name:  MYSQL_MGR_INSTANCE_NAME
+          value: mysql-mgr
+        - name:  MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: root.password
+              name: mysql-mgr-auth
+        - name:  MYSQL_REPL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: repl.password
+              name: mysql-mgr-auth
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        volumeMounts:
+        - name: scripts
+          mountPath: /opt
+      volumes:
+      - name: scripts
+        configMap:
+          defaultMode: 0755
+          name: mysql-mgr-scripts
+      restartPolicy: Never
