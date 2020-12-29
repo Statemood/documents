@@ -153,8 +153,6 @@ storage_service:
 - `secretkey` *secret_key*
 
 
-
 ### 启动 Harbor
 
 启动Harbor即可。
-
