@@ -540,6 +540,7 @@ rados -p rbd -b 4096 bench 60 write -t 128 --run-name test1
 ##### rados bench 更多信息请参阅 [官方文档](http://docs.ceph.com/docs/master/)
 
 #### 2. 使用 fio 测试 ceph-fs
+
 ##### 在节点 50-50 上进行
 
 ##### 使用 `yum install -y fio` 安装 fio

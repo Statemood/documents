@@ -1,63 +1,69 @@
 ## 查看cephfs
 ### 列出 fs
-    ceph fs ls
+```shell
+ceph fs ls
+```
 
 ### 查看指定 fs 状态
-    ceph fs status files
 
+  ```shell
+ceph fs status files
+  ```
 
 ## 新建cephfs
+
 ### 创建一个名称为 files 的文件系统
-- 创建数据池, PG 32
-  
+创建数据池, PG 32
+
   ```shell
-    ceph osd pool create files_data 32
+ceph osd pool create files_data 32
   ```
-  
-  
-  
-- 创建元数据池, PG 32
-  
-      ```shell
-    ceph osd pool create files_metadata 32
-      ```
-  
-  
-  
-- 创建文件系统, 名称为 files, 并分别指定 元数据 和 数据池
-  
-      ceph fs new files files_metadata files_data
+
+
+创建元数据池, PG 32
+
+  ```shell
+ceph osd pool create files_metadata 32
+  ```
+
+
+创建文件系统, 名称为 files, 并分别指定 元数据 和 数据池
+
+  ```shell
+ceph fs new files files_metadata files_data
+  ```
 
 ## 权限
 
 ### cephfs 简单权限控制
-#### 使用 ceph auth
-    ceph auth add client.files mds 'allow rw' osd 'allow rw tag files data=files' mon 'allow r'
 
-- 添加一个用户 client.files
-  - mds 
-    - allow rw
-  - mon 
-    - allow r
-  - osd 
-    - allow rw, 仅限 files
+#### 使用 ceph auth
+
+    ceph auth add client.files mds 'allow rw' osd 'allow rw tag cephfs data=files' mon 'allow r'
+
+添加一个用户 client.files
+
+- `allow rw mds`
+
+- `allow r mon`
+
+- `allow rw osd` 同时限定仅针对 `data=files`
 
 #### 使用 ceph fs authorize
+
     ceph fs authorize files client.files / rw
 
 ### cephfs 限制客户端网络
 
-    ceph auth caps client.files mds 'allow rw network 192.168.20.18/29' mon 'allow r network 192.168.20.18/29' osd 'allow rw tag files data=files network 192.168.20.18/29'
+    ceph auth caps client.files mds 'allow rw network 192.168.20.18/29' mon 'allow r network 192.168.20.18/29' osd 'allow rw tag cephfs data=files network 192.168.20.18/29'
 
 - 更新一个用户 client.files
-  - mds 
-    - 对于来自 192.168.20.18/29 网络的客户端 allow rw
-  - mon
-    - 对于来自 192.168.20.18/29 网络的客户端 allow r
-  - osd
-    - 对于来自 192.168.20.18/29 网络的客户端 allow rw, 并且 tag = files, data = files
+  - 对于来自 192.168.20.18/29 网络的客户端 `allow rw mds`
+  - 对于来自 192.168.20.18/29 网络的客户端 `allow r mon`
+  - 对于来自 192.168.20.18/29 网络的客户端 `allow rw osd`, 并且 `tag cephfs data=files`
 
 ## 挂载 cephfs
+
 ### 使用 ceph-fuse 挂载文件系统
 ##### 示例挂载 cephfs files 到 客户端机器 /data/files 目录
 ###### 以下命令除非特别说明, 否则都是在客户端机器(要挂载 cephfs 的机器)上执行
@@ -78,11 +84,11 @@
 - 创建挂载点目录 /data/files
   
 ```shell
-  mkdir -p /data/files
-  ```
+mkdir -p /data/files
+```
+
   
-  
-  
+
 - 使用 `ceph-fuse` 挂载
 
       ceph-fuse -m ceph-0,ceph-1,ceph-2:6789 /data/files --id files --client_mds_namespace files
@@ -96,7 +102,7 @@
       #DEVICE    PATH        TYPE        OPTIONS
       none       /data/files fuse.ceph   ceph.id=files,_netdev,defaults 0 0
   - client keyring 保存在 /etc/ceph/keyring 文件中
-  - 如果需要指定挂载特定 fs, 在 ceph conf 中配置 
+  - 如果需要指定挂载特定 fs, 在 ceph conf 中配置([client] 段内)
 
         client mds namespace = files
 
