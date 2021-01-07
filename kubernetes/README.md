@@ -114,20 +114,15 @@ Docker-CE 18.03 或更高版本
 
 ## 4. kubernetes
 
-以下版本均已经过测试
+以下版本已经过测试
 
-- 1.15.x
-
-- 1.16.x
-
-- 1.17.x
-
-- 1.18.0
+- [1.20.1](https://github.com/kubernetes/kubernetes/releases/tag/v1.20.1)
 
   
 
 # 系统配置
 
+- [安装依赖](https://github.com/Statemood/documents/blob/master/kubernetes/install/105.install-depends.md)
 - [调整内核参数](https://github.com/Statemood/documents/blob/master/kubernetes/install/091.config-kernel-parameters.md)
 - [查看 SELinux](https://github.com/Statemood/documents/blob/master/kubernetes/install/092.config-selinux.md)
 - [禁用 Firewall](https://github.com/Statemood/documents/blob/master/kubernetes/install/093.config-firewall.md)
@@ -147,7 +142,6 @@ Docker-CE 18.03 或更高版本
 
 - [为 kubectl 生成 kubeconfig](https://github.com/Statemood/documents/blob/master/kubernetes/install/110.kubeconfig-4-kubectl.md)
 - [安装 Docker-CE](https://github.com/Statemood/documents/blob/master/docker/how-install-docker-ce.md)
-- [安装依赖](https://github.com/Statemood/documents/blob/master/kubernetes/install/105.install-depends.md)
 
 
 
