@@ -88,15 +88,20 @@ data:
     GRANT SELECT ON mysql.db TO 'health_check'@'%' IDENTIFIED BY 'MYSQL_HC_PASSWORD';
     GRANT REPLICATION SLAVE ON *.* to 'repl'@'%' IDENTIFIED BY 'MYSQL_REPL_PASSWORD';
 
-  health-check.sh: |-
-    #! /bin/bash
-    mysql -S /tmp/mysql.sock -u health_check -p$MYSQL_HC_PASSWORD -e "select Db from mysql.db where Db = 'sys';"
-
-  mysql-mgr-init.sh: |-
+  library.sh: |-
     #! /bin/bash
 
-    name=$MYSQL_MGR_INSTANCE_NAME
-     svc=$name
+    ###############################################
+    # NOTE: DO NOT include '/' in the PASSWORD!!! #
+    ###############################################
+    default_conf="/etc/mysql/mysql.cnf"
+    mysql_default_password="sdc3eci.2dcdX"
+    MYSQL_DATA_DIR="/data/mysql"
+    MYSQL_SERVER_ID="$RANDOM"
+    MYSQL_CONF_FILE="$MYSQL_DATA_DIR/mysql.conf"
+
+    test -z "$MYSQL_RUN_OPTS"         && MYSQL_RUN_OPTS="--datadir=$MYSQL_DATA_DIR --user=mysql"
+    test -z "$MYSQL_ROOT_PASSWORD"    && MYSQL_ROOT_PASSWORD="$mysql_default_password"
 
     msg(){
         echo "`date +'%F %T'` $@"
@@ -105,6 +110,90 @@ data:
     Command(){
         mysql -u root -p$MYSQL_ROOT_PASSWORD -h $1 -S /tmp/mysql.sock -e "$2" 2>/dev/null
     }
+
+    mysql_mgr(){
+        msg "Init MGR config"
+        local  p=13306
+        local hn=`hostname -f`
+        local hd=`hostname -d`
+        local hi=`hostname -i`
+        local nn=${MYSQL_INSTANCE_NAME%-*}
+        {
+            lgr=loose-group_replication
+            echo "server-id=$p${HOSTNAME##*-}"
+            echo "report_host=$hn"
+            echo "${lgr}_local_address=$hi:$p"
+            echo "${lgr}_group_seeds=$nn-0.$hd:$p,$nn-1.$hd:$p,$nn-2.$hd:$p"
+        } >> $MYSQL_CONF_FILE
+    }
+
+    mysql_mm(){
+        msg "Init MM config"
+
+        local aii=auto_increment_increment
+        local aio=auto_increment_offset
+
+        grep -q $aii $MYSQL_CONF_FILE
+        test $? = 1 && echo $aii=2 >> $MYSQL_CONF_FILE
+
+        # Require Kubernetes STATEFULSET
+        grep -q "^$aio" $MYSQL_CONF_FILE
+
+        if [ $? = 1 ]
+        then
+            # set mm-0 offset=1, others to 2
+            test ${HOSTNAME##*-} -gt 0 && offset=2 || offset=1
+            echo "$aio=$offset" >> $MYSQL_CONF_FILE
+        fi
+    }
+
+    init_new_mysql (){
+        irp="/usr/share/mysql/init.sql"
+        ips="/tmp/mysql.init.sql"
+
+        msg "Initial NEW MySQL"
+
+        test -f $default_conf && cat $default_conf > $MYSQL_CONF_FILE
+        test -f /opt/init.sql && irp=/opt/init.sql
+
+        msg "Update MySQL root Password"
+        cat $irp > $ips
+
+        sed -i "s/MYSQL_ROOT_PASSWORD/$MYSQL_ROOT_PASSWORD/" $ips
+        sed -i "s/MYSQL_REPL_PASSWORD/$MYSQL_REPL_PASSWORD/" $ips
+        sed -i   "s/MYSQL_HC_PASSWORD/$MYSQL_HC_PASSWORD/"   $ips
+
+        sed -i "s/MYSQL_SERVER_ID/$MYSQL_SERVER_ID/" $MYSQL_CONF_FILE
+
+        case "$MYSQL_RUN_ROLE" in
+            MM)    mysql_mm        ;;
+            MGR)   mysql_mgr       ;;
+            STD)   mysql_standard  ;;
+        esac
+
+        msg "Initial MySQL"
+        mysqld --initialize-insecure --init-file=$ips --console --log-error-verbosity=3 $MYSQL_RUN_OPTS
+
+        if [ $? != 0 ]
+        then
+            msg "Error occurred in MySQL initial"
+            exit 1
+        fi
+
+        test -f $ips && rm -f $ips && msg "Removed $ips"
+    }
+
+  health-check.sh: |-
+    #! /bin/bash
+    mysql -S /tmp/mysql.sock -u health_check -p$MYSQL_HC_PASSWORD -e "select Db from mysql.db where Db = 'sys';"
+
+  mysql-mgr-init.sh: |-
+    #! /bin/bash
+
+    test -f ./library.sh && . ./library.sh || exit 127
+
+    name=$MYSQL_MGR_INSTANCE_NAME
+     svc=$name
 
     Install_Module(){
         Command "$1" "INSTALL PLUGIN group_replication SONAME 'group_replication.so';"
@@ -169,102 +258,28 @@ data:
     #    https://github.com/Statemood/dockerfiles
     # --------------------------------------------
 
-    msg(){
-        echo "`date +'%F %T'` $@"
-    }
-
-    mysql_mgr(){
-        msg "Init MGR config"
-        local  p=13306
-        local hn=`hostname -f`
-        local hd=`hostname -d`
-        local hi=`hostname -i`
-        local nn=${MYSQL_INSTANCE_NAME%-*}
-        {
-            lgr=loose-group_replication
-            echo "server-id=$p${HOSTNAME##*-}"
-            echo "report_host=$hn"
-            echo "${lgr}_local_address=$hi:$p"
-            echo "${lgr}_group_seeds=$nn-0.$hd:$p,$nn-1.$hd:$p,$nn-2.$hd:$p"
-        } >> $conf
-    }
-
-    mysql_mm(){
-        msg "Init MM config"
-
-        local aii=auto_increment_increment
-        local aio=auto_increment_offset
-
-        grep -q $aii $conf
-        test $? = 1 && echo $aii=2 >> $conf
-
-        # Require Kubernetes STATEFULSET
-        grep -q "^$aio" $conf
-
-        if [ $? = 1 ]
-        then
-            # set mm-0 offset=1, others to 2
-            test ${HOSTNAME##*-} -gt 0 && offset=2 || offset=1
-            echo "$aio=$offset" >> $conf
-        fi
-    }
+    test -f ./library.sh && . ./library.sh || exit 127
 
     if [ -z "$@" ]
     then
-        ###############################################
-        # NOTE: DO NOT include '/' in the PASSWORD!!! #
-        ###############################################
-        conf="/tmp/my.cnf"
-        default_conf="/etc/mysql/mysql.cnf"
-        mysql_default_password="sdc3eci.2dcdX"
-        MYSQL_DATA_DIR="/data/mysql"
-        MYSQL_SERVER_ID="$RANDOM"
-
-        test -z "$MYSQL_RUN_OPTS"         && MYSQL_RUN_OPTS="--datadir=$MYSQL_DATA_DIR --user=mysql"
-        test -z "$MYSQL_ROOT_PASSWORD"    && MYSQL_ROOT_PASSWORD="$mysql_default_password"
-
         if [ -d "$MYSQL_DATA_DIR/mysql" ] && [ -d "$MYSQL_DATA_DIR/sys" ]
         then
             msg "Exist MySQL data detected, loading..."
             chown -R $MYSQL_USER:$MYSQL_GROUP $MYSQL_DATA_DIR
-        else
-            irp="/usr/share/mysql/init.sql"
-            ips="/tmp/mysql.init.sql"
 
-            msg "Initial NEW MySQL"
-
-            test -f $default_conf && cat $default_conf > $conf
-            test -f /opt/init.sql && irp=/opt/init.sql
-
-            msg "Update MySQL root Password"
-            cat $irp > $ips
-
-            sed -i "s/MYSQL_ROOT_PASSWORD/$MYSQL_ROOT_PASSWORD/" $ips
-            sed -i "s/MYSQL_REPL_PASSWORD/$MYSQL_REPL_PASSWORD/" $ips
-            sed -i   "s/MYSQL_HC_PASSWORD/$MYSQL_HC_PASSWORD/"   $ips
-
-            sed -i "s/MYSQL_SERVER_ID/$MYSQL_SERVER_ID/" $conf
-
-            case "$MYSQL_RUN_ROLE" in
-                MM)    mysql_mm        ;;
-                MGR)   mysql_mgr       ;;
-                STD)   mysql_standard  ;;
-            esac
-
-            msg "Initial MySQL"
-            mysqld --initialize-insecure --init-file=$ips --console --log-error-verbosity=3 $MYSQL_RUN_OPTS
-
-            if [ $? != 0 ]
+            if [ -f "$MYSQL_CONF_FILE" ] && [ "$MYSQL_RUN_ROLE" = "MGR" ]
             then
-                msg "Error occurred in MySQL initial"
-                exit 1
-            fi
-
-            test -f $ips && rm -f $ips && msg "Removed $ips"
+                k="loose-group_replication_local_address"
+                i="`hostname -i`"
+                msg "Change to new IP $i, file: $MYSQL_CONF_FILE, Key: $k"
+                sed -i "s/$key=.*/$key=$i:13306/" $MYSQL_CONF_FILE
+            fi 
+        else
+            init_new_mysql
         fi
 
         msg "Start MySQL Server"
-        exec mysqld --defaults-file=$conf --defaults-extra-file=/etc/mysql/my.extra.cnf
+        exec mysqld --defaults-file=$MYSQL_CONF_FILE --defaults-extra-file=/etc/mysql/my.extra.cnf
     else
         exec "$@"
     fi
