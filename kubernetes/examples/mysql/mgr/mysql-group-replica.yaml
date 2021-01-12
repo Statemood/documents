@@ -14,9 +14,9 @@ data:
 
     [mysqld]
     port                            = 3306
-    datadir                         = /data/mysql
+    datadir                         = /data/db/mysql
     socket                          = /tmp/mysql.sock
-    pid-file                        = /data/mysql/mysql.pid
+    pid-file                        = /data/db/mysql/mysql.pid
     skip-name-resolve
     character-set-server            = utf8
     enforce_gtid_consistency        = ON
@@ -24,7 +24,7 @@ data:
     sql_mode                        = NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
 
     slow_query_log                  = ON
-    slow_query_log_file             = /data/mysql/slow_sql.log
+    slow_query_log_file             = /data/db/mysql/slow_sql.log
     binlog_checksum                 = NONE
     log_bin                         = mysql-bin
     max_binlog_cache_size           = 64M
@@ -96,9 +96,12 @@ data:
     ###############################################
     default_conf="/etc/mysql/mysql.cnf"
     mysql_default_password="sdc3eci.2dcdX"
-    MYSQL_DATA_DIR="/data/mysql"
+    MYSQL_DATA_DIR="/data/db/mysql"
     MYSQL_SERVER_ID="$RANDOM"
-    MYSQL_CONF_FILE="$MYSQL_DATA_DIR/mysql.conf"
+    MYSQL_CONF_FILE="$(dirname $MYSQL_DATA_DIR)/mysql.conf"
+    socket="/tmp/mysql.sock"
+
+    mgr_port=13306
 
     test -z "$MYSQL_RUN_OPTS"         && MYSQL_RUN_OPTS="--datadir=$MYSQL_DATA_DIR --user=mysql"
     test -z "$MYSQL_ROOT_PASSWORD"    && MYSQL_ROOT_PASSWORD="$mysql_default_password"
@@ -108,22 +111,21 @@ data:
     }
 
     Command(){
-        mysql -u root -p$MYSQL_ROOT_PASSWORD -h $1 -S /tmp/mysql.sock -e "$2" 2>/dev/null
+        mysql -u root -p$MYSQL_ROOT_PASSWORD -h $1 -S $socket -e "$2" 2>/dev/null
     }
 
     mysql_mgr(){
         msg "Init MGR config"
-        local  p=13306
         local hn=`hostname -f`
         local hd=`hostname -d`
         local hi=`hostname -i`
         local nn=${MYSQL_INSTANCE_NAME%-*}
         {
             lgr=loose-group_replication
-            echo "server-id=$p${HOSTNAME##*-}"
+            echo "server-id=$mgr_port${HOSTNAME##*-}"
             echo "report_host=$hn"
-            echo "${lgr}_local_address=$hi:$p"
-            echo "${lgr}_group_seeds=$nn-0.$hd:$p,$nn-1.$hd:$p,$nn-2.$hd:$p"
+            echo "${lgr}_local_address=$hi:$mgr_port"
+            echo "${lgr}_group_seeds=$nn-0.$hd:$mgr_port,$nn-1.$hd:$mgr_port,$nn-2.$hd:$mgr_port"
         } >> $MYSQL_CONF_FILE
     }
 
@@ -162,7 +164,6 @@ data:
         sed -i "s/MYSQL_ROOT_PASSWORD/$MYSQL_ROOT_PASSWORD/" $ips
         sed -i "s/MYSQL_REPL_PASSWORD/$MYSQL_REPL_PASSWORD/" $ips
         sed -i   "s/MYSQL_HC_PASSWORD/$MYSQL_HC_PASSWORD/"   $ips
-
         sed -i "s/MYSQL_SERVER_ID/$MYSQL_SERVER_ID/" $MYSQL_CONF_FILE
 
         case "$MYSQL_RUN_ROLE" in
@@ -185,7 +186,9 @@ data:
 
   health-check.sh: |-
     #! /bin/bash
-    mysql -S /tmp/mysql.sock -u health_check -p$MYSQL_HC_PASSWORD -e "select Db from mysql.db where Db = 'sys';"
+    test -f ./library.sh && . ./library.sh || exit 127
+
+    mysql -S $socket -u health_check -p$MYSQL_HC_PASSWORD -e "select Db from mysql.db where Db = 'sys';"
 
   mysql-mgr-init.sh: |-
     #! /bin/bash
@@ -272,7 +275,7 @@ data:
                 k="loose-group_replication_local_address"
                 i="`hostname -i`"
                 msg "Change to new IP $i, file: $MYSQL_CONF_FILE, Key: $k"
-                sed -i "s/$key=.*/$key=$i:13306/" $MYSQL_CONF_FILE
+                sed -i "s/$key=.*/$key=$i:$mgr_port/" $MYSQL_CONF_FILE
             fi 
         else
             init_new_mysql
@@ -330,7 +333,7 @@ spec:
         command:
         - /bin/sh
         - -c
-        - mkdir -pv /data/mysql; chown -Rv 27. /data/mysql
+        - mkdir -pv /data/db/mysql; chown -Rv 27. /data/db
         volumeMounts:
         - name: data
           mountPath: /data
