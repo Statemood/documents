@@ -14,9 +14,9 @@ data:
 
     [mysqld]
     port                            = 3306
-    datadir                         = /data/db/mysql
+    datadir                         = /data/mysql
     socket                          = /tmp/mysql.sock
-    pid-file                        = /data/db/mysql/mysql.pid
+    pid-file                        = /data/mysql/mysql.pid
     skip-name-resolve
     character-set-server            = utf8
     enforce_gtid_consistency        = ON
@@ -24,7 +24,7 @@ data:
     sql_mode                        = NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
 
     slow_query_log                  = ON
-    slow_query_log_file             = /data/db/mysql/slow_sql.log
+    slow_query_log_file             = /data/mysql/slow_sql.log
     binlog_checksum                 = NONE
     log_bin                         = mysql-bin
     max_binlog_cache_size           = 64M
@@ -96,9 +96,9 @@ data:
     ###############################################
     default_conf="/etc/mysql/mysql.cnf"
     mysql_default_password="sdc3eci.2dcdX"
-    MYSQL_DATA_DIR="/data/db/mysql"
+    MYSQL_DATA_DIR="/data/mysql"
     MYSQL_SERVER_ID="$RANDOM"
-    MYSQL_CONF_FILE="$(dirname $MYSQL_DATA_DIR)/mysql.conf"
+    MYSQL_CONF_FILE="$MYSQL_DATA_DIR/mysql.conf"
     socket="/tmp/mysql.sock"
 
     mgr_port=13306
@@ -124,7 +124,7 @@ data:
             lgr=loose-group_replication
             echo "server-id=$mgr_port${HOSTNAME##*-}"
             echo "report_host=$hn"
-            echo "${lgr}_local_address=$hi:$mgr_port"
+            echo "${lgr}_local_address=$hn:$mgr_port"
             echo "${lgr}_group_seeds=$nn-0.$hd:$mgr_port,$nn-1.$hd:$mgr_port,$nn-2.$hd:$mgr_port"
         } >> $MYSQL_CONF_FILE
     }
@@ -269,14 +269,6 @@ data:
         then
             msg "Exist MySQL data detected, loading..."
             chown -R $MYSQL_USER:$MYSQL_GROUP $MYSQL_DATA_DIR
-
-            if [ -f "$MYSQL_CONF_FILE" ] && [ "$MYSQL_RUN_ROLE" = "MGR" ]
-            then
-                k="loose-group_replication_local_address"
-                i="`hostname -i`"
-                msg "Change to new IP $i, file: $MYSQL_CONF_FILE, Key: $k"
-                sed -i "s/$key=.*/$key=$i:$mgr_port/" $MYSQL_CONF_FILE
-            fi 
         else
             init_new_mysql
         fi
@@ -333,7 +325,7 @@ spec:
         command:
         - /bin/sh
         - -c
-        - mkdir -pv /data/db/mysql; chown -Rv 27. /data/db
+        - mkdir -pv /data/mysql; chown -Rv 27. /data/mysql
         volumeMounts:
         - name: data
           mountPath: /data
