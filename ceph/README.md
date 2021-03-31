@@ -304,11 +304,12 @@ mkdir ceph-install && cd ceph-install
 
 ### 三. 安装 Ceph
 #### 1. 使用 ceph-deploy 安装 Ceph
+
 ##### 创建一个新的Ceph 集群
+
 ```shell
 ceph-deploy new ceph-0 ceph-1 ceph-2
 ```
-
 
 ##### 在全部节点上安装Ceph
 
@@ -478,7 +479,6 @@ systemctl restart ceph\*.service ceph\*.target
   
 
 - ##### 此时
-  
   - ceph-mon 进程应监听在 192.168.50.0 网段IP上
   - ceph-osd 应分别监听在 192.168.50.0 和 172.20.0.0 两个网段IP上
   - 172.20.0.0 网段为集群内部复制数据时使用

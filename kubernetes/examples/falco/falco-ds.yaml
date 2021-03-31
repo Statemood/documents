@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: falco
+  namespace: kube-system 
+  labels:
+    k8s-app: falco
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+spec:
+  selector:
+    matchLabels:
+      k8s-app: falco
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: falco
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      hostNetwork: true
+      hostPID: true
+      priorityClassName: system-node-critical
+      terminationGracePeriodSeconds: 10
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      containers:
+      - name: falco
+        image: registry.fosun.com/k8s/falco:0.27.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: webserver
+          containerPort: 8765
+          protocol: TCP
+        volumeMounts:
+        - name: boot
+          mountPath: /host/boot
+          readOnly:  true
+        - name: dev
+          mountPath: /host/dev
+          readOnly: true
+        - name: etc
+          mountPath: /host/etc
+          readOnly:  true
+        - name: modules
+          mountPath: /host/lib/modules
+          readOnly:  true
+        - name: proc
+          mountPath: /host/proc
+          readOnly:  true
+        - name: socket
+          mountPath: /host/var/run/docker.sock
+          readOnly: true
+        - name: usr
+          mountPath: /host/usr
+          readOnly:  true
+        resources:
+          limits:
+            cpu: 50m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        securityContext:
+          privileged: true
+      volumes:
+      - name: boot
+        hostPath:
+          path: /boot
+      - name: dev
+        hostPath:
+          path: /dev
+      - name: etc
+        hostPath:
+          path: /etc
+      - name: modules
+        hostPath:
+          path: /lib/modules
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: socket
+        hostPath:
+          path: /run/docker.sock
+      - name: usr
+        hostPath:
+          path: /usr
