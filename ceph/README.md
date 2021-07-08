@@ -103,7 +103,7 @@ CentOS 7 minimal x86_64
 
 #### Ceph 版本
 
-  - Ceph 14.2.2 Nautilus
+  - Ceph 14.2.2 Nautilus 及以上版本
   - Ceph-deploy 2.0.1
 
 
@@ -317,7 +317,6 @@ ceph-deploy new ceph-0 ceph-1 ceph-2
 ceph-deploy install ceph-0 ceph-1 ceph-2
 ```
 - 或在每个节点上手动执行 `yum install -y ceph`
-  
 
 ##### 创建和初始化监控节点  
 ```shell
@@ -408,7 +407,6 @@ ceph-deploy forgetkeys
 ```
 
 - VG Remove
-  
 ```shell
 vgremove -y `vgdisplay | grep ' VG Name' | grep 'ceph-' | awk '{print $3}'`
 ```
@@ -461,7 +459,6 @@ vgremove -y `vgdisplay | grep ' VG Name' | grep 'ceph-' | awk '{print $3}'`
       rbd cache size = 268435456
       rbd cache max dirty = 134217728
       rbd cache max dirty age = 5
-  
 ##### 将配置文件同步到其它节点
 
 ```shell

@@ -30,7 +30,7 @@
     
       ```shell
       firewall-cmd --zone=public --add-port=6789/tcp --permanent
-firewall-cmd --zone=public --add-port=6800-6810/tcp --permanent
+      firewall-cmd --zone=public --add-port=6800-6810/tcp --permanent
       firewall-cmd --reload
       ```
       
