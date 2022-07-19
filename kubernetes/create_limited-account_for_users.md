@@ -170,7 +170,7 @@
     - 先取得 Secret 名称
 
       ```shell
-  kubectl get secret -n default | grep user-tom-token
+    kubectl get secret -n default | grep user-tom-token
       ```
 
     - 删除 Secret

@@ -25,7 +25,6 @@ output(){
 test -f $harbor_rc && . $harbor_rc || msg e "File not found: $harbor_rc"
 test -z "$HARBOR_URL"              && msg e "ERROR: Undefined variable: HARBOR_URL"
 
-
 # Define project_id
 #
 #project_id=`list_all_projects` # get IDs of all projects

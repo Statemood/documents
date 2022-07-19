@@ -8,8 +8,6 @@
 yum install -y keepalived
 ```
 
-
-
 ## 配置
 
 #### /etc/keepalived/keepalived.conf
@@ -47,8 +45,6 @@ yum install -y keepalived
         }
     }
 
-
-
 #### /usr/local/bin/check.sh
 
 ```shell
@@ -60,7 +56,6 @@ test $http_code = 200 && exit 0 || exit 1
 ```
 
 
-
 #### Permission
 
 ```shell
@@ -68,8 +63,6 @@ chmod 755 /usr/local/bin/check.sh
 
 chcon -u system_u -t bin_t /usr/local/bin/check.sh
 ```
-
-
 
 ### 防火墙打开端口
 
@@ -80,7 +73,6 @@ firewall-cmd --reload
 ```
 
 
-
 ## 启动
 
 ```shell
@@ -88,4 +80,3 @@ systemctl start  keepalived
 systemctl enable keepalived
 systemctl status keepalived
 ```
-

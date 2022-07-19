@@ -15,8 +15,7 @@
 
 - #### 更改为**清华镜像源**
 
-      sed -i 's#download.docker.com#mirrors.tuna.tsinghua.edu.cn/docker-ce#g' \
-      /etc/yum.repos.d/docker-ce.repo
+      sed -i 's#download.docker.com#mirrors.tuna.tsinghua.edu.cn/docker-ce#g' /etc/yum.repos.d/docker-ce.repo
 
 - #### 安装 Docker-CE
   

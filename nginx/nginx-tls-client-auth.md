@@ -86,7 +86,6 @@ openssl req -new -key client.key -out client.csr \
 #### 签发证书
 
 ```shell
-
 openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
         -out client.pem -days 60 -extfile client.cnf -extensions v3_req
 ```

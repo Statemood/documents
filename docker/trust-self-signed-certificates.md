@@ -15,7 +15,6 @@
    ```shell
    cp my-ca.pem /etc/pki/ca-trust/source/anchors/
    ```
-
    
 
 3. 启用 CA 证书动态更新

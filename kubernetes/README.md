@@ -3,7 +3,7 @@
 # 概览
 - 通过二进制文件安装 Kubernetes 1.10 及以上版本
 
-- 本文档指导如何安装一个具有3 Master、2 Worker的高可用集群，在升级下方硬件配置后，可以应用于生成环境
+- 本文档指导如何安装一个具有3 Master、2 Worker的高可用集群，在升级下方硬件配置后，可以应用于生产环境
 
   
 
@@ -74,12 +74,13 @@ CentOS 7.2 minimal x86_64 或以上版本
 
 ## 2. 网络
 
+### Cilium
+
 ### Calico
 
 - 如使用 Calico网络，请忽略任何与 Flannel 相关操作
 - BGP (default)
 - IPIP
-
 
 
 ### Flannel
@@ -105,11 +106,9 @@ IP 网段：10.64.0.0/10
 IP 数量：4,194,304
 
 
-
 ## 3. Docker
 
-Docker-CE 18.03 或更高版本
-
+Docker-CE 20.10 或更高版本
 
 
 ## 4. kubernetes
@@ -117,8 +116,9 @@ Docker-CE 18.03 或更高版本
 以下版本已经过测试
 
 - [1.20.1](https://github.com/kubernetes/kubernetes/releases/tag/v1.20.1)
+- [1.22.8](https://github.com/kubernetes/kubernetes/releases/tag/v1.22.8)
+- [1.23.6](https://github.com/kubernetes/kubernetes/releases/tag/v1.23.6)
 
-  
 
 # 系统配置
 
