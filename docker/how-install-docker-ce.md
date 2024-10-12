@@ -49,20 +49,14 @@
 
         ```json
         {
-            "exec-opts": ["native.cgroupdriver=systemd"],
             "data-root": "/data/docker",
             "storage-driver": "overlay2",
-            "storage-opts":["overlay2.override_kernel_check=true"],
-            "selinux-enabled": false,
+            "selinux-enabled": true,
             "log-driver": "json-file",
             "log-opts": {
                 "max-size": "500m",
                 "max-file": "3"
             },
-            "registry-mirrors": [
-                "https://docker.mirrors.ustc.edu.cn/"
-            ],
-            "oom-score-adjust": -1000,
             "default-ulimits": {
                 "nofile": {
                     "Name": "nofile",

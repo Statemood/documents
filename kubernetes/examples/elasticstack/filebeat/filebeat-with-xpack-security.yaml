@@ -91,7 +91,7 @@ data:
 
     - type: container
       paths:
-        - /var/lib/docker/containers/*/*.log
+      - /var/lib/docker/containers/*/*.log
       scan_frequency: 5s
       max_bytes: 1048576
       fields:

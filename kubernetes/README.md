@@ -11,11 +11,9 @@
 
 - etcd
 
-- calico
+- cilium
 
-- flannel
-
-- docker
+- containerd
 
 - kube-apiserver
 
@@ -44,8 +42,8 @@
 
 #### 版本
 
-CentOS 7.2 minimal x86_64 或以上版本
-
+- CentOS 7.2 minimal x86_64 或以上版本
+- AlmaLinux 9.0 x86_64 或以上版本
 
 
 #### 磁盘分区
@@ -118,6 +116,7 @@ Docker-CE 20.10 或更高版本
 - [1.20.1](https://github.com/kubernetes/kubernetes/releases/tag/v1.20.1)
 - [1.22.8](https://github.com/kubernetes/kubernetes/releases/tag/v1.22.8)
 - [1.23.6](https://github.com/kubernetes/kubernetes/releases/tag/v1.23.6)
+- [1.31.0](https://github.com/kubernetes/kubernetes/releases/tag/v1.31.0)
 
 
 # 系统配置
