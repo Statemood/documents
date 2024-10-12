@@ -104,9 +104,8 @@ IP 网段：10.64.0.0/10
 IP 数量：4,194,304
 
 
-## 3. Docker
-
-Docker-CE 20.10 或更高版本
+## 3. Containerd
+[安装 Containerd](https://github.com/Statemood/documents/blob/master/kubernetes/install/106.install-contaierd.io.md)
 
 
 ## 4. kubernetes
