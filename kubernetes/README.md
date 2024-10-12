@@ -42,8 +42,9 @@
 
 #### 版本
 
-- CentOS 7.2 minimal x86_64 或以上版本
-- AlmaLinux 9.0 x86_64 或以上版本
+- AlmaLinux 9.0 或以上版本
+- CentOS 7 minimal 或以上版本
+- Rocky Linux 9.0 或以上版本
 
 
 #### 磁盘分区
@@ -54,16 +55,30 @@
 
 ## 2. 资源配置
 
-| 节点 | IP | 配置 | 备注 |
-| :---: | :--: | :--: | :--: |
-| k8s-master-1 | 192.168.20.31 | 4 CPU, 8G MEM, 30G DISK | - |
-| k8s-master-2 | 192.168.20.32 | 4 CPU, 8G MEM, 30G DISK | - |
-| k8s-master-3 | 192.168.20.33 | 4 CPU, 8G MEM, 30G DISK | - |
+| 节点 | IP | 配置 | 角色 | 备注 |
+| :--: | :--: | :--: | :--: | :--: |
+| k8s-master-1 | 192.168.20.31 | 4 CPU, 8G MEM, 30G DISK | Master | - |
+| k8s-master-2 | 192.168.20.32 | 4 CPU, 8G MEM, 30G DISK | Master | - |
+| k8s-master-3 | 192.168.20.33 | 4 CPU, 8G MEM, 30G DISK | Master | - |
+| k8s-worker-1 | 192.168.20.41 | 8 CPU, 16G MEM, 30G DISK | Worker | - |
+| k8s-worker-2 | 192.168.20.42 | 8 CPU, 16G MEM, 30G DISK | Worker | - |
+| k8s-worker-3 | 192.168.20.43 | 8 CPU, 16G MEM, 30G DISK | Worker | - |
 
-- 本配置为不分角色的混合部署，在同一节点上部署
-  - etcd
-  - master
-  - worker
+
+> - 在 Master(控制) 节点上部署以下组件
+>   - etcd
+>   - containerd
+>   - kube-apiserver
+>   - kube-controller-manager
+>   - kube-scheduler
+>   - kubelet
+>   - kube-proxy
+
+> - 在 Worker(工作) 节点上部署以下组件
+>   - containerd
+>   - kubelet
+>   - kube-proxy
+  
 - 推荐在生产环境中
   - 使用更高配置
   - 独立部署 Etcd 并使用高性能SSD (PCIe)
@@ -79,11 +94,6 @@
 - 如使用 Calico网络，请忽略任何与 Flannel 相关操作
 - BGP (default)
 - IPIP
-
-
-### Flannel
-
-- vxlan
 
 
 
@@ -105,7 +115,6 @@ IP 数量：4,194,304
 
 
 ## 3. Containerd
-[安装 Containerd](https://github.com/Statemood/documents/blob/master/kubernetes/install/106.install-contaierd.io.md)
 
 
 ## 4. kubernetes
@@ -139,7 +148,7 @@ IP 数量：4,194,304
 - [添加用户](https://github.com/Statemood/documents/blob/master/kubernetes/install/103.add-user.md)
 
 - [为 kubectl 生成 kubeconfig](https://github.com/Statemood/documents/blob/master/kubernetes/install/110.kubeconfig-4-kubectl.md)
-- [安装 Docker-CE](https://github.com/Statemood/documents/blob/master/docker/how-install-docker-ce.md)
+- [安装 Containerd](https://github.com/Statemood/documents/blob/master/kubernetes/install/106.install-contaierd.io.md)
 
 
 
@@ -166,7 +175,7 @@ IP 数量：4,194,304
 
 ## 部署基础组件
 
-- [Calico](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-calico.md) *or* [Flannel](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-flannel.md) (*二选一*)
+- [Calico](https://github.com/Statemood/documents/blob/master/kubernetes/install/210.deploy-cni-calico.md)
 - [CoreDNS](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/400.deploy-coredns.md)
 - [Node Local DNS](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/400.deploy-nodelocaldns.md)
 - [Metrics Server](https://github.com/Statemood/documents/blob/master/kubernetes/deploy/401.deploy-metrics-server.md)
