@@ -67,18 +67,18 @@ extendedKeyUsage = serverAuth, clientAuth
 
 #### 生成 Client Key
 
-client=rulin@cossc.co
-name="YiYi Tech Security TLS Client Authentication"
+name=name@mail.com
+desc="IT Security TLS Client Authentication"
 
 ```shell
-openssl genrsa -out $client.key 4096
+openssl genrsa -out $name.key 4096
 ```
 
 #### 生成证书签名请求
 
 ```shell
-openssl req -new -key $client.key -out $client.csr \
-        -subj "/CN=$name/OU=SA/C=CN/ST=Shanghai/L=Shanghai/O=IT" \
+openssl req -new -key $name.key -out $name.csr \
+        -subj "/CN=$desc/OU=SA/C=CN/ST=Shanghai/L=Shanghai/O=IT" \
         -config client.cnf
 ```
 
@@ -86,17 +86,16 @@ openssl req -new -key $client.key -out $client.csr \
 #### 签发证书
 
 ```shell
-openssl x509 -req -in $client.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
-        -out $client.pem -days 365 -extfile client.cnf -extensions v3_req
+openssl x509 -req -in $name.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
+        -out $name.pem -days 365 -extfile client.cnf -extensions v3_req
 ```
-
 
 
 #### 导出 PKCS12 格式证书
 
 ```shell
-openssl pkcs12 -export -in $client.pem -inkey $client.key -out $client.p12 \
-        -name "$name"
+openssl pkcs12 -export -in $name.pem -inkey $name.key -out $name.p12 \
+        -name "$desc"
 ```
 
 
