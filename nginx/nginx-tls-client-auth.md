@@ -67,27 +67,27 @@ extendedKeyUsage = serverAuth, clientAuth
 
 #### 生成 Client Key
 
+client=rulin@cossc.co
+name="YiYi Tech Security TLS Client Authentication"
+
 ```shell
-openssl genrsa -out client.key 4096
+openssl genrsa -out $client.key 4096
 ```
-
-
 
 #### 生成证书签名请求
 
 ```shell
-openssl req -new -key client.key -out client.csr \
-        -subj "/CN=Office Security Client/OU=SA/C=CN/ST=Shanghai/L=Shanghai/O=IT" \
+openssl req -new -key $client.key -out $client.csr \
+        -subj "/CN=$name/OU=SA/C=CN/ST=Shanghai/L=Shanghai/O=IT" \
         -config client.cnf
 ```
-
 
 
 #### 签发证书
 
 ```shell
-openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
-        -out client.pem -days 60 -extfile client.cnf -extensions v3_req
+openssl x509 -req -in $client.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
+        -out $client.pem -days 365 -extfile client.cnf -extensions v3_req
 ```
 
 
@@ -95,8 +95,8 @@ openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
 #### 导出 PKCS12 格式证书
 
 ```shell
-openssl pkcs12 -export -in client.pem -inkey client.key -out client.p12 \
-        -name "Office Security TLS Client Authentication"
+openssl pkcs12 -export -in $client.pem -inkey $client.key -out $client.p12 \
+        -name "$name"
 ```
 
 
@@ -108,9 +108,6 @@ openssl pkcs12 -export -in client.pem -inkey client.key -out client.p12 \
 | client.p12 | PKCS #12    | 导入系统供浏览器使用 / 配置到应用中使用 |
 | client.key | RSA Key     | 供应用访问使用                          |
 | client.pem | Certificate | 供应用访问使用                          |
-
-
-
 
 
 ## 在 Nginx 中使用TLS Client Authentication

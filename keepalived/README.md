@@ -16,16 +16,14 @@ dnf install -y keepalived
     global_defs {
         router_id nginx-ha-21
     }
-    vrrp_sync_group VG_1 {
-        group {
-            VI_1
-        }
-    }
-    vrrp_script nginx_check {
+
+    vrrp_script nginx_check 
+    {
         script "/usr/libexec/keepalived/check-nginx-status"
         interval 3
     }
-    vrrp_instance VI_1 {
+
+    vrrp_instance vi_nginx {
         state MASTER
         interface eth0
         virtual_router_id 18
@@ -33,11 +31,13 @@ dnf install -y keepalived
         advert_int 1
         authentication {
             auth_type PASS
-            auth_pass 1111
+            auth_pass h3m5Ewvk
         }
+
         track_script {
             nginx_check weight 0
         }
+
         virtual_ipaddress {
             192.168.20.18 dev eth0
         }
@@ -50,16 +50,14 @@ dnf install -y keepalived
     global_defs {
         router_id nginx-ha-22
     }
-    vrrp_sync_group VG_1 {
-        group {
-            VI_1
-        }
-    }
-    vrrp_script nginx_check {
+
+    vrrp_script nginx_check 
+    {
         script "/usr/libexec/keepalived/check-nginx-status"
         interval 3
     }
-    vrrp_instance VI_1 {
+
+    vrrp_instance vi_nginx {
         state BACKUP
         interface eth0
         virtual_router_id 18
@@ -67,11 +65,13 @@ dnf install -y keepalived
         advert_int 1
         authentication {
             auth_type PASS
-            auth_pass 1111
+            auth_pass h3m5Ewvk
         }
+
         track_script {
             nginx_check weight 0
         }
+        
         virtual_ipaddress {
             192.168.20.18 dev eth0
         }
@@ -97,15 +97,26 @@ chmod 755 /usr/libexec/keepalived/check-nginx-status
 chcon -u system_u -t keepalived_unconfined_script_exec_t /usr/libexec/keepalived/check-nginx-status
 ```
 
-### 防火墙打开端口
+### 防火墙
+
+##### 查看防火墙运行状态
+```shell
+firewall-cmd --state
+```
+
+
+##### 添加规则
 
 ```shell
-firewall-cmd --direct --permanent --add-rule ipv4 filter INPUT 0 --destination 224.0.0.18 --protocol vrrp -j ACCEPT
-firewall-cmd --direct --permanent --add-rule ipv4 filter OUTPUT 0 --destination 224.0.0.18 --protocol vrrp -j ACCEPT
-firewall-cmd --zone public --add-port 6443/tcp --permanent
+firewall-cmd --add-rich-rule='rule protocol value="vrrp" family=ipv4 destination address=224.0.0.18 accept' --permanent
 firewall-cmd --reload
 ```
 
+
+##### 查看规则
+```shell
+firewall-cmd --list-all
+```
 
 ## 启动
 

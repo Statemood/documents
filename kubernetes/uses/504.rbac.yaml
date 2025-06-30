@@ -1,0 +1,114 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: user-tom
+rules:
+# READONLY
+- apiGroups:
+  - ''
+  resources: 
+  - nodes
+  - namespaces
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - ''
+  resources: 
+  - pods
+  - pods/log
+  - configmaps
+  - secrets
+  - services
+  - endpoints
+  - replicationcontrollers
+  - persistentvolumes
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - watch
+  - list
+  - delete
+  - update
+  - patch
+  - create
+# Allow user into pod by 'exec'
+- apiGroups: 
+  - ''
+  resources: 
+  - pods/exec
+  verbs:
+  - create
+- apiGroups:
+  - apps
+  resources: 
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - watch
+  - list
+  - delete
+  - update
+  - patch
+  - create
+- apiGroups: 
+  - batch
+  resources:
+  - cronjobs
+  - jobs
+  verbs:
+  - get
+  - watch
+  - list
+  - delete
+  - update
+  - patch
+  - create
+- apiGroups:
+  - networking.k8s.io
+  resources: 
+  - ingresses
+  verbs:
+  - get
+  - watch
+  - list
+  - delete
+  - update
+  - patch
+  - create
+- apiGroups: 
+  - autoscaling
+  resources: 
+  - horizontalpodautoscalers
+  verbs:
+  - get
+  - watch
+  - list
+  - delete
+  - update
+  - patch
+  - create
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: user-tom
+  namespace: default
+subjects:
+- kind: User
+  name: tom
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: user-tom
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: user-tom
+  namespace: default

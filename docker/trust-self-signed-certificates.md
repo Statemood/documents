@@ -8,8 +8,6 @@
    yum install -y ca-certificates
    ```
 
-   
-
 2. 复制 CA 证书
 
    ```shell
@@ -30,6 +28,3 @@
    ```shell
    systemctl restart docker
    ```
-
-   
-

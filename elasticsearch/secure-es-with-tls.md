@@ -74,14 +74,11 @@ IP.3 = 10.10.20.153
 - IP 为 ES Node IP，不在列表中的IP将无法加入本集群
   对应配置为 `xpack.security.transport.ssl.verification_mode: full`
 
-
-
 ##### 生成 es-server Key
 
 ```shell
 openssl genrsa -out es-server.key 3072
 ```
-
 
 
 ##### 生成 es-server 证书签发请求

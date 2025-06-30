@@ -16,7 +16,7 @@ http {
     include mime.types;
     default_type application/octet-stream;
     log_format default '$remote_addr $remote_port $remote_user $time_iso8601 $status $body_bytes_sent '
-                       '"$request" "$request_body" "$http_referer" "$http_user_agent" "$http_x_forwarded_for"';
+                       '"$request" "$http_referer" "$http_user_agent" "$http_x_forwarded_for"';
 
     fastcgi_connect_timeout 300;
     fastcgi_send_timeout 300;
@@ -52,5 +52,5 @@ http {
     include conf.d/*.conf;
 }
 
-#include conf.d/L4-Proxy/*.conf;
+include conf.d/L4-Proxy/*.conf;
 ```
