@@ -26,7 +26,7 @@ do
 
     kubectl $cfg get ns $ns -o yaml > $dn/$ns.`date +%w`.`date +%H`.yaml
 
-    # 等待5秒再继续，避免给 k8s 造成过大压力
+    # 等待5秒再继续，避免给 etcd 造成过大压力
     sleep 5
 
     for res in cj cm deploy ds ing job secret sts svc

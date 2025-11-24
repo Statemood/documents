@@ -11,8 +11,6 @@
 | OSS | my-harbor-registry.oss-cn-beijing.aliyuncs.com | - | harbor-storage |
 | SLB | 123.123.123.123/192.168.10.12 | - | 公网+私网 |
 
-
-
 ## Harbor 配置
 
 ### PostgreSQL 数据库
