@@ -29,8 +29,8 @@ do
     # 等待5秒再继续，避免给 etcd 造成过大压力
     sleep 5
 
-    for res in cj cm deploy ds ing job secret sts svc
-    do 
+    for res in cj cm deploy ds ing job secret sts svc 
+    do
         test -z "$res" && continue
         msg "Backup resource $res"
 

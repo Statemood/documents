@@ -5,7 +5,7 @@ SELinux context of Nginx
 
 ```shell
 nginx_cfg_dir=/usr/local/nginx/conf
-nginx_log_dir=/data/log/nginx
+nginx_log_dir=/data/logs/nginx
 nginx_mod_dir=/usr/lib64/nginx/modules
 nginx_lib_dir=/run/nginx
 

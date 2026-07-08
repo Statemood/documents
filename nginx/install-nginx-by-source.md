@@ -116,6 +116,7 @@ PIDFile=/run/nginx/nginx.pid
 ExecStartPre=/usr/bin/rm -f /run/nginx/nginx.pid
 ExecStartPre=/usr/bin/mkdir -p /run/nginx
 ExecStartPre=/usr/bin/chcon -R -u system_u -t httpd_var_run_t /run/nginx
+ExecStartPre=/usr/sbin/setsebool httpd_can_network_connect 1
 ExecStartPre=/usr/sbin/nginx -t
 ExecStart=/usr/sbin/nginx
 ExecReload=/usr/sbin/nginx -s reload
